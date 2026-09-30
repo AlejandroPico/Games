@@ -2,28 +2,42 @@
 
 Los juegos disponibles tienen un menú integrado en la mesa, instrucciones, diseño adaptable y temas día, tarde, noche y automático. Las ideas pendientes se conservan en [ROADMAP.md](ROADMAP.md), con fichas deshabilitadas en el catálogo.
 
-| Juego         | Categoría                  | Modos y ayudas                                  | Variante                                                      |
-| ------------- | -------------------------- | ----------------------------------------------- | ------------------------------------------------------------- |
-| Ajedrez       | Estrategia                 | Stockfish, local, salas privadas, 3D/2D         | Reglas y límites descritos en README                          |
-| Conecta 4     | Clásicos                   | IA en Worker, tres dificultades, local          | Tablero 7×6                                                   |
-| Tres en raya  | Clásicos / Familia         | IA clásica óptima, IA continua en Worker, local | Tablero 3×3; clásico o continuo con tres marcas por jugador   |
-| Reversi       | Estrategia                 | IA en Worker, local                             | 8×8, pasos automáticos                                        |
-| Damas         | Estrategia                 | IA en Worker, local                             | Inglesas, capturas obligatorias y múltiples                   |
-| Mancala       | Tradicionales              | IA en Worker, local                             | Kalah, seis cuencos, cuatro semillas                          |
-| Batalla naval | Deducción                  | IA que solo usa disparos conocidos              | Cinco barcos, colocación aleatoria                            |
-| Solitario     | Cartas                     | Pistas y deshacer                               | Klondike, robo de una o tres, reciclado ilimitado             |
-| Buscaminas    | Lógica                     | Pistas deductivas, tres tamaños                 | Primer clic y entorno seguros, banderas, apertura por números |
-| Sudoku        | Lógica                     | Pistas, notas y deshacer                        | Solución única, tres densidades                               |
-| 2048          | Puzles                     | Sugerencias, deshacer, teclado, gestos          | Fusiones únicas por jugada, continuar tras 2048               |
-| Parejas       | Memoria / Familia          | Solo, IA con memoria visible, local             | Ocho parejas, repetir al acertar                              |
-| Go            | Estrategia / Tradicionales | IA en Worker, local                             | 9×9, 13×13 o 19×19; área y komi 7.5                           |
-| Parchís       | Familia / Tradicionales    | 2–4 jugadores, mezcla de humanos e IA           | Individual, un dado, cuatro fichas por color                  |
+| Juego                 | Categoría                  | Modos y ayudas                                     | Variante                                                      |
+| --------------------- | -------------------------- | -------------------------------------------------- | ------------------------------------------------------------- |
+| Ajedrez               | Estrategia                 | Stockfish, local, salas privadas, 3D/2D            | Reglas y límites descritos en README                          |
+| Conecta 4             | Clásicos                   | IA en Worker, tres dificultades, local             | Tablero 7×6                                                   |
+| Tres en raya          | Clásicos / Familia         | IA clásica óptima, IA continua en Worker, local    | Tablero 3×3; clásico o continuo con tres marcas por jugador   |
+| Reversi               | Estrategia                 | IA en Worker, local                                | 8×8, pasos automáticos                                        |
+| Damas                 | Estrategia                 | IA en Worker, local                                | Inglesas, capturas obligatorias y múltiples                   |
+| Mancala               | Tradicionales              | IA en Worker, local                                | Kalah, seis cuencos, cuatro semillas                          |
+| Batalla naval         | Deducción                  | IA que solo usa disparos conocidos                 | Cinco barcos, colocación aleatoria                            |
+| Solitario             | Cartas                     | Pistas y deshacer                                  | Klondike, robo de una o tres, reciclado ilimitado             |
+| Buscaminas            | Lógica                     | Pistas deductivas, tres tamaños                    | Primer clic y entorno seguros, banderas, apertura por números |
+| Sudoku                | Lógica                     | Pistas, notas y deshacer                           | Solución única, tres densidades                               |
+| 2048                  | Puzles                     | Sugerencias, deshacer, teclado, gestos             | Fusiones únicas por jugada, continuar tras 2048               |
+| Parejas               | Memoria / Familia          | Solo, IA con memoria visible, local                | Ocho parejas, repetir al acertar                              |
+| Go                    | Estrategia / Tradicionales | IA en Worker, local                                | 9×9, 13×13 o 19×19; área y komi 7.5                           |
+| Parchís               | Familia / Tradicionales    | 2–4 jugadores, mezcla de humanos e IA              | Individual, un dado, cuatro fichas por color                  |
+| Damas internacionales | Tradicionales / Estrategia | IA en Worker, local, arrastre                      | 10×10, toma máxima, damas voladoras                           |
+| Shogi                 | Tradicionales / Estrategia | IA en Worker, local, arrastre de piezas y reservas | 9×9, lanzamientos y promociones                               |
+| Xiangqi               | Tradicionales / Estrategia | IA en Worker, local, arrastre                      | Edición casual, tablero 9×10                                  |
+| Spider                | Cartas                     | Pistas, deshacer y arrastre de grupos              | Uno, dos o cuatro palos                                       |
+| Carta Blanca          | Cartas                     | Pistas, deshacer, doble clic y arrastre            | FreeCell, transporte según espacios disponibles               |
+| Blackjack             | Cartas                     | Crupier automático, fichas de práctica             | Seis barajas, seguro, doblar, separar y rendirse              |
+| Mus                   | Cartas                     | Tres IA o cuatro jugadores locales                 | Cuatro u ocho reyes, juego a 30 o 40 tantos                   |
+| Brisca                | Cartas                     | IA o dos jugadores locales                         | Individual, intercambio opcional de triunfo                   |
+| Mahjong solitario     | Lógica / Puzles            | Pistas, deshacer, reordenar                        | Tortuga, parejas libres, flores y estaciones                  |
+| Yahtzee               | Dados                      | Solo, IA o dos jugadores locales                   | Joker, bonus superior y Yahtzees adicionales                  |
+| Mastermind            | Deducción                  | Descifrar, ayuda de IA o crear código para la IA   | Repetición de colores opcional                                |
+| Quarto                | Abstractos                 | IA o local                                         | Canto automático o manual, sin cuadrados adicionales          |
+
+Detalles, fuentes y límites de estas modalidades: [EXPANSION.md](EXPANSION.md).
 
 ## Interacción y nuevas partidas
 
 El menú inicial y el botón de ajustes muestran la misma configuración completa, con «Empezar partida» al final. «Nueva partida», en la esquina inferior derecha, reinicia con las opciones actuales sin volver a ese menú. En ajedrez por Internet solicita una revancha al rival; ambos aceptan antes de reiniciar.
 
-Ajedrez 2D y 3D, damas y solitario permiten arrastrar además de seleccionar con clic. En solitario se desplaza toda la secuencia de cartas elegida. Reversi permite arrastrar una ficha desde la reserva; las fichas ya colocadas permanecen en el tablero. Las reglas siguen validando todos los destinos.
+Ajedrez 2D y 3D, damas americanas e internacionales, Shogi, Xiangqi y los solitarios permiten arrastrar además de seleccionar con clic. En solitario se desplaza toda la secuencia de cartas elegida. Reversi permite arrastrar una ficha desde la reserva; las fichas ya colocadas permanecen en el tablero. Las reglas siguen validando todos los destinos.
 
 Tres en raya continuo conserva un máximo de tres marcas por jugador. La cuarta elimina la primera de ese mismo jugador antes de comprobar la victoria. Se señala la marca que desaparecerá; las repeticiones no terminan la partida en empate. La IA continua usa búsqueda limitada y no se presenta como una solución óptima de esta variante.
 

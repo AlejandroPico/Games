@@ -13,7 +13,19 @@ export type PlayableGameId =
   | "battleship"
   | "sudoku"
   | "2048"
-  | "memory";
+  | "memory"
+  | "damas-internacionales"
+  | "shogi-ajedrez-japones"
+  | "xiangqi-ajedrez-chino"
+  | "solitario-spider"
+  | "solitario-carta-blanca-freecell"
+  | "blackjack-21"
+  | "mus"
+  | "brisca"
+  | "mahjong-solitario"
+  | "yahtzee-la-generala"
+  | "mastermind"
+  | "quarto";
 export type GameId = PlayableGameId | (typeof roadmapGames)[number]["id"];
 export interface GameInfo {
   id: GameId;
@@ -26,6 +38,68 @@ export interface GameInfo {
   ready: boolean;
   color: string;
 }
+const enabledGames: Record<string, Partial<GameInfo>> = {
+  "damas-internacionales": {
+    name: "Damas internacionales",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+  "shogi-ajedrez-japones": {
+    name: "Shogi",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+  "xiangqi-ajedrez-chino": {
+    name: "Xiangqi",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+  "solitario-spider": {
+    name: "Spider",
+    players: "1 jugador",
+    ready: true,
+  },
+  "solitario-carta-blanca-freecell": {
+    name: "Carta Blanca",
+    players: "1 jugador",
+    ready: true,
+  },
+  "blackjack-21": {
+    name: "Blackjack",
+    players: "1 jugador + IA",
+    ready: true,
+  },
+  mus: {
+    name: "Mus",
+    players: "1–4 jugadores",
+    ready: true,
+  },
+  brisca: {
+    name: "Brisca",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+  "mahjong-solitario": {
+    name: "Mahjong solitario",
+    players: "1 jugador",
+    ready: true,
+  },
+  "yahtzee-la-generala": {
+    name: "Yahtzee",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+  mastermind: {
+    name: "Mastermind",
+    players: "1 jugador + IA",
+    ready: true,
+  },
+  quarto: {
+    name: "Quarto",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+};
 export const games: GameInfo[] = [
   {
     id: "chess",
@@ -169,5 +243,5 @@ export const games: GameInfo[] = [
     ready: true,
     color: "rose",
   },
-  ...roadmapGames,
+  ...roadmapGames.map((g) => ({ ...g, ...(enabledGames[g.id] || {}) })),
 ];

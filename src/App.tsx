@@ -20,6 +20,7 @@ import GameBoundary from "./shared/GameBoundary";
 import Overlay from "./shared/Overlay";
 import AutoThemeIcon from "./shared/AutoThemeIcon";
 import RoadmapArt from "./shared/RoadmapArt";
+import NewGameArt, { newGameIds } from "./shared/NewGameArt";
 import {
   automaticTheme,
   type ThemeMode,
@@ -40,6 +41,22 @@ const extraGames: Partial<Record<GameId, ReturnType<typeof lazy>>> = {
   memory: lazy(() => import("./games/memory/Memory")),
   go: lazy(() => import("./games/go/GoGame")),
   ludo: lazy(() => import("./games/ludo/Parchis")),
+  "damas-internacionales": lazy(
+    () => import("./games/international-draughts/InternationalDraughts"),
+  ),
+  "shogi-ajedrez-japones": lazy(() => import("./games/shogi/Shogi")),
+  "xiangqi-ajedrez-chino": lazy(() => import("./games/xiangqi/Xiangqi")),
+  "solitario-spider": lazy(() => import("./games/spider/Spider")),
+  "solitario-carta-blanca-freecell": lazy(
+    () => import("./games/freecell/FreeCell"),
+  ),
+  "blackjack-21": lazy(() => import("./games/blackjack/Blackjack")),
+  mus: lazy(() => import("./games/mus/Mus")),
+  brisca: lazy(() => import("./games/brisca/Brisca")),
+  "mahjong-solitario": lazy(() => import("./games/mahjong/Mahjong")),
+  "yahtzee-la-generala": lazy(() => import("./games/yahtzee/Yahtzee")),
+  mastermind: lazy(() => import("./games/mastermind/Mastermind")),
+  quarto: lazy(() => import("./games/quarto/Quarto")),
 };
 const normalizeText = (s: string) =>
   s
@@ -535,6 +552,7 @@ export default function App() {
 }
 
 function GameArt({ id }: { id: GameId }) {
+  if (newGameIds.includes(id)) return <NewGameArt id={id} />;
   if (
     ![
       "chess",

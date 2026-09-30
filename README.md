@@ -11,16 +11,18 @@ Desarrollada con React, TypeScript y Three.js. Sitio estático para GitHub Pages
 - Temas día, tarde, noche y automático. El automático solicita ubicación mediante el permiso del navegador y calcula amanecer y anochecer. Guarda coordenadas aproximadas solo en este navegador. Si no hay permiso, usa el reloj local y una estimación estacional para el hemisferio norte. No mide luz ambiental ni meteorología.
 - Partidas ocupando el espacio bajo la barra, sin desplazamiento de página. Ajustes e instrucciones se abren sobre la mesa; los paneles largos pueden desplazarse internamente.
 - Nueva partida en la esquina inferior derecha: reinicia directamente con las opciones seleccionadas. El botón de ajustes abre el mismo menú completo de entrada.
-- Arrastre además de clic en ajedrez 2D/3D, damas y solitario, incluyendo secuencias de cartas; en reversi se puede arrastrar la ficha de reserva a una casilla legal.
+- Arrastre además de clic en ajedrez 2D/3D, damas americanas e internacionales, Shogi, Xiangqi y los solitarios, incluyendo secuencias de cartas; en reversi se puede arrastrar la ficha de reserva a una casilla legal.
 - Navegación mediante fragmentos: volver desde un juego regresa a la colección; desde la colección se conserva el comportamiento del navegador o del sistema.
 - Aplicación PWA instalable y preparada para jugar sin conexión tras completar la primera descarga. Salas de ajedrez requieren Internet.
 - `favicon.svg` en la raíz es la fuente del icono; la compilación lo copia a `public/favicon.svg`. Incluye iconos PNG de instalación y versión maskable.
 
 ## Juegos
 
-Ajedrez, Conecta 4, tres en raya, reversi, damas, mancala, batalla naval, solitario, buscaminas, sudoku, 2048, parejas, Go y Parchís. Las fichas grises reservan las ideas de [docs/ROADMAP.md](docs/ROADMAP.md) y no abren partidas. Tres en raya incluye una variante continua: cada jugador conserva sus tres últimas marcas; al colocar la cuarta desaparece la más antigua. Variantes y modos: [docs/GAMES.md](docs/GAMES.md).
+Ajedrez, Conecta 4, tres en raya, reversi, damas americanas e internacionales, mancala, batalla naval, solitario Klondike, Spider, Carta Blanca, buscaminas, sudoku, 2048, parejas, Go, Parchís, Shogi, Xiangqi, blackjack, mus, brisca, mahjong solitario, Yahtzee, Mastermind y Quarto. Las fichas grises reservan las ideas de [docs/ROADMAP.md](docs/ROADMAP.md) y no abren partidas. Tres en raya incluye una variante continua: cada jugador conserva sus tres últimas marcas; al colocar la cuarta desaparece la más antigua. Variantes y modos: [docs/GAMES.md](docs/GAMES.md).
 
 Ajedrez ofrece tablero 3D y 2D, Stockfish 19 Lite Single con cuatro dificultades, dos jugadores locales y salas privadas mediante PeerJS. Incluye práctica sin reloj, relojes 3+2, 5+3, 10+5 y 15+10, guardado local, reanudación e importación/exportación PGN.
+
+Los juegos añadidos, sus variantes, las fuentes de reglas y los límites de las IA se describen en [docs/EXPANSION.md](docs/EXPANSION.md). Los motores de los tableros nuevos usan búsqueda limitada en Workers, para práctica; Xiangqi es una edición casual con revisión de repeticiones y sin arbitraje automático completo de persecuciones WXF. Los juegos de cartas no usan dinero.
 
 ## Desarrollo
 
@@ -42,7 +44,7 @@ La compilación genera un Service Worker con una versión basada en el contenido
 
 ## Estructura y colaboración
 
-Cada juego vive en `src/games/<id>/`, con reglas, IA y componentes independientes. Registro: `src/games/registry.ts`; navegación: `src/App.tsx`; presentación compartida: `src/shared/GameLayout.tsx` y `src/shared/Overlay.tsx`; estilos: `src/styles.css` y `src/redesign.css` (este último define el rediseño).
+Cada juego vive en `src/games/<id>/`, con reglas, IA y componentes independientes. Registro: `src/games/registry.ts`; navegación: `src/App.tsx`; presentación compartida: `src/shared/GameLayout.tsx` y `src/shared/Overlay.tsx`; estilos: `src/styles.css`, `src/redesign.css` y `src/new-games.css` (mesas de los juegos añadidos).
 
 Para añadir un juego: crear su carpeta, registrar metadatos, añadir importación diferida y comprobar sus reglas. No marcar `ready: true` hasta que sea jugable. Si necesita persistencia, usar claves propias con versión; no compartir partidas entre juegos. IndexedDB permite bases locales grandes. SQLite requeriría WASM o un servicio externo y no es necesario para esta entrega.
 

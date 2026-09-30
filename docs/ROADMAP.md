@@ -1,15 +1,15 @@
 # Colección propuesta por Alejandro Pico
 
-Ideas de la lista original, organizadas para ampliar la colección. Las ya implementadas aparecen marcadas; las pendientes tienen fichas deshabilitadas en gris y no abren partidas. Cada variante se concretará al desarrollarla.
+Ideas de la lista original, organizadas para ampliar la colección. Las ya implementadas aparecen marcadas; las pendientes tienen fichas deshabilitadas en gris y no abren partidas. Cada variante se concretará al desarrollarla. Los juegos añadidos y sus límites están detallados en [EXPANSION.md](EXPANSION.md).
 
 ## Tradicionales
 
 - [x] **Ajedrez**: El estándar de oro. Capturas, jaques y árboles de decisión complejos.
-- [ ] **Damas Internacionales**: Capturas obligatorias saltando piezas en tableros de 10x10.
+- [x] **Damas Internacionales**: Capturas obligatorias saltando piezas en tableros de 10x10.
 - [x] **Damas Americanas**: Variante clásica en tablero de 8x8.
 - [x] **Go (Weiqi)**: Colocación de piedras para rodear territorio y capturar fichas rivales.
-- [ ] **Shogi (Ajedrez Japonés)**: Las piezas capturadas se pueden reintroducir en el campo de juego.
-- [ ] **Xiangqi (Ajedrez Chino)**: Piezas con movimientos únicos (como el Cañón) cruzando un río central.
+- [x] **Shogi (Ajedrez Japonés)**: Las piezas capturadas se pueden reintroducir en el campo de juego.
+- [x] **Xiangqi (Ajedrez Chino)**: Piezas con movimientos únicos (como el Cañón) cruzando un río central.
 - [ ] **Backgammon**: Movimiento de fichas guiado por dados, bloqueos y retornos a la casilla de salida.
 - [x] **Othello / Reversi**: Volteo de fichas atrapadas entre dos piezas del color contrario.
 - [x] **Mancala (Kalaha)**: Siembra y captura de semillas en pequeños huecos.
@@ -61,15 +61,15 @@ Ideas de la lista original, organizadas para ampliar la colección. Las ya imple
 ## Cartas
 
 - [x] **Solitario Klondike**: El solitario tradicional de mover cartas por columnas alternando colores.
-- [ ] **Solitario Spider**: Ordenar cartas de una o varias barajas por palos completos descendentes.
-- [ ] **Solitario Carta Blanca (FreeCell)**: Solitario donde todas las cartas se ven desde el inicio con 4 casillas libres de apoyo.
+- [x] **Solitario Spider**: Ordenar cartas de una o varias barajas por palos completos descendentes.
+- [x] **Solitario Carta Blanca (FreeCell)**: Solitario donde todas las cartas se ven desde el inicio con 4 casillas libres de apoyo.
 - [ ] **Póker Texas Hold'em**: Apuestas, faroles y combinaciones de 5 cartas usando cartas comunitarias.
-- [ ] **Blackjack (21)**: Sumar 21 puntos o acercarse al máximo sin pasarse contra el crupier.
+- [x] **Blackjack (21)**: Sumar 21 puntos o acercarse al máximo sin pasarse contra el crupier.
 - [ ] **Chinchón**: Agrupar series de cartas del mismo número o escaleras del mismo palo.
 - [ ] **Escoba**: Sumar 15 puntos combinando cartas de la mano con las del tapete para limpiar la mesa.
 - [ ] **Tute**: Juego de bazas español donde se cantan "las cuarenta" o "las veinte" con reyes y caballos.
-- [ ] **Mus**: Juego de faroles, señas y cuatro grandes fases (grandes, chicas, pares y juego).
-- [ ] **Brisca**: Juego de bazas rápidas donde el palo de triunfo determina qué carta gana.
+- [x] **Mus**: Juego de faroles, señas y cuatro grandes fases (grandes, chicas, pares y juego).
+- [x] **Brisca**: Juego de bazas rápidas donde el palo de triunfo determina qué carta gana.
 - [ ] **Cinquillo**: Ir colocando las cartas sobre la mesa en orden ascendente y descendente a partir de los cincos.
 - [ ] **Truco Argentino / Uruguayo**: Mentiras, envites y señas en partidas rápidas de 3 cartas.
 - [ ] **Rummy / Continental**: Crear series de números idénticos o escaleras bajando las cartas a la mesa.
@@ -109,7 +109,7 @@ Ideas de la lista original, organizadas para ampliar la colección. Las ya imple
 - [x] **Buscaminas Clásico**: Despejar cuadrículas mediante pistas numéricas de proximidad.
 - [x] **Sudoku Estándar**: Completar regiones de 9x9 sin repetir números del 1 al 9.
 - [ ] **Nonogramas (Picross)**: Colorear celdas guiado por secuencias de números en los ejes para formar un dibujo pixelado.
-- [ ] **Mahjong Solitario**: Retirar parejas libres de fichas chinas apiladas tridimensionalmente.
+- [x] **Mahjong Solitario**: Retirar parejas libres de fichas chinas apiladas tridimensionalmente.
 - [x] **2048**: Deslizar y fusionar potencias de 2 en una cuadrícula de 4x4.
 - [ ] **Crucigramas Interactivos**: Rellenar cajas de texto entrelazadas a partir de definiciones horizontales y verticales.
 - [ ] **Sopa de Letras Dinámica**: Selección de palabras arrastrando el ratón/dedo en una sopa de caracteres.
@@ -141,7 +141,7 @@ Ideas de la lista original, organizadas para ampliar la colección. Las ya imple
 
 ## Dados
 
-- [ ] **Yahtzee / La Generala**: Lanzamientos repetidos de 5 dados para obtener manos de póker (Full, Escaleras, Repóker).
+- [x] **Yahtzee / La Generala** (implementada la puntuación Yahtzee): Lanzamientos repetidos de 5 dados para obtener manos de póker (Full, Escaleras, Repóker).
 - [ ] **Dados Mentirosos (Perudo)**: Apostar sobre el número total de dados con cierta cara ocultos bajo los cubiletes de todos los jugadores.
 - [ ] **Farkle (Diez Mil)**: Tentar a la suerte relanzando dados para acumular puntos, arriesgándote a perder el acumulado si sacas una tirada en blanco.
 - [ ] **Dados Zombie**: Dados de tres colores (fácil, medio, difícil) donde coleccionas cerebros y evitas disparos.
@@ -159,7 +159,7 @@ Ideas de la lista original, organizadas para ampliar la colección. Las ya imple
 - [ ] **El Asesino de la Mansión (Estilo Cluedo)**: Descarte de cartas de Sospechoso, Arma y Habitación mediante sugerencias cruzadas.
 - [ ] **Código de Redes (Estilo Código Secreto)**: Tableros de palabras donde los jefes de equipo guían con una palabra y un índice numérico.
 - [ ] **Pistas Abstractas (Estilo Dixit)**: Selección de ilustraciones ambiguas basándose en frases poéticas o pistas abstractas de los usuarios.
-- [ ] **Mastermind**: Descubrir un código oculto de colores mediante pivotes de feedback (blanco = color correcto, negro = posición y color correcto).
+- [x] **Mastermind**: Descubrir un código oculto de colores mediante pivotes de feedback (blanco = color correcto, negro = posición y color correcto).
 - [ ] **Deducción Alquímica (Estilo Alchimistas)**: Mezcla de ingredientes virtuales para descubrir fórmulas lógicas mediante descarte de signos.
 - [ ] **Adivina Quién**: Filtrar rostros de personajes mediante preguntas binarias (¿Tiene gafas?, ¿Es rubio?).
 - [ ] **Mensajes Cruzados (Estilo Decrypto)**: Transmisión de códigos numéricos secretos entre compañeros sin que el equipo rival intercepte el patrón de palabras clave.
@@ -173,7 +173,7 @@ Ideas de la lista original, organizadas para ampliar la colección. Las ya imple
 - [ ] **La Colmena (Estilo Hive)**: Juego de insectos sin tablero; cada pieza se mueve de forma exclusiva intentando rodear a la abeja reina enemiga.
 - [ ] **Ventanas de Catedral (Estilo Sagrada)**: Colocación de dados de colores simulando vidrieras, respetando restricciones de valor y color adyacentes.
 - [ ] **Bloques Geométricos (Estilo Blokus)**: Colocación de piezas de polióminos en un tablero común tocándose estrictamente solo por las esquinas.
-- [ ] **Quarto**: Colocar piezas en un tablero de 4x4; el rival elige qué pieza juegas tú, y ganas alineando 4 piezas con una característica común (altura, color, forma).
+- [x] **Quarto**: Colocar piezas en un tablero de 4x4; el rival elige qué pieza juegas tú, y ganas alineando 4 piezas con una característica común (altura, color, forma).
 - [ ] **Quoridor**: Mover un peón al extremo opuesto del tablero o colocar vallas de madera para bloquear y desviar el camino del rival.
 - [ ] **Santorini**: Mover constructores en un mapa de 5x5 subiendo niveles de edificios y colocando cúpulas para bloquear alturas.
 - [ ] **Onitama**: Duelo de artes marciales en tablero de 5x5 donde los movimientos disponibles rotan constantemente entre los jugadores usando cartas compartidas.

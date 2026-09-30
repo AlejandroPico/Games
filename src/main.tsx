@@ -8,6 +8,7 @@ createRoot(document.getElementById("root")!).render(
   </React.StrictMode>,
 );
 import "./redesign.css";
+import "./new-games.css";
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     void navigator.serviceWorker
