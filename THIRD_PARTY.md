@@ -19,6 +19,6 @@ Games se distribuye bajo GPL-3.0. Se conserva LICENSE en la raíz.
 - Three.js: MIT, https://github.com/mrdoob/three.js
 - PeerJS: MIT, https://github.com/peers/peerjs
 - Lucide: ISC, https://github.com/lucide-icons/lucide
-- DM Sans y Manrope: SIL Open Font License; Google Fonts, con alternativas del sistema.
+  La interfaz utiliza fuentes del sistema y no descarga fuentes externas.
 
 Los textos completos de las dependencias están en sus paquetes bloqueados por pnpm-lock.yaml. No se modifican los motores de terceros.

@@ -1,3 +1,4 @@
+import { boardFieldOfView } from "./camera";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
@@ -394,6 +395,7 @@ export default function Board3D(props: Props) {
       const { width, height } = host.getBoundingClientRect();
       renderer.setSize(width, height);
       camera.aspect = width / Math.max(height, 1);
+      camera.fov = boardFieldOfView(camera.aspect, props.decorative);
       camera.updateProjectionMatrix();
     };
     const observer = new ResizeObserver(resize);

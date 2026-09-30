@@ -6,8 +6,9 @@
   "packageManager": "pnpm@11.25.0",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc -b && node scripts/prepare-engine.mjs && vite build",
+    "build": "tsc -b && node scripts/prepare-engine.mjs && vite build && node scripts/generate-pwa.mjs",
     "test": "vitest run",
+    "check:pwa": "node scripts/check-pwa.mjs",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {

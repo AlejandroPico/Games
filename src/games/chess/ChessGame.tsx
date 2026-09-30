@@ -20,6 +20,8 @@ import {
   X,
 } from "lucide-react";
 import Board3D from "./Board3D";
+import Overlay from "../../shared/Overlay";
+import { Settings2 } from "lucide-react";
 import { ChessEngine, type Level } from "./engine";
 import {
   automaticOutcome,
@@ -87,6 +89,8 @@ function readSave(): Save | null {
   }
 }
 export default function ChessGame({ night }: { night: boolean }) {
+  const [settings, setSettings] = useState(false);
+
   const [chess, setChess] = useState(() => new Chess()),
     [revision, setRevision] = useState(0),
     [phase, setPhase] = useState<"menu" | "play">("menu");
@@ -575,43 +579,42 @@ export default function ChessGame({ night }: { night: boolean }) {
       .filter((m) => m.color === color && m.captured)
       .map((m) => symbols[(color === "w" ? "b" : "w") + m.captured])
       .join(" ");
+  useEffect(() => {
+    if (phase === "play") setSettings(false);
+  }, [phase]);
   const ranks = flipped ? [1, 2, 3, 4, 5, 6, 7, 8] : [8, 7, 6, 5, 4, 3, 2, 1],
     files = flipped ? "hgfedcba" : "abcdefgh";
   return (
     <div className="game-page">
-      <div className="game-breadcrumb">
-        <a href="#">
-          <ArrowLeft size={16} /> La colección
-        </a>
-        <span>/</span>
-        <span>Ajedrez</span>
-        <button onClick={() => setRules(true)}>
-          <Info size={15} /> Cómo jugar
-        </button>
-      </div>
-      <div className="game-title">
-        <div>
-          <div className="eyebrow">EL ARTE DE LA ESTRATEGIA</div>
-          <h1>
-            Ajedrez<span>.</span>
-          </h1>
+      <div className="chess-layout game-surface chess-surface">
+        <div className="surface-bar">
+          <div role="status">
+            {phase === "menu"
+              ? "Elige cómo jugar"
+              : outcome?.reason ||
+                (thinking
+                  ? "Stockfish está pensando…"
+                  : chess.turn() === "w"
+                    ? "Juegan blancas"
+                    : "Juegan negras")}
+          </div>
+          <div>
+            <button
+              className="icon-button"
+              aria-label="Ajustes de partida"
+              onClick={() => setSettings(true)}
+            >
+              <Settings2 size={20} />
+            </button>
+            <button
+              className="icon-button"
+              aria-label="Cómo jugar"
+              onClick={() => setRules(true)}
+            >
+              <Info size={20} />
+            </button>
+          </div>
         </div>
-        <div className="view-controls">
-          <button
-            className={view === "3d" ? "active" : ""}
-            onClick={() => setView("3d")}
-          >
-            Vista 3D
-          </button>
-          <button
-            className={view === "2d" ? "active" : ""}
-            onClick={() => setView("2d")}
-          >
-            Vista 2D
-          </button>
-        </div>
-      </div>
-      <div className="chess-layout">
         <section className={"table-stage " + (night ? "night" : "")}>
           <div
             className={
@@ -770,382 +773,424 @@ export default function ChessGame({ night }: { night: boolean }) {
             </div>
           </div>
         </section>
-        <aside className="game-sidebar">
-          {phase === "menu" ? (
-            <>
-              <div className="eyebrow">TU PRÓXIMA PARTIDA</div>
-              <h2>Haz tu primera jugada.</h2>
-              <p className="muted">Elige cómo quieres jugar.</p>
-              <div className="mode-selector">
-                {[
-                  {
-                    id: "ai",
-                    icon: Bot,
-                    title: "Contra la IA",
-                    sub: "Un rival a tu altura",
-                  },
-                  {
-                    id: "local",
-                    icon: Users,
-                    title: "Dos jugadores",
-                    sub: "Comparte el tablero",
-                  },
-                  {
-                    id: "online",
-                    icon: Globe,
-                    title: "Con un amigo",
-                    sub: "Sala privada por código",
-                  },
-                ].map((m) => (
-                  <button
-                    key={m.id}
-                    className={config.mode === m.id ? "selected" : ""}
-                    onClick={() => {
-                      room.current?.destroy();
-                      room.current = null;
-                      setRoomStatus("");
-                      setConfig({ ...config, mode: m.id as Mode });
-                    }}
-                  >
-                    <m.icon size={21} />
-                    <span>
-                      <strong>{m.title}</strong>
-                      <small>{m.sub}</small>
-                    </span>
-                    <span className="radio" />
-                  </button>
-                ))}
+        {(phase === "menu" || settings) && (
+          <Overlay
+            title={phase === "menu" ? "Nueva partida" : "Ajustes de partida"}
+            onClose={() => {
+              if (phase === "menu") location.hash = "";
+              else setSettings(false);
+            }}
+          >
+            <div className="game-sidebar">
+              <div className="view-controls">
+                <button
+                  className={view === "3d" ? "active" : ""}
+                  onClick={() => setView("3d")}
+                >
+                  Vista 3D
+                </button>
+                <button
+                  className={view === "2d" ? "active" : ""}
+                  onClick={() => setView("2d")}
+                >
+                  Vista 2D
+                </button>
+                <button onClick={() => setFlipped(!flipped)}>
+                  Girar tablero
+                </button>
+                <button onClick={() => setSound(!sound)}>
+                  {sound ? "Desactivar sonido" : "Activar sonido"}
+                </button>
               </div>
-              {config.mode === "ai" && (
+              {phase === "menu" ? (
                 <>
-                  <label className="field-label">
-                    Dificultad
-                    <select
-                      value={config.level}
-                      onChange={(e) =>
-                        setConfig({ ...config, level: e.target.value as Level })
-                      }
-                    >
-                      <option value="beginner">
-                        Principiante · primeros pasos
-                      </option>
-                      <option value="club">Club · un buen desafío</option>
-                      <option value="expert">
-                        Experto · estrategia profunda
-                      </option>
-                      <option value="master">Maestro · máxima fuerza</option>
-                    </select>
-                  </label>
-                  <div className="field-label">
-                    Tus piezas
-                    <div className="segmented">
+                  <div className="eyebrow">TU PRÓXIMA PARTIDA</div>
+                  <h2>Haz tu primera jugada.</h2>
+                  <p className="muted">Elige cómo quieres jugar.</p>
+                  <div className="mode-selector">
+                    {[
+                      {
+                        id: "ai",
+                        icon: Bot,
+                        title: "Contra la IA",
+                        sub: "Un rival a tu altura",
+                      },
+                      {
+                        id: "local",
+                        icon: Users,
+                        title: "Dos jugadores",
+                        sub: "Comparte el tablero",
+                      },
+                      {
+                        id: "online",
+                        icon: Globe,
+                        title: "Con un amigo",
+                        sub: "Sala privada por código",
+                      },
+                    ].map((m) => (
                       <button
-                        className={config.color === "w" ? "active" : ""}
-                        onClick={() => setConfig({ ...config, color: "w" })}
+                        key={m.id}
+                        className={config.mode === m.id ? "selected" : ""}
+                        onClick={() => {
+                          room.current?.destroy();
+                          room.current = null;
+                          setRoomStatus("");
+                          setConfig({ ...config, mode: m.id as Mode });
+                        }}
                       >
-                        ○ Blancas
+                        <m.icon size={21} />
+                        <span>
+                          <strong>{m.title}</strong>
+                          <small>{m.sub}</small>
+                        </span>
+                        <span className="radio" />
                       </button>
-                      <button
-                        className={config.color === "b" ? "active" : ""}
-                        onClick={() => setConfig({ ...config, color: "b" })}
-                      >
-                        ● Negras
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                </>
-              )}
-              {config.mode !== "online" ? (
-                <>
-                  <label className="field-label">
-                    Ritmo de juego
-                    <select
-                      value={config.minutes + "+" + config.increment}
-                      onChange={(e) => {
-                        const [minutes, increment] = e.target.value
-                          .split("+")
-                          .map(Number);
-                        setConfig({ ...config, minutes, increment });
-                      }}
-                    >
-                      <option value="0+0">Sin reloj · a tu ritmo</option>
-                      <option value="3+2">Blitz · 3 min + 2 s</option>
-                      <option value="5+3">Blitz · 5 min + 3 s</option>
-                      <option value="10+5">Rápida · 10 min + 5 s</option>
-                      <option value="15+10">Rápida · 15 min + 10 s</option>
-                    </select>
-                  </label>
-                  <button className="primary full" onClick={() => start()}>
-                    Empezar partida <ArrowRight size={18} />
-                  </button>
-                  {save && (
-                    <button className="text-button full" onClick={resume}>
-                      Continuar partida guardada
-                    </button>
+                  {config.mode === "ai" && (
+                    <>
+                      <label className="field-label">
+                        Dificultad
+                        <select
+                          value={config.level}
+                          onChange={(e) =>
+                            setConfig({
+                              ...config,
+                              level: e.target.value as Level,
+                            })
+                          }
+                        >
+                          <option value="beginner">
+                            Principiante · primeros pasos
+                          </option>
+                          <option value="club">Club · un buen desafío</option>
+                          <option value="expert">
+                            Experto · estrategia profunda
+                          </option>
+                          <option value="master">
+                            Maestro · máxima fuerza
+                          </option>
+                        </select>
+                      </label>
+                      <div className="field-label">
+                        Tus piezas
+                        <div className="segmented">
+                          <button
+                            className={config.color === "w" ? "active" : ""}
+                            onClick={() => setConfig({ ...config, color: "w" })}
+                          >
+                            ○ Blancas
+                          </button>
+                          <button
+                            className={config.color === "b" ? "active" : ""}
+                            onClick={() => setConfig({ ...config, color: "b" })}
+                          >
+                            ● Negras
+                          </button>
+                        </div>
+                      </div>
+                    </>
                   )}
-                  <small className="setup-note">
-                    Movimientos legales · enroque · captura al paso · promoción
-                  </small>
-                </>
-              ) : (
-                <div className="room-panel">
-                  <p>
-                    El anfitrión juega con blancas. Ambos deben mantener esta
-                    página abierta. Las salas no tienen reloj.
-                  </p>
-                  <button
-                    className="primary full"
-                    onClick={() => openRoom(true)}
-                  >
-                    Crear sala privada <ArrowRight size={17} />
-                  </button>
-                  <label className="field-label">
-                    Código de tu amigo
-                    <input
-                      aria-label="Código de sala"
-                      value={roomCode}
-                      maxLength={8}
-                      onChange={(e) =>
-                        setRoomCode(e.target.value.toUpperCase())
-                      }
-                      placeholder="8 CARACTERES"
-                    />
-                  </label>
-                  <button
-                    className="secondary full"
-                    onClick={() => openRoom(false)}
-                  >
-                    Unirme a una sala
-                  </button>
-                  {roomStatus && (
-                    <div className="room-status" role="status">
-                      <strong>{roomHost && roomCode}</strong>
-                      <p>{roomStatus}</p>
-                      {roomHost && roomCode && (
-                        <button
-                          className="text-button"
-                          onClick={() => {
-                            navigator.clipboard
-                              .writeText(roomCode)
-                              .then(() => {
-                                setCopied(true);
-                                setTimeout(() => setCopied(false), 2000);
-                              })
-                              .catch(() =>
-                                setRoomStatus(
-                                  "Copia el código que aparece arriba.",
-                                ),
-                              );
+                  {config.mode !== "online" ? (
+                    <>
+                      <label className="field-label">
+                        Ritmo de juego
+                        <select
+                          value={config.minutes + "+" + config.increment}
+                          onChange={(e) => {
+                            const [minutes, increment] = e.target.value
+                              .split("+")
+                              .map(Number);
+                            setConfig({ ...config, minutes, increment });
                           }}
                         >
-                          {copied ? <Check size={14} /> : <Copy size={14} />}{" "}
-                          Copiar código
+                          <option value="0+0">Sin reloj · a tu ritmo</option>
+                          <option value="3+2">Blitz · 3 min + 2 s</option>
+                          <option value="5+3">Blitz · 5 min + 3 s</option>
+                          <option value="10+5">Rápida · 10 min + 5 s</option>
+                          <option value="15+10">Rápida · 15 min + 10 s</option>
+                        </select>
+                      </label>
+                      <button className="primary full" onClick={() => start()}>
+                        Empezar partida <ArrowRight size={18} />
+                      </button>
+                      {save && (
+                        <button className="text-button full" onClick={resume}>
+                          Continuar partida guardada
+                        </button>
+                      )}
+                      <small className="setup-note">
+                        Movimientos legales · enroque · captura al paso ·
+                        promoción
+                      </small>
+                    </>
+                  ) : (
+                    <div className="room-panel">
+                      <p>
+                        El anfitrión juega con blancas. Ambos deben mantener
+                        esta página abierta. Las salas no tienen reloj.
+                      </p>
+                      <button
+                        className="primary full"
+                        onClick={() => openRoom(true)}
+                      >
+                        Crear sala privada <ArrowRight size={17} />
+                      </button>
+                      <label className="field-label">
+                        Código de tu amigo
+                        <input
+                          aria-label="Código de sala"
+                          value={roomCode}
+                          maxLength={8}
+                          onChange={(e) =>
+                            setRoomCode(e.target.value.toUpperCase())
+                          }
+                          placeholder="8 CARACTERES"
+                        />
+                      </label>
+                      <button
+                        className="secondary full"
+                        onClick={() => openRoom(false)}
+                      >
+                        Unirme a una sala
+                      </button>
+                      {roomStatus && (
+                        <div className="room-status" role="status">
+                          <strong>{roomHost && roomCode}</strong>
+                          <p>{roomStatus}</p>
+                          {roomHost && roomCode && (
+                            <button
+                              className="text-button"
+                              onClick={() => {
+                                navigator.clipboard
+                                  .writeText(roomCode)
+                                  .then(() => {
+                                    setCopied(true);
+                                    setTimeout(() => setCopied(false), 2000);
+                                  })
+                                  .catch(() =>
+                                    setRoomStatus(
+                                      "Copia el código que aparece arriba.",
+                                    ),
+                                  );
+                              }}
+                            >
+                              {copied ? (
+                                <Check size={14} />
+                              ) : (
+                                <Copy size={14} />
+                              )}{" "}
+                              Copiar código
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      <small>
+                        Conexión directa con señalización PeerJS. Algunas redes
+                        pueden bloquearla.
+                      </small>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="eyebrow">
+                    {config.mode === "ai"
+                      ? "TÚ CONTRA STOCKFISH"
+                      : config.mode === "online"
+                        ? "SALA " + roomCode
+                        : "PARTIDA LOCAL"}
+                  </div>
+                  <h2>
+                    {outcome
+                      ? "Partida terminada."
+                      : "La partida está en juego."}
+                  </h2>
+                  <div
+                    className={"game-status " + (outcome ? "finished" : "")}
+                    role="status"
+                  >
+                    <span className="status-dot" />
+                    {status}
+                    {outcome && (
+                      <strong>
+                        {outcome.result === "1/2-1/2"
+                          ? "½ — ½"
+                          : outcome.result === "1-0"
+                            ? "1 — 0"
+                            : "0 — 1"}
+                      </strong>
+                    )}
+                  </div>
+                  {error && (
+                    <div className="error" role="alert">
+                      {error}
+                      {config.mode === "ai" && (
+                        <button onClick={() => setRevision((r) => r + 1)}>
+                          Reintentar IA
                         </button>
                       )}
                     </div>
                   )}
-                  <small>
-                    Conexión directa con señalización PeerJS. Algunas redes
-                    pueden bloquearla.
-                  </small>
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              <div className="eyebrow">
-                {config.mode === "ai"
-                  ? "TÚ CONTRA STOCKFISH"
-                  : config.mode === "online"
-                    ? "SALA " + roomCode
-                    : "PARTIDA LOCAL"}
-              </div>
-              <h2>
-                {outcome ? "Partida terminada." : "La partida está en juego."}
-              </h2>
-              <div
-                className={"game-status " + (outcome ? "finished" : "")}
-                role="status"
-              >
-                <span className="status-dot" />
-                {status}
-                {outcome && (
-                  <strong>
-                    {outcome.result === "1/2-1/2"
-                      ? "½ — ½"
-                      : outcome.result === "1-0"
-                        ? "1 — 0"
-                        : "0 — 1"}
-                  </strong>
-                )}
-              </div>
-              {error && (
-                <div className="error" role="alert">
-                  {error}
-                  {config.mode === "ai" && (
-                    <button onClick={() => setRevision((r) => r + 1)}>
-                      Reintentar IA
-                    </button>
-                  )}
-                </div>
-              )}
-              <div className="move-heading">
-                <strong>Movimientos</strong>
-                <span>{Math.ceil(history.length / 2)} jugadas</span>
-              </div>
-              <div className="move-history">
-                {!history.length ? (
-                  <p>Tu historia empieza con la primera jugada.</p>
-                ) : (
-                  Array.from(
-                    { length: Math.ceil(history.length / 2) },
-                    (_, i) => (
-                      <div key={i}>
-                        <span>{i + 1}.</span>
-                        <b>{history[i * 2].san}</b>
-                        <b
-                          className={
-                            i * 2 + 1 === history.length - 1 ? "latest" : ""
+                  <div className="move-heading">
+                    <strong>Movimientos</strong>
+                    <span>{Math.ceil(history.length / 2)} jugadas</span>
+                  </div>
+                  <div className="move-history">
+                    {!history.length ? (
+                      <p>Tu historia empieza con la primera jugada.</p>
+                    ) : (
+                      Array.from(
+                        { length: Math.ceil(history.length / 2) },
+                        (_, i) => (
+                          <div key={i}>
+                            <span>{i + 1}.</span>
+                            <b>{history[i * 2].san}</b>
+                            <b
+                              className={
+                                i * 2 + 1 === history.length - 1 ? "latest" : ""
+                              }
+                            >
+                              {history[i * 2 + 1]?.san || "—"}
+                            </b>
+                          </div>
+                        ),
+                      )
+                    )}
+                  </div>
+                  {!outcome && (
+                    <>
+                      <p className="play-tip">
+                        {claimMode
+                          ? "Selecciona la jugada con la que reclamarás tablas."
+                          : "Selecciona una pieza y después una casilla marcada."}
+                      </p>
+                      <div className="game-actions">
+                        <button
+                          disabled={
+                            config.mode === "online" ||
+                            !history.length ||
+                            config.minutes > 0
+                          }
+                          onClick={undo}
+                          title="Disponible en partidas de práctica sin reloj"
+                        >
+                          <RotateCcw size={16} /> Deshacer
+                        </button>
+                        <button
+                          onClick={() => setConfirm("resign")}
+                          disabled={config.mode === "online" && !connected}
+                        >
+                          <Flag size={16} /> Abandonar
+                        </button>
+                      </div>
+                      <div className="draw-actions">
+                        <button
+                          disabled={!canPlay}
+                          onClick={() =>
+                            claim ? sendClaim() : setClaimMode(!claimMode)
                           }
                         >
-                          {history[i * 2 + 1]?.san || "—"}
-                        </b>
+                          {claim
+                            ? "Reclamar tablas"
+                            : claimMode
+                              ? "Cancelar reclamación"
+                              : "Reclamar con jugada"}
+                        </button>
+                        <button
+                          disabled={
+                            (config.mode === "online" && !connected) ||
+                            offer === "sent"
+                          }
+                          onClick={() => {
+                            if (config.mode === "ai") {
+                              setError(
+                                "Stockfish continúa la partida. Puedes reclamar tablas cuando se cumpla la regla.",
+                              );
+                              return;
+                            }
+                            setOffer(
+                              config.mode === "local" ? "received" : "sent",
+                            );
+                            room.current?.send({ v: 1, type: "offer" });
+                          }}
+                        >
+                          Ofrecer tablas
+                        </button>
                       </div>
-                    ),
-                  )
-                )}
-              </div>
-              {!outcome && (
-                <>
-                  <p className="play-tip">
-                    {claimMode
-                      ? "Selecciona la jugada con la que reclamarás tablas."
-                      : "Selecciona una pieza y después una casilla marcada."}
-                  </p>
-                  <div className="game-actions">
-                    <button
-                      disabled={
-                        config.mode === "online" ||
-                        !history.length ||
-                        config.minutes > 0
-                      }
-                      onClick={undo}
-                      title="Disponible en partidas de práctica sin reloj"
-                    >
-                      <RotateCcw size={16} /> Deshacer
-                    </button>
-                    <button
-                      onClick={() => setConfirm("resign")}
-                      disabled={config.mode === "online" && !connected}
-                    >
-                      <Flag size={16} /> Abandonar
-                    </button>
-                  </div>
-                  <div className="draw-actions">
-                    <button
-                      disabled={!canPlay}
-                      onClick={() =>
-                        claim ? sendClaim() : setClaimMode(!claimMode)
-                      }
-                    >
-                      {claim
-                        ? "Reclamar tablas"
-                        : claimMode
-                          ? "Cancelar reclamación"
-                          : "Reclamar con jugada"}
-                    </button>
-                    <button
-                      disabled={
-                        (config.mode === "online" && !connected) ||
-                        offer === "sent"
-                      }
-                      onClick={() => {
-                        if (config.mode === "ai") {
-                          setError(
-                            "Stockfish continúa la partida. Puedes reclamar tablas cuando se cumpla la regla.",
-                          );
-                          return;
-                        }
-                        setOffer(config.mode === "local" ? "received" : "sent");
-                        room.current?.send({ v: 1, type: "offer" });
-                      }}
-                    >
-                      Ofrecer tablas
-                    </button>
-                  </div>
-                </>
-              )}
-              {offer && (
-                <div className="room-status">
-                  <p>
-                    {offer === "sent"
-                      ? "Esperando respuesta a tu oferta de tablas."
-                      : "Oferta de tablas: el rival decide."}
-                  </p>
-                  {offer === "received" && (
-                    <div className="game-actions">
-                      <button
-                        onClick={() => {
-                          room.current?.send({ v: 1, type: "accept" });
-                          setOutcome({
-                            result: "1/2-1/2",
-                            reason: "Tablas por acuerdo",
-                          });
-                          setOffer(null);
-                        }}
-                      >
-                        Aceptar
-                      </button>
-                      <button
-                        onClick={() => {
-                          room.current?.send({ v: 1, type: "decline" });
-                          setOffer(null);
-                        }}
-                      >
-                        Continuar
-                      </button>
+                    </>
+                  )}
+                  {offer && (
+                    <div className="room-status">
+                      <p>
+                        {offer === "sent"
+                          ? "Esperando respuesta a tu oferta de tablas."
+                          : "Oferta de tablas: el rival decide."}
+                      </p>
+                      {offer === "received" && (
+                        <div className="game-actions">
+                          <button
+                            onClick={() => {
+                              room.current?.send({ v: 1, type: "accept" });
+                              setOutcome({
+                                result: "1/2-1/2",
+                                reason: "Tablas por acuerdo",
+                              });
+                              setOffer(null);
+                            }}
+                          >
+                            Aceptar
+                          </button>
+                          <button
+                            onClick={() => {
+                              room.current?.send({ v: 1, type: "decline" });
+                              setOffer(null);
+                            }}
+                          >
+                            Continuar
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
+                  <button
+                    className="primary full"
+                    onClick={() =>
+                      outcome ? setPhase("menu") : setConfirm("new")
+                    }
+                  >
+                    Nueva partida <ArrowRight size={17} />
+                  </button>
+                  <div className="file-actions">
+                    <button onClick={exportPGN}>
+                      <Download size={14} /> Exportar PGN
+                    </button>
+                    {config.mode !== "online" && (
+                      <label>
+                        <Upload size={14} /> Importar PGN
+                        <input
+                          type="file"
+                          accept=".pgn,text/plain"
+                          onChange={(e) => {
+                            if (e.target.files?.[0])
+                              void importPGN(e.target.files[0]);
+                            e.target.value = "";
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  {config.mode === "online" && <small>{roomStatus}</small>}
+                </>
+              )}
+              {phase === "menu" && error && (
+                <div className="error" role="alert">
+                  {error}
                 </div>
               )}
-              <button
-                className="primary full"
-                onClick={() => (outcome ? setPhase("menu") : setConfirm("new"))}
-              >
-                Nueva partida <ArrowRight size={17} />
-              </button>
-              <div className="file-actions">
-                <button onClick={exportPGN}>
-                  <Download size={14} /> Exportar PGN
-                </button>
-                {config.mode !== "online" && (
-                  <label>
-                    <Upload size={14} /> Importar PGN
-                    <input
-                      type="file"
-                      accept=".pgn,text/plain"
-                      onChange={(e) => {
-                        if (e.target.files?.[0])
-                          void importPGN(e.target.files[0]);
-                        e.target.value = "";
-                      }}
-                    />
-                  </label>
-                )}
-              </div>
-              {config.mode === "online" && <small>{roomStatus}</small>}
-            </>
-          )}
-          {phase === "menu" && error && (
-            <div className="error" role="alert">
-              {error}
             </div>
-          )}
-        </aside>
-      </div>
-      <div className="game-footnote">
-        <span>Diseñado para pensar. Hecho para disfrutar.</span>
-        <span>Stockfish 19 Lite · Reglas de ajedrez estándar</span>
+          </Overlay>
+        )}
       </div>
       {promotion && (
         <div className="modal-backdrop">

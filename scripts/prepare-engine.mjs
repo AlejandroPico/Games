@@ -13,3 +13,4 @@ for (const name of [
   await copyFile(join(root, "bin", name), join("public/engine", name));
 }
 await copyFile(join(root, "Copying.txt"), "public/engine/COPYING.txt");
+await copyFile("favicon.svg", "public/favicon.svg");

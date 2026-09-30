@@ -1,33 +1,46 @@
-# Los diez juegos añadidos
+# Los 14 juegos
 
-Todos están disponibles, con menú propio, instrucciones, interfaz adaptable y temas día/noche.
+Todos están disponibles, con menú integrado en la mesa, instrucciones, diseño adaptable y temas día, tarde, noche y automático.
 
-| Idea aplicada | Categoría          | Modos y ayudas                                  | Variante                                                       |
-| ------------- | ------------------ | ----------------------------------------------- | -------------------------------------------------------------- |
-| Tres en raya  | Clásicos / Familia | IA sin derrotas con juego óptimo, dos jugadores | Tablero 3×3                                                    |
-| Reversi       | Estrategia         | IA en Worker, dos jugadores                     | 8×8, pasos automáticos                                         |
-| Damas         | Estrategia         | IA en Worker, dos jugadores                     | Inglesas, capturas obligatorias y múltiples                    |
-| Mancala       | Tradicionales      | IA en Worker, dos jugadores                     | Kalah de seis cuencos, cuatro semillas                         |
-| Batalla naval | Deducción          | Rival IA que solo usa disparos conocidos        | Cinco barcos; colocación aleatoria                             |
-| Solitario     | Cartas             | Pistas y deshacer                               | Klondike, robo de una o tres, reciclado ilimitado              |
-| Buscaminas    | Lógica             | Pistas deductivas y tres tamaños                | Primer clic y entorno seguros, banderas y apertura por números |
-| Sudoku        | Lógica             | Pistas, notas y deshacer                        | Tableros generados con solución única, tres densidades         |
-| 2048          | Puzles             | Sugerencias, deshacer, teclado y gestos         | Fusiones únicas por jugada, continuar después de 2048          |
-| Parejas       | Memoria / Familia  | Solo, IA con memoria visible, dos jugadores     | Ocho parejas; repetir al acertar                               |
+| Juego         | Categoría                  | Modos y ayudas                          | Variante                                                      |
+| ------------- | -------------------------- | --------------------------------------- | ------------------------------------------------------------- |
+| Ajedrez       | Estrategia                 | Stockfish, local, salas privadas, 3D/2D | Reglas y límites descritos en README                          |
+| Conecta 4     | Clásicos                   | IA en Worker, tres dificultades, local  | Tablero 7×6                                                   |
+| Tres en raya  | Clásicos / Familia         | IA óptima, local                        | Tablero 3×3                                                   |
+| Reversi       | Estrategia                 | IA en Worker, local                     | 8×8, pasos automáticos                                        |
+| Damas         | Estrategia                 | IA en Worker, local                     | Inglesas, capturas obligatorias y múltiples                   |
+| Mancala       | Tradicionales              | IA en Worker, local                     | Kalah, seis cuencos, cuatro semillas                          |
+| Batalla naval | Deducción                  | IA que solo usa disparos conocidos      | Cinco barcos, colocación aleatoria                            |
+| Solitario     | Cartas                     | Pistas y deshacer                       | Klondike, robo de una o tres, reciclado ilimitado             |
+| Buscaminas    | Lógica                     | Pistas deductivas, tres tamaños         | Primer clic y entorno seguros, banderas, apertura por números |
+| Sudoku        | Lógica                     | Pistas, notas y deshacer                | Solución única, tres densidades                               |
+| 2048          | Puzles                     | Sugerencias, deshacer, teclado, gestos  | Fusiones únicas por jugada, continuar tras 2048               |
+| Parejas       | Memoria / Familia          | Solo, IA con memoria visible, local     | Ocho parejas, repetir al acertar                              |
+| Go            | Estrategia / Tradicionales | IA en Worker, local                     | 9×9, 13×13 o 19×19; área y komi 7.5                           |
+| Parchís       | Familia / Tradicionales    | 2–4 jugadores, mezcla de humanos e IA   | Individual, un dado, cuatro fichas por color                  |
 
-El ajedrez y Conecta 4 se mantienen. Total: **12 juegos disponibles**. Go y Parchís siguen marcados como próximos.
+## Go
 
-Las partidas de los diez juegos nuevos duran mientras está abierta su vista. No tienen guardado de progreso ni salas en línea; esos servicios se pueden añadir por juego. El ajedrez conserva su guardado y sus salas privadas.
+Grupos y libertades, capturas simultáneas, prohibición de suicidio y superko posicional (no repetir ninguna posición anterior). Dos pasos consecutivos abren el recuento: se marcan grupos muertos, ambos jugadores locales confirman el resultado o se reanuda el juego para resolver desacuerdos. En modo IA el jugador revisa y confirma el recuento. Se cuentan piedras vivas y espacios vacíos rodeados exclusivamente por un color, con komi 7.5 para blancas.
 
-## Organización
+Es una variante explícita con recuento de área y superko posicional, no una implementación literal de todas las federaciones. La IA usa búsqueda Monte Carlo limitada para iniciación; no tiene la fuerza de KataGo ni arbitra vida y muerte. [Comparación de reglas de la British Go Association](https://www.britgo.org/rules/compare.html).
 
-Cada juego conserva sus reglas, su componente y su Worker (si lo necesita) en su propia carpeta. GameLayout y useAI solo comparten presentación y gestión de Workers, no reglas ni datos entre juegos. El catálogo se amplía en registry.ts y las importaciones diferidas en App.tsx.
+## Parchís
 
-## Comprobaciones de esta entrega
+Todas las fichas comienzan en casa. Salida obligatoria con cinco cuando es legal; con seis se repite y se avanzan siete si no quedan fichas en casa. Barreras de dos fichas del mismo color, casillas seguras, captura con premio de veinte, llegada exacta con premio de diez y penalización al tercer seis consecutivo (salvo pasillo final). Un seis obliga a abrir una barrera propia si existe una jugada legal que lo permita. Las bonificaciones se realizan con otra ficha legal y pueden encadenarse. En la salida llena se captura una ficha rival; entre dos rivales se captura la última que llegó.
 
-- Pruebas de los doce motores de reglas, incluyendo todas las respuestas humanas frente a la IA de tres en raya.
-- Inicio de los diez juegos nuevos y jugadas reales verificadas en el navegador.
-- Respuestas de IA comprobadas en Reversi, Damas, Mancala y Batalla naval.
-- Los doce menús comprobados en móvil de 390×844, modo noche, sin desbordamiento horizontal.
-- Ajedrez: Stockfish respondió y una sala real sincronizó e4/e5 entre dos pestañas con el servicio PeerJS.
-- La primera entrega se desplegó correctamente con GitHub Actions; la ampliación utiliza el mismo flujo.
+Dos jugadores usan colores opuestos. Se puede jugar localmente con todos los colores humanos o combinar humanos y rivales automáticos. La IA valora capturas, llegada, salidas y seguridad; no se presenta como motor competitivo. Variante individual inspirada en las [reglas de Ludoteka](https://www.ludoteka.com/juegos/parchis/reglas), con inicio de todas las fichas en casa.
+
+## Organización y persistencia
+
+Reglas, componente y Worker (cuando se necesita) pertenecen a cada carpeta de juego. `GameLayout`, `Overlay` y `useAI` comparten presentación y gestión, no reglas ni partidas. El catálogo se amplía en `registry.ts` y las importaciones en `App.tsx`.
+
+Salvo ajedrez, las partidas duran mientras está abierta su vista, sin guardado de progreso ni salas en línea. El ajedrez conserva su guardado y sus salas privadas. La PWA guarda recursos para jugar sin conexión, no el progreso de todos los juegos.
+
+## Comprobaciones
+
+- 134 pruebas de reglas, IA, iluminación automática y encuadre 3D, incluidas respuestas humanas frente a tres en raya óptimo.
+- Los 14 juegos iniciados en 320×568 y 390×844, sin desplazamiento de página ni tableros recortados; revisión adicional de vista horizontal.
+- Jugadas y respuesta de IA de Go verificadas en el navegador.
+- El ajedrez conserva la validación anterior de Stockfish y sincronización de e4/e5 entre dos pestañas mediante PeerJS.
+- Prueba del Service Worker compilado: precarga, limpieza de versiones, navegación y recursos sin conexión, incluido el motor de ajedrez.

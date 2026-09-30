@@ -106,7 +106,11 @@ export default function Solitaire() {
           ? " selected"
           : "")
       }
-      style={offset !== undefined ? { top: offset + "px" } : undefined}
+      style={
+        offset !== undefined
+          ? { top: "calc(var(--card-step) * " + offset / 25 + ")" }
+          : undefined
+      }
       aria-label={
         c.up
           ? rank(c.rank) +
@@ -205,7 +209,14 @@ export default function Solitaire() {
       }
       rules="Solitario Klondike: forma columnas descendentes alternando rojo y negro. Puedes mover secuencias descubiertas completas y solo un rey puede ocupar una columna vacía. Las bases se construyen por palo, del as al rey. Haz clic en una carta o secuencia y luego en su destino; doble clic envía una carta a su base cuando es posible. El mazo roba una o tres cartas y se puede reciclar sin límite. Las cartas de base pueden volver al tablero. Algunas reparticiones no tienen solución."
     >
-      <div className="solitaire-table">
+      <div
+        className="solitaire-table"
+        style={
+          {
+            "--max-stack": Math.max(7, ...state.columns.map((c) => c.length)),
+          } as React.CSSProperties
+        }
+      >
         <div className="solitaire-top">
           <div>
             <button
@@ -268,7 +279,10 @@ export default function Solitaire() {
               key={pile}
               className="solitaire-column"
               style={{
-                minHeight: Math.max(145, (col.length - 1) * 25 + 110) + "px",
+                height:
+                  "calc(var(--card-height) + var(--card-step) * " +
+                  (col.length - 1) +
+                  ")",
               }}
             >
               <button

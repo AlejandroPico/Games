@@ -1,24 +1,28 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
-  ArrowUpRight,
-  ArrowRight,
   Search,
   Sun,
+  Sunset,
   Moon,
-  Dice5,
+  Monitor,
   Users,
-  Clock3,
-  Github,
-  Heart,
   SlidersHorizontal,
+  Info,
   X,
-  ExternalLink,
-  Sparkles,
+  Github,
+  MapPin,
+  Download,
 } from "lucide-react";
 import { Chess } from "chess.js";
 import { games, type GameId } from "./games/registry";
 import Board3D from "./games/chess/Board3D";
 import GameBoundary from "./shared/GameBoundary";
+import Overlay from "./shared/Overlay";
+import {
+  automaticTheme,
+  type ThemeMode,
+  type SunLocation,
+} from "./shared/theme";
 const ChessGame = lazy(() => import("./games/chess/ChessGame"));
 const ConnectFour = lazy(() => import("./games/connect-four/ConnectFour"));
 const extraGames: Partial<Record<GameId, ReturnType<typeof lazy>>> = {
@@ -32,27 +36,45 @@ const extraGames: Partial<Record<GameId, ReturnType<typeof lazy>>> = {
   sudoku: lazy(() => import("./games/sudoku/Sudoku")),
   "2048": lazy(() => import("./games/2048/Game2048")),
   memory: lazy(() => import("./games/memory/Memory")),
+  go: lazy(() => import("./games/go/GoGame")),
+  ludo: lazy(() => import("./games/ludo/Parchis")),
 };
-const normalizeText = (value: string) =>
-  value
+const normalizeText = (s: string) =>
+  s
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase();
-const initialTheme = () => {
+function read<T>(key: string, fallback: T): T {
   try {
-    return localStorage.getItem("games-theme") || "day";
+    return JSON.parse(localStorage.getItem(key) || "null") ?? fallback;
   } catch {
-    return "day";
+    return fallback;
   }
+}
+type InstallEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: string }>;
 };
 export default function App() {
-  const [theme, setTheme] = useState(initialTheme),
+  const [mode, setMode] = useState<ThemeMode>(() =>
+      read("games-theme-mode", "auto"),
+    ),
     [route, setRoute] = useState(location.hash.slice(1)),
     [query, setQuery] = useState(""),
-    [category, setCategory] = useState("Todos"),
-    [available, setAvailable] = useState(false),
-    [about, setAbout] = useState(false);
-  const portfolio = "https://alejandropico.github.io/Portfolio/";
+    [categories, setCategories] = useState<string[]>([]),
+    [panel, setPanel] = useState<
+      "search" | "filters" | "theme" | "about" | null
+    >(null),
+    [now, setNow] = useState(() => new Date()),
+    [solarLocation, setSolarLocation] = useState<SunLocation | undefined>(() =>
+      read("games-sun-location", undefined),
+    ),
+    [locationNote, setLocationNote] = useState(""),
+    [install, setInstall] = useState<InstallEvent | null>(null);
+  const active = route.split("?")[0],
+    game = games.find((g) => g.id === active),
+    ExtraGame = extraGames[active as GameId];
+  const theme = mode === "auto" ? automaticTheme(now, solarLocation) : mode;
   const preview = useMemo(
     () =>
       new Chess(
@@ -60,400 +82,440 @@ export default function App() {
       ),
     [],
   );
-  const night = theme === "night";
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.view = game ? "game" : "collection";
+  }, [theme, game]);
+  useEffect(() => {
     try {
-      localStorage.setItem("games-theme", theme);
+      localStorage.setItem("games-theme-mode", JSON.stringify(mode));
     } catch {}
-  }, [theme]);
+  }, [mode]);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
   useEffect(() => {
     const listen = () => {
       setRoute(location.hash.slice(1));
-      window.scrollTo({ top: 0 });
+      setPanel(null);
+      window.scrollTo(0, 0);
     };
     window.addEventListener("hashchange", listen);
     return () => window.removeEventListener("hashchange", listen);
   }, []);
   useEffect(() => {
-    if (!about) return;
-    const key = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setAbout(false);
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstall(e as InstallEvent);
     };
-    document.addEventListener("keydown", key);
-    const before = document.activeElement as HTMLElement;
-    document.getElementById("close-about")?.focus();
+    const installed = () => setInstall(null);
+    window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", installed);
     return () => {
-      document.removeEventListener("keydown", key);
-      before?.focus();
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", installed);
     };
-  }, [about]);
-  const navigate = (id: GameId) => {
-    location.hash = id;
-  };
-  const ExtraGame = extraGames[route.split("?")[0] as GameId];
-  const active = route.split("?")[0],
-    shown = games.filter(
-      (g) =>
-        (category === "Todos" ||
-          g.category === category ||
-          g.tags?.includes(category)) &&
-        (!available || g.ready) &&
-        normalizeText(
-          g.name + " " + g.category + " " + (g.tags || []).join(" "),
-        ).includes(normalizeText(query)),
+  }, []);
+  useEffect(() => {
+    const close = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPanel(null);
+    };
+    document.addEventListener("keydown", close);
+    return () => document.removeEventListener("keydown", close);
+  }, []);
+  useEffect(() => {
+    if (
+      games.some((g) => g.id === location.hash.slice(1).split("?")[0]) &&
+      !history.state?.games
+    ) {
+      const hash = location.hash;
+      history.replaceState(
+        { games: true },
+        "",
+        location.pathname + location.search,
+      );
+      history.pushState(
+        { games: true },
+        "",
+        location.pathname + location.search + hash,
+      );
+    }
+    const mark = () => history.replaceState({ games: true }, "", location.href);
+    window.addEventListener("hashchange", mark);
+    return () => window.removeEventListener("hashchange", mark);
+  }, []);
+  const shown = games.filter(
+    (g) =>
+      (!categories.length ||
+        categories.some((c) => g.category === c || g.tags?.includes(c))) &&
+      normalizeText(
+        g.name + " " + g.category + " " + (g.tags || []).join(" "),
+      ).includes(normalizeText(query)),
+  );
+  const toggle = (p: typeof panel) => setPanel(panel === p ? null : p);
+  const locate = () => {
+    if (!navigator.geolocation) {
+      setLocationNote("La ubicación no está disponible.");
+      return;
+    }
+    setLocationNote("Buscando ubicación…");
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        const value = {
+          latitude: p.coords.latitude,
+          longitude: p.coords.longitude,
+        };
+        setSolarLocation(value);
+        setNow(new Date());
+        try {
+          localStorage.setItem("games-sun-location", JSON.stringify(value));
+        } catch {}
+        setLocationNote("Amanecer y anochecer ajustados a tu ubicación.");
+      },
+      () => setLocationNote("Se mantiene el horario local estacional."),
+      { timeout: 10000, maximumAge: 86400000 },
     );
+  };
   return (
     <>
       <header className="site-header">
         <a href="#" className="brand" aria-label="Games, inicio">
-          <span className="brand-mark">
-            <Dice5 size={23} />
-          </span>
-          games<span className="brand-dot">.</span>
+          <img src="./favicon.svg" alt="" width="36" height="36" />
+          Games
         </a>
-        <nav>
-          <a href="#" className={!active ? "nav-active" : ""}>
-            La colección
-          </a>
-          <button onClick={() => setAbout(true)}>Acerca de</button>
-        </nav>
+        {game && <h1 className="header-game-title">{game.name}</h1>}
         <div className="header-end">
-          <span className="header-note">Hecho para disfrutar</span>
           <button
-            className="icon-button theme-switch"
-            onClick={() => setTheme(night ? "day" : "night")}
-            aria-label={night ? "Activar modo día" : "Activar modo noche"}
+            className={
+              "icon-button " + (panel === "search" || query ? "active" : "")
+            }
+            aria-label="Buscar juegos"
+            aria-expanded={panel === "search"}
+            onClick={() => toggle("search")}
           >
-            {night ? <Sun size={20} /> : <Moon size={20} />}
+            <Search size={21} />
           </button>
-          <a
-            className="icon-button github-link"
-            href="https://github.com/AlejandroPico/Games"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Repositorio de Games"
+          <button
+            className={
+              "icon-button " +
+              (panel === "filters" || categories.length ? "active" : "")
+            }
+            aria-label="Filtrar juegos"
+            aria-expanded={panel === "filters"}
+            onClick={() => toggle("filters")}
           >
-            <Github size={21} />
-          </a>
+            <SlidersHorizontal size={21} />
+            {categories.length > 0 && (
+              <span className="filter-badge">{categories.length}</span>
+            )}
+          </button>
+          <button
+            className="icon-button"
+            aria-label="Cambiar tema"
+            aria-expanded={panel === "theme"}
+            onClick={() => toggle("theme")}
+          >
+            {mode === "auto" ? (
+              <Monitor size={21} />
+            ) : mode === "day" ? (
+              <Sun size={21} />
+            ) : mode === "afternoon" ? (
+              <Sunset size={21} />
+            ) : (
+              <Moon size={21} />
+            )}
+          </button>
+          <button
+            className="icon-button"
+            aria-label="Acerca de"
+            onClick={() => toggle("about")}
+          >
+            <Info size={21} />
+          </button>
         </div>
+        {panel && panel !== "about" && (
+          <div
+            className={"header-popover panel-" + panel}
+            role="region"
+            aria-label={
+              panel === "search"
+                ? "Búsqueda"
+                : panel === "filters"
+                  ? "Filtros"
+                  : "Tema"
+            }
+          >
+            <div className="popover-heading">
+              <strong>
+                {panel === "search"
+                  ? "Buscar juegos"
+                  : panel === "filters"
+                    ? "Categorías"
+                    : "Iluminación"}
+              </strong>
+              <button
+                className="icon-button"
+                aria-label="Cerrar desplegable"
+                onClick={() => setPanel(null)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            {panel === "search" && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (game) location.hash = "";
+                  setPanel(null);
+                }}
+              >
+                <input
+                  autoFocus
+                  aria-label="Nombre del juego"
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Nombre del juego"
+                />
+                {game && (
+                  <button className="primary full" type="submit">
+                    Ver resultados
+                  </button>
+                )}
+              </form>
+            )}
+            {panel === "filters" && (
+              <>
+                <div className="category-options">
+                  {[
+                    ...new Set(
+                      games.flatMap((g) => [g.category, ...(g.tags || [])]),
+                    ),
+                  ].map((c) => (
+                    <label key={c}>
+                      <input
+                        type="checkbox"
+                        checked={categories.includes(c)}
+                        onChange={() =>
+                          setCategories((v) =>
+                            v.includes(c)
+                              ? v.filter((x) => x !== c)
+                              : [...v, c],
+                          )
+                        }
+                      />
+                      {c}
+                    </label>
+                  ))}
+                </div>
+                <p>Cualquiera de las categorías seleccionadas.</p>
+                <div className="filter-actions">
+                  <button
+                    className="secondary"
+                    onClick={() => setCategories([])}
+                  >
+                    Limpiar
+                  </button>
+                  <button
+                    className="primary"
+                    onClick={() => {
+                      if (game) location.hash = "";
+                      setPanel(null);
+                    }}
+                  >
+                    Aplicar
+                  </button>
+                </div>
+              </>
+            )}
+            {panel === "theme" && (
+              <>
+                <div className="theme-options">
+                  {(
+                    [
+                      ["day", "Día", Sun],
+                      ["afternoon", "Tarde", Sunset],
+                      ["night", "Noche", Moon],
+                      ["auto", "Automático", Monitor],
+                    ] as const
+                  ).map(([value, label, Icon]) => (
+                    <button
+                      key={value}
+                      className={mode === value ? "active" : ""}
+                      aria-pressed={mode === value}
+                      onClick={() => setMode(value)}
+                    >
+                      <Icon size={18} />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {mode === "auto" && (
+                  <>
+                    <p>
+                      {solarLocation
+                        ? "Según el sol en tu ubicación y la hora local."
+                        : "Según la hora local y la estación. Horario aproximado."}
+                    </p>
+                    <button className="text-button" onClick={locate}>
+                      <MapPin size={15} /> Ajustar con mi ubicación
+                    </button>
+                    {solarLocation && (
+                      <button
+                        className="text-button"
+                        onClick={() => {
+                          setSolarLocation(undefined);
+                          try {
+                            localStorage.removeItem("games-sun-location");
+                          } catch {}
+                          setLocationNote("");
+                        }}
+                      >
+                        Olvidar ubicación
+                      </button>
+                    )}
+                    <p role="status">{locationNote}</p>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </header>
-      <main>
+      <main className={game ? "game-main" : "collection-main"}>
         <GameBoundary key={active}>
           {active === "chess" ? (
             <Suspense
-              fallback={<div className="loading">Preparando tu tablero…</div>}
+              fallback={<div className="loading">Cargando ajedrez…</div>}
             >
-              <ChessGame night={night} />
+              <ChessGame night={theme === "night"} />
             </Suspense>
           ) : active === "connect-four" ? (
             <Suspense
-              fallback={<div className="loading">Preparando Conecta 4…</div>}
+              fallback={<div className="loading">Cargando Conecta 4…</div>}
             >
               <ConnectFour />
             </Suspense>
           ) : ExtraGame ? (
-            <Suspense
-              fallback={<div className="loading">Preparando tu juego…</div>}
-            >
+            <Suspense fallback={<div className="loading">Cargando juego…</div>}>
               <ExtraGame />
             </Suspense>
           ) : (
-            <div className="collection">
-              <section className="intro">
-                <div>
-                  <div className="eyebrow">
-                    <span className="tiny-dot" /> TU CLUB DE JUEGOS, SIEMPRE
-                    ABIERTO
-                  </div>
-                  <h1>
-                    El placer de <em>jugar.</em>
-                  </h1>
-                  <p>
-                    Clásicos de siempre. Nuevas formas de disfrutarlos.
-                    <br /> Elige tu juego, encuentra tu ritmo y haz tu próxima
-                    jugada.
-                  </p>
-                </div>
-                <div className="intro-detail">
-                  <span className="mini-dice">
-                    <Dice5 size={34} />
-                  </span>
+            <section className="collection" aria-label="Colección de juegos">
+              {(query || categories.length > 0) && (
+                <div className="active-filters">
                   <span>
-                    Un buen juego.
-                    <br />
-                    <strong>Un gran momento.</strong>
+                    {shown.length} juegos{query ? ' · "' + query + '"' : ""}
+                    {categories.length ? " · " + categories.join(", ") : ""}
                   </span>
-                </div>
-              </section>
-              <section className="featured">
-                <div className="featured-copy">
-                  <span className="pill light">
-                    <Sparkles size={13} /> EL CLÁSICO, REINVENTADO
-                  </span>
-                  <h2>Ajedrez</h2>
-                  <p>
-                    64 casillas.
-                    <br /> Infinitas posibilidades.
-                  </p>
-                  <div className="featured-description">
-                    Un tablero que cobra vida. Pon a prueba tu estrategia frente
-                    a Stockfish o comparte una partida con alguien.
-                  </div>
-                  <button className="primary" onClick={() => navigate("chess")}>
-                    Jugar al ajedrez <ArrowUpRight size={19} />
+                  <button
+                    className="text-button"
+                    onClick={() => {
+                      setQuery("");
+                      setCategories([]);
+                    }}
+                  >
+                    Limpiar filtros <X size={14} />
                   </button>
-                  <div className="featured-meta">
-                    <span>
-                      <Users size={14} /> 1–2 jugadores
-                    </span>
-                    <span>
-                      <span className="status-dot" /> Disponible
-                    </span>
-                  </div>
                 </div>
-                <div className="featured-art">
-                  <div className="art-halo" />
-                  <Board3D chess={preview} night={night} decorative />
-                  <span className="art-caption">
-                    <span /> TABLERO 3D · STOCKFISH 19
-                  </span>
-                </div>
-                <span className="feature-number">01 / LA COLECCIÓN</span>
-              </section>
-              <section className="catalog" aria-label="Colección de juegos">
-                <div className="catalog-heading">
-                  <div>
-                    <div className="eyebrow">ENCUENTRA TU PRÓXIMA PARTIDA</div>
-                    <h2>
-                      Una mesa para cada ocasión<span>.</span>
-                    </h2>
-                  </div>
-                  <span className="count">
-                    {games.filter((g) => g.ready).length} disponibles ·{" "}
-                    {games.length} en la colección
-                  </span>
-                </div>
-                <div className="filters">
-                  <div className="categories">
-                    {["Todos", ...new Set(games.map((g) => g.category))].map(
-                      (c) => (
-                        <button
-                          key={c}
-                          className={category === c ? "active" : ""}
-                          onClick={() => setCategory(c)}
-                        >
-                          {c}
-                        </button>
-                      ),
-                    )}
-                  </div>
-                  <div className="filter-tools">
-                    <label className="search">
-                      <Search size={17} />
-                      <input
-                        aria-label="Buscar juegos"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Buscar un juego"
-                      />
-                      {query && (
-                        <button
-                          aria-label="Borrar búsqueda"
-                          onClick={() => setQuery("")}
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                    </label>
-                    <button
-                      title="Mostrar solo juegos disponibles"
-                      aria-pressed={available}
-                      className={"availability " + (available ? "active" : "")}
-                      onClick={() => setAvailable(!available)}
-                    >
-                      <SlidersHorizontal size={17} />
-                      <span>Disponibles</span>
-                    </button>
-                  </div>
-                </div>
-                <div className="game-grid">
-                  {shown.map((g, i) => (
-                    <article className={"game-card " + g.color} key={g.id}>
-                      <button
-                        className="card-art"
-                        onClick={() => (g.ready ? navigate(g.id) : undefined)}
-                        disabled={!g.ready}
-                        aria-label={
-                          g.ready
-                            ? "Jugar a " + g.name
-                            : g.name + ", próximamente"
-                        }
-                      >
+              )}
+              <div className="game-grid">
+                {shown.map((g) => (
+                  <button
+                    key={g.id}
+                    className={"game-tile " + g.color}
+                    onClick={() => (location.hash = g.id)}
+                    aria-label={"Jugar a " + g.name}
+                  >
+                    <div className="tile-art">
+                      {g.id === "chess" ? (
+                        <Board3D
+                          chess={preview}
+                          night={theme === "night"}
+                          decorative
+                        />
+                      ) : (
                         <GameArt id={g.id} />
-                        <span
-                          className={"card-status " + (g.ready ? "ready" : "")}
-                        >
-                          {g.ready ? "Jugar ahora" : "Próximamente"}
-                        </span>
-                        <span className="card-arrow">
-                          <ArrowUpRight size={19} />
-                        </span>
-                      </button>
-                      <div className="card-body">
-                        <span className="card-category">{g.category}</span>
-                        <h3>{g.name}</h3>
-                        <p>{g.subtitle}</p>
-                        <div className="card-meta">
-                          <span>
-                            <Users size={13} />
-                            {g.players}
-                          </span>
-                          <span>
-                            <Clock3 size={13} />
-                            {g.duration}
-                          </span>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-                {!shown.length && (
-                  <div className="empty">
-                    <Search />
-                    <h3>No hay juegos con esos filtros</h3>
-                    <button
-                      onClick={() => {
-                        setQuery("");
-                        setCategory("Todos");
-                        setAvailable(false);
-                      }}
-                    >
-                      Ver toda la colección
-                    </button>
-                  </div>
-                )}
-              </section>
-              <div className="collection-note">
-                <span>
-                  <Heart size={17} /> Los mejores momentos empiezan con una
-                  partida.
-                </span>
-                <button onClick={() => setAbout(true)}>
-                  Una colección que sigue creciendo <ArrowRight size={15} />
-                </button>
+                      )}
+                    </div>
+                    <span className="tile-players" title={g.players}>
+                      <Users size={14} />
+                      <span>
+                        {g.players
+                          .replace(" jugadores", "")
+                          .replace(" jugador", "")}
+                      </span>
+                    </span>
+                    <span className="tile-title">{g.name}</span>
+                    <span className="tile-category">{g.category}</span>
+                  </button>
+                ))}
               </div>
-            </div>
+              {!shown.length && (
+                <p className="empty-state">No hay juegos con esos filtros.</p>
+              )}
+            </section>
           )}
         </GameBoundary>
       </main>
-      <footer>
-        <a href="#" className="footer-brand">
-          games.
-        </a>
-        <span>
-          Un proyecto de{" "}
-          <a href={portfolio} target="_blank" rel="noreferrer">
-            Alejandro Pico <ExternalLink size={11} />
-          </a>
-        </span>
-        <a
-          href="https://github.com/AlejandroPico/Games"
-          target="_blank"
-          rel="noreferrer"
+      {panel === "about" && (
+        <Overlay
+          title="Acerca de Games"
+          onClose={() => setPanel(null)}
+          className="site-overlay"
         >
-          Código abierto <Github size={14} />
-        </a>
-      </footer>
-      {about && (
-        <div className="modal-backdrop" onClick={() => setAbout(false)}>
-          <section
-            className="modal about-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="about-title"
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key === "Tab") {
-                const focusable =
-                  e.currentTarget.querySelectorAll<HTMLElement>("button,a");
-                const first = focusable[0],
-                  last = focusable[focusable.length - 1];
-                if (e.shiftKey && document.activeElement === first) {
-                  e.preventDefault();
-                  last.focus();
-                } else if (!e.shiftKey && document.activeElement === last) {
-                  e.preventDefault();
-                  first.focus();
-                }
-              }
-            }}
-          >
-            <button
-              id="close-about"
-              className="modal-close icon-button"
-              onClick={() => setAbout(false)}
-              aria-label="Cerrar acerca de"
+          <p className="rules-copy">
+            Una colección de juegos de mesa de Alejandro Pico. Catorce juegos
+            para jugar a tu ritmo, con rivales automáticos, modos locales y
+            salas privadas de ajedrez.
+          </p>
+          <div className="about-links">
+            <a
+              className="primary"
+              href="https://alejandropico.github.io/Portfolio/"
+              target="_blank"
+              rel="noreferrer"
             >
-              <X />
+              Portfolio
+            </a>
+            <a
+              className="secondary"
+              href="https://github.com/AlejandroPico/Games"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Github size={18} /> Repositorio
+            </a>
+          </div>
+          {install ? (
+            <button
+              className="secondary full"
+              onClick={async () => {
+                await install.prompt();
+                await install.userChoice;
+                setInstall(null);
+              }}
+            >
+              <Download size={18} /> Instalar Games
             </button>
-            <span className="brand-mark">
-              <Dice5 />
-            </span>
-            <div className="eyebrow">JUGAR NOS CONECTA</div>
-            <h2 id="about-title">
-              Una colección.
-              <br />
-              Muchas posibilidades.
-            </h2>
-            <p>
-              Games es el club de juegos de mesa de Alejandro Pico. Un lugar
-              para reunir clásicos, descubrir nuevos retos y disfrutar a tu
-              ritmo.
+          ) : (
+            <p className="rules-copy">
+              Puedes instalar Games desde el menú del navegador. Una vez
+              cargada, la colección también funciona sin conexión; las salas
+              privadas necesitan Internet.
             </p>
-            <p>
-              La colección crece juego a juego. El ajedrez incluye Stockfish 19,
-              vistas 3D y 2D, juego local y salas privadas entre amigos. La
-              colección ya incluye doce juegos, con estrategias, cartas, lógica,
-              deducción y memoria.
-            </p>
-            <div className="about-links">
-              <a
-                className="primary"
-                href={portfolio}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Portfolio de Alejandro <ArrowUpRight size={17} />
-              </a>
-              <a
-                className="secondary"
-                href="https://github.com/AlejandroPico/Games"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Github size={17} /> Repositorio
-              </a>
-            </div>
-            <small>
-              Stockfish: GPLv3 · chess.js: BSD-2-Clause · Three.js y PeerJS:
-              MIT. Las salas privadas usan el servicio de señalización PeerJS y
-              requieren conexión a Internet.{" "}
-              <a
-                href="https://handbook.fide.com/chapter/e012023"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Reglas de referencia
-              </a>
-              .
-            </small>
-          </section>
-        </div>
+          )}
+          <small>
+            Proyecto de código abierto · GPLv3. Stockfish 19, chess.js y
+            Three.js. Cada juego indica su variante y reglas en su menú.
+          </small>
+        </Overlay>
       )}
     </>
   );
 }
+
 function GameArt({ id }: { id: GameId }) {
   if (
     ![

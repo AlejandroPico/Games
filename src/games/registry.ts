@@ -154,7 +154,7 @@ export const games: GameInfo[] = [
     category: "Estrategia",
     players: "1–2 jugadores",
     duration: "30–60 min",
-    ready: false,
+    ready: true,
     color: "sand",
   },
   {
@@ -164,7 +164,7 @@ export const games: GameInfo[] = [
     category: "Familia",
     players: "2–4 jugadores",
     duration: "20–40 min",
-    ready: false,
+    ready: true,
     color: "rose",
   },
 ];

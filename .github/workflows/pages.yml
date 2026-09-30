@@ -24,6 +24,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
       - run: pnpm build
+      - run: pnpm check:pwa
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with:

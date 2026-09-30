@@ -1,16 +1,23 @@
 # Games
 
-Una colección de juegos de mesa para jugar en el navegador. React + TypeScript + Three.js. Sitio estático compatible con GitHub Pages, sin claves ni servidor propio.
+Colección de **14 juegos jugables** en el navegador. React, TypeScript y Three.js. Sitio estático para GitHub Pages, sin claves ni servidor propio.
 
-## Games: doce juegos disponibles
+## Interfaz
 
-- Catálogo con búsqueda, categorías, filtro de disponibilidad y temas día/noche.
-- Ajedrez con tablero 3D real y alternativa 2D accesible.
-- Stockfish 19 Lite Single: cuatro dificultades, cálculo en un Web Worker.
-- Dos jugadores locales y salas privadas con códigos a través de PeerJS.
-- Relojes 3+2, 5+3, 10+5 y 15+10; práctica sin reloj con deshacer.
-- Guardado de partidas locales, reanudación, importación y exportación PGN.
-- Conecta 4 con IA en un Worker, tres dificultades y juego local.
+- Catálogo de fichas cuadradas con arte del juego, nombre sobre la imagen, jugadores y categoría. El ajedrez utiliza un tablero 3D real.
+- Barra superior fija con búsqueda, filtros de categorías combinables, iluminación y acerca de. Portfolio y repositorio dentro de acerca de.
+- Temas día, tarde, noche y automático. El automático usa el reloj local y una estimación estacional; opcionalmente calcula amanecer y anochecer con la ubicación. Sin ubicación, la estimación estacional corresponde al hemisferio norte. No mide luz ambiental ni meteorología.
+- La ubicación se solicita únicamente al pulsar «Ajustar con mi ubicación», se guarda en este navegador y se puede olvidar desde el mismo menú.
+- Partidas ocupando el espacio bajo la barra, sin desplazamiento de página. Ajustes e instrucciones se abren sobre la mesa; los paneles largos pueden desplazarse internamente.
+- Navegación mediante fragmentos: volver desde un juego regresa a la colección; desde la colección se conserva el comportamiento del navegador o del sistema.
+- Aplicación PWA instalable y preparada para jugar sin conexión tras completar la primera descarga. Salas de ajedrez requieren Internet.
+- `favicon.svg` en la raíz es la fuente del icono; la compilación lo copia a `public/favicon.svg`. Incluye iconos PNG de instalación y versión maskable.
+
+## Juegos
+
+Ajedrez, Conecta 4, tres en raya, reversi, damas, mancala, batalla naval, solitario, buscaminas, sudoku, 2048, parejas, Go y Parchís. No hay fichas de juegos pendientes. Variantes y modos: [docs/GAMES.md](docs/GAMES.md).
+
+Ajedrez ofrece tablero 3D y 2D, Stockfish 19 Lite Single con cuatro dificultades, dos jugadores locales y salas privadas mediante PeerJS. Incluye práctica sin reloj, relojes 3+2, 5+3, 10+5 y 15+10, guardado local, reanudación e importación/exportación PGN.
 
 ## Desarrollo
 
@@ -22,46 +29,40 @@ node scripts/prepare-engine.mjs
 pnpm dev
 pnpm test
 pnpm build
+pnpm check:pwa
 pnpm preview
 ```
 
-La primera preparación copia únicamente el motor de un hilo y su licencia a public/engine. El motor pesa aproximadamente 1.8 MB; no necesita encabezados de aislamiento, que Pages no permite configurar. Las rutas usan fragmentos para que las visitas directas funcionen bajo /Games/.
+La preparación copia el motor de un hilo y su licencia a `public/engine`, además del favicon. El motor pesa aproximadamente 1.8 MB y no necesita encabezados de aislamiento. Las rutas por fragmentos admiten visitas directas bajo `/Games/`.
+
+La compilación genera un Service Worker con una versión basada en el contenido y precarga recursos propios, incluidos todos los juegos y el motor. Requiere completar la descarga inicial y disponer de almacenamiento del navegador. Las actualizaciones esperan al cierre de las pestañas existentes para evitar sustituir recursos durante una partida. `check:pwa` sirve la compilación bajo `/Games/`, ejecuta el Service Worker generado y verifica instalación, limpieza de versiones antiguas y navegación/recursos sin conexión. Android puede instalarla desde el navegador; no se ha comprobado la instalación en un teléfono físico.
 
 ## Estructura y colaboración
 
-Cada juego vive en src/games/<id>/. Sus reglas, IA, componentes y pruebas deben permanecer independientes. El catálogo está en src/games/registry.ts y la navegación general en src/App.tsx. La apariencia compartida está en src/styles.css.
+Cada juego vive en `src/games/<id>/`, con reglas, IA y componentes independientes. Registro: `src/games/registry.ts`; navegación: `src/App.tsx`; presentación compartida: `src/shared/GameLayout.tsx` y `src/shared/Overlay.tsx`; estilos: `src/styles.css` y `src/redesign.css` (este último define el rediseño).
 
-Para añadir un juego: crear su carpeta, registrar sus metadatos, añadir una ruta con importación diferida y cubrir sus reglas con pruebas. No marcar ready: true hasta que sea jugable. Si un juego necesita persistencia, usar una clave con nombre y versión propios; no compartir estado con otros juegos. IndexedDB sería la opción para bases locales grandes. SQLite requiere WASM o un servicio externo; no aporta nada al estado pequeño de esta entrega.
+Para añadir un juego: crear su carpeta, registrar metadatos, añadir importación diferida y comprobar sus reglas. No marcar `ready: true` hasta que sea jugable. Si necesita persistencia, usar claves propias con versión; no compartir partidas entre juegos. IndexedDB permite bases locales grandes. SQLite requeriría WASM o un servicio externo y no es necesario para esta entrega.
+
+Formato común: `pnpm exec prettier --write src tests scripts`.
 
 ## Ajedrez: reglas y límites
 
 chess.js valida movimientos, jaque, mate, ahogado, enroques, captura al paso, promociones y material insuficiente habitual. Nuestra capa distingue las reclamaciones por triple repetición y 50 movimientos de los finales automáticos por cinco repeticiones y 75 movimientos. Se puede reclamar con una jugada prevista sin efectuarla. El mate tiene prioridad sobre la regla de 75 movimientos.
 
-No se presenta como arbitraje completo de un torneo presencial: no hay árbitro, sanciones de conducta, pieza tocada ni reclamaciones ilegales. Las posiciones muertas excepcionales debidas a bloqueos se resuelven por acuerdo; no se demuestra exhaustivamente la imposibilidad de mate en todas las posiciones legales. La comprobación de material en caída de bandera cubre los casos habituales, no toda posición excepcional. Fuente: https://handbook.fide.com/chapter/e012023
+No se presenta como arbitraje completo de un torneo presencial: no hay árbitro, sanciones de conducta, pieza tocada ni reclamaciones ilegales. Las posiciones muertas excepcionales debidas a bloqueos se resuelven por acuerdo; no se demuestra exhaustivamente la imposibilidad de mate en todas las posiciones legales. La comprobación de material en caída de bandera cubre los casos habituales, no toda posición excepcional. [Reglas FIDE](https://handbook.fide.com/chapter/e012023).
 
 Las partidas locales se pausan al cerrar la vista; no se trata de un reloj de torneo resistente a manipulación. Deshacer solo está permitido en práctica sin reloj.
 
 ## Multijugador
 
-Las salas son privadas, sin listado público. PeerJS Cloud proporciona señalización y WebRTC comunica a los dos navegadores. El anfitrión es blancas; solo entra un rival. Ambos validan las jugadas y el estado previo. Una desconexión detiene el juego; no hay reconexión persistente, cuentas ni sincronización de relojes. No es un sistema competitivo contra trampas.
+Las salas de ajedrez son privadas, sin listado público. PeerJS Cloud proporciona señalización y WebRTC comunica a los navegadores. El anfitrión es blancas y solo entra un rival. Ambos validan jugadas y estado previo. Una desconexión detiene el juego; no hay reconexión persistente, cuentas ni sincronización de relojes. No es un sistema competitivo contra trampas.
 
-Algunas redes necesitan un servidor TURN para conectar; el servicio gratuito no garantiza disponibilidad. Un listado persistente de salas, partidas recuperables y relojes de torneo necesita un backend externo: GitHub Pages solo sirve archivos estáticos. Referencias: https://peerjs.com/docs/ y https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages
+Algunas redes necesitan TURN para conectar; el servicio gratuito no garantiza disponibilidad. Salas persistentes, partidas recuperables y relojes de torneo requieren un backend externo: Pages sirve archivos estáticos. [PeerJS](https://peerjs.com/docs/) y [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
 
-## Publicación
+## Publicación y licencias
 
-.github/workflows/pages.yml instala dependencias con el lockfile, ejecuta las pruebas, compila y despliega dist al hacer push a main. Configurar Settings → Pages → Source: GitHub Actions. No hay secretos en el cliente.
+`.github/workflows/pages.yml` instala con el lockfile, ejecuta pruebas, compila, comprueba la PWA y despliega `dist` al subir a `main`. Pages debe usar GitHub Actions. No hay secretos en el cliente.
 
-## Licencias
-
-El proyecto se distribuye bajo GPL-3.0. Stockfish 19/Stockfish.js es GPLv3; se incluye COPYING con el motor. Fuente y compilación: https://github.com/nmrugg/stockfish.js (versión del paquete stockfish: 19.0.0).
-chess.js: BSD-2-Clause. React, Three.js, PeerJS y Lucide: ISC. Las fuentes Google Fonts son externas; existen alternativas locales. La aplicación funciona sin ellas.
-
-## Ampliación implementada
-
-Diez juegos jugables añadidos: tres en raya, reversi, damas, mancala, batalla naval, solitario, buscaminas, sudoku, 2048 y parejas de memoria. Go y Parchís quedan en la hoja de ruta.
-
-El detalle de variantes, modos y comprobaciones está en [docs/GAMES.md](docs/GAMES.md). La atribución y la revisión fuente exacta del motor están en [THIRD_PARTY.md](THIRD_PARTY.md).
+Proyecto GPL-3.0. Stockfish/Stockfish.js: GPLv3 con licencia y fuente correspondiente indicadas en [THIRD_PARTY.md](THIRD_PARTY.md). chess.js: BSD-2-Clause; React, Three.js y PeerJS: MIT; Lucide: ISC. Se utilizan fuentes del sistema, sin solicitudes a Google Fonts.
 
 Web pública: https://alejandropico.github.io/Games/
-
-Para mantener un formato común entre colaboradores: pnpm exec prettier --write src tests scripts.

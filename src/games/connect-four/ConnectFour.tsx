@@ -1,3 +1,4 @@
+import GameLayout from "../../shared/GameLayout";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
@@ -74,38 +75,89 @@ export default function ConnectFour() {
     setThinking(false);
   };
   return (
-    <div className="game-page">
-      <div className="game-breadcrumb">
-        <a href="#">
-          <ArrowLeft size={16} /> La colección
-        </a>
-        <span>/</span>
-        <span>Conecta 4</span>
-      </div>
-      <div className="game-title">
-        <div>
-          <div className="eyebrow">UNA LÍNEA, MIL POSIBILIDADES</div>
-          <h1>
-            Conecta 4<span>.</span>
-          </h1>
+    <GameLayout
+      id="connect-four"
+      started={playing}
+      onStart={start}
+      onReset={() => setPlaying(false)}
+      mode={mode}
+      setMode={setMode}
+      status={
+        win
+          ? "Gana " +
+            (win.player === 1
+              ? mode === "ai"
+                ? "el jugador"
+                : "el jugador 1"
+              : mode === "ai"
+                ? "la IA"
+                : "el jugador 2")
+          : draw
+            ? "Empate"
+            : thinking
+              ? "La IA está pensando…"
+              : "Turno de " + (turn === 1 ? "rojas" : "doradas")
+      }
+      menu={
+        mode === "ai" && (
+          <label className="field-label">
+            Dificultad
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(Number(e.target.value))}
+            >
+              <option value={3}>Principiante</option>
+              <option value={5}>Club</option>
+              <option value={7}>Experto</option>
+            </select>
+          </label>
+        )
+      }
+      controls={
+        <button
+          className="secondary"
+          onClick={undo}
+          disabled={!moves.length || thinking}
+        >
+          <RotateCcw size={16} /> Deshacer
+        </button>
+      }
+      rules="Deja caer una ficha en una columna. Gana quien conecte cuatro fichas en horizontal, vertical o diagonal. Si se llena el tablero sin cuatro en línea, hay empate."
+    >
+      {" "}
+      <div className="connect-stage-inner">
+        <div className="connect-top">
+          <span className={"connect-player " + (turn === 1 ? "active" : "")}>
+            <i className="disc red" /> {mode === "ai" ? "Tú" : "Jugador 1"}
+          </span>
+          <span className={"connect-player " + (turn === 2 ? "active" : "")}>
+            <i className="disc gold" /> {mode === "ai" ? "IA" : "Jugador 2"}
+          </span>
         </div>
-        <span className="pill">UN CLÁSICO PARA TODOS</span>
-      </div>
-      <div className="chess-layout">
-        <section className="connect-stage">
-          <div className="connect-top">
-            <span className={"connect-player " + (turn === 1 ? "active" : "")}>
-              <i className="disc red" /> {mode === "ai" ? "Tú" : "Jugador 1"}
-            </span>
-            <span className={"connect-player " + (turn === 2 ? "active" : "")}>
-              <i className="disc gold" /> {mode === "ai" ? "IA" : "Jugador 2"}
-            </span>
+        <div className="connect-board">
+          <div className="column-controls">
+            {Array.from({ length: 7 }, (_, c) => (
+              <button
+                key={c}
+                onClick={() => play(c)}
+                disabled={
+                  !playing ||
+                  over ||
+                  thinking ||
+                  Boolean(grid[0][c]) ||
+                  (mode === "ai" && turn === 2)
+                }
+                aria-label={"Soltar ficha en columna " + (c + 1)}
+              >
+                <ChevronIcon />
+              </button>
+            ))}
           </div>
-          <div className="connect-board">
-            <div className="column-controls">
-              {Array.from({ length: 7 }, (_, c) => (
+          <div className="connect-grid">
+            {grid.flatMap((row, r) =>
+              row.map((v, c) => (
                 <button
-                  key={c}
+                  key={r + "-" + c}
                   onClick={() => play(c)}
                   disabled={
                     !playing ||
@@ -114,163 +166,36 @@ export default function ConnectFour() {
                     Boolean(grid[0][c]) ||
                     (mode === "ai" && turn === 2)
                   }
-                  aria-label={"Soltar ficha en columna " + (c + 1)}
+                  aria-label={
+                    "Fila " +
+                    (r + 1) +
+                    ", columna " +
+                    (c + 1) +
+                    (v ? ", ficha " + (v === 1 ? "roja" : "dorada") : ", vacía")
+                  }
+                  className={
+                    "connect-cell " +
+                    (v === 1 ? "red" : v === 2 ? "gold" : "") +
+                    (win?.cells.some(([rr, cc]) => rr === r && cc === c)
+                      ? " winning"
+                      : "")
+                  }
                 >
-                  <ChevronIcon />
+                  <span />
                 </button>
-              ))}
-            </div>
-            <div className="connect-grid">
-              {grid.flatMap((row, r) =>
-                row.map((v, c) => (
-                  <button
-                    key={r + "-" + c}
-                    onClick={() => play(c)}
-                    disabled={
-                      !playing ||
-                      over ||
-                      thinking ||
-                      Boolean(grid[0][c]) ||
-                      (mode === "ai" && turn === 2)
-                    }
-                    aria-label={
-                      "Fila " +
-                      (r + 1) +
-                      ", columna " +
-                      (c + 1) +
-                      (v
-                        ? ", ficha " + (v === 1 ? "roja" : "dorada")
-                        : ", vacía")
-                    }
-                    className={
-                      "connect-cell " +
-                      (v === 1 ? "red" : v === 2 ? "gold" : "") +
-                      (win?.cells.some(([rr, cc]) => rr === r && cc === c)
-                        ? " winning"
-                        : "")
-                    }
-                  >
-                    <span />
-                  </button>
-                )),
-              )}
-            </div>
+              )),
+            )}
           </div>
-          <div className="connect-legs">
-            <i />
-            <i />
-          </div>
-          <p className="connect-hint">
-            Elige una columna. La gravedad hace el resto.
-          </p>
-        </section>
-        <aside className="game-sidebar">
-          <div className="eyebrow">
-            {playing ? "LA PARTIDA" : "TU PRÓXIMO RETO"}
-          </div>
-          <h2>
-            {playing
-              ? win
-                ? "¡Cuatro en línea!"
-                : draw
-                  ? "Un buen empate."
-                  : "Busca tu conexión."
-              : "La estrategia se conecta."}
-          </h2>
-          <p className="muted">
-            Conecta cuatro fichas de tu color en horizontal, vertical o
-            diagonal.
-          </p>
-          {!playing ? (
-            <>
-              <div className="mode-selector">
-                <button
-                  className={mode === "ai" ? "selected" : ""}
-                  onClick={() => setMode("ai")}
-                >
-                  <Bot />
-                  <span>
-                    <strong>Contra la IA</strong>
-                    <small>Piensa una jugada más allá</small>
-                  </span>
-                  <span className="radio" />
-                </button>
-                <button
-                  className={mode === "local" ? "selected" : ""}
-                  onClick={() => setMode("local")}
-                >
-                  <Users />
-                  <span>
-                    <strong>Dos jugadores</strong>
-                    <small>En el mismo dispositivo</small>
-                  </span>
-                  <span className="radio" />
-                </button>
-              </div>
-              {mode === "ai" && (
-                <label className="field-label">
-                  Dificultad
-                  <select
-                    value={difficulty}
-                    onChange={(e) => setDifficulty(Number(e.target.value))}
-                  >
-                    <option value={3}>Principiante</option>
-                    <option value={5}>Club</option>
-                    <option value={7}>Experto</option>
-                  </select>
-                </label>
-              )}
-              <button className="primary full" onClick={start}>
-                Empezar partida <ArrowRight size={17} />
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="game-status" role="status">
-                <span className="status-dot" />
-                {win
-                  ? win.player === 1
-                    ? mode === "ai"
-                      ? "¡Has ganado!"
-                      : "Gana el jugador 1"
-                    : mode === "ai"
-                      ? "Gana la IA"
-                      : "Gana el jugador 2"
-                  : draw
-                    ? "Tablero lleno · empate"
-                    : thinking
-                      ? "La IA está pensando…"
-                      : "Turno de " + (turn === 1 ? "rojas" : "doradas")}
-              </div>
-              <div className="connect-stat">
-                <span>Fichas jugadas</span>
-                <strong>{grid.flat().filter(Boolean).length} / 42</strong>
-              </div>
-              <button
-                className="secondary full"
-                onClick={undo}
-                disabled={!moves.length || thinking}
-              >
-                <RotateCcw size={16} /> Deshacer
-              </button>
-              <button
-                className="primary full"
-                onClick={() => setPlaying(false)}
-              >
-                Nueva partida <ArrowRight size={16} />
-              </button>
-            </>
-          )}
-          <div className="strategy-note">
-            <Info size={18} />
-            <p>
-              Consejo: controla el centro y crea dos amenazas a la vez. Tu rival
-              solo puede bloquear una.
-            </p>
-          </div>
-        </aside>
+        </div>
+        <div className="connect-legs">
+          <i />
+          <i />
+        </div>
+        <p className="connect-hint">
+          Elige una columna. La gravedad hace el resto.
+        </p>
       </div>
-    </div>
+    </GameLayout>
   );
 }
 function ChevronIcon() {
