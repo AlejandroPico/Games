@@ -1,0 +1,5 @@
+packages:
+  - .
+allowBuilds:
+  stockfish: false
+verifyDepsBeforeRun: false
