@@ -481,6 +481,34 @@ describe("Colonizadores", () => {
   }, 30000);
 });
 describe("Motores de observación y ayudas", () => {
+  it("Klondike y Spider no eligen en función de cartas tapadas o del mazo", async () => {
+    const K = await import("../src/games/solitaire/rules");
+    const SK = await import("../src/games/solitaire/autoplay");
+    const SP = await import("../src/games/spider/rules");
+    const SAI = await import("../src/games/spider/autoplay");
+    const shape = (s: any) =>
+      s &&
+      JSON.stringify([
+        s.columns.map((c: any[]) => c.map((v) => v.up)),
+        s.stock.length,
+        s.waste?.length,
+        s.foundations?.map((c: any[]) => c.length),
+        s.completed,
+      ]);
+    const conceal = (s: any) => ({
+      ...s,
+      columns: s.columns.map((c: any[]) =>
+        c.map((v) => (v.up ? v : { ...v, rank: 1, suit: 3 })),
+      ),
+      stock: s.stock.map((v: any) => ({ ...v, rank: 1, suit: 3 })),
+    });
+    for (let seed = 1; seed <= 12; seed++) {
+      const a = K.initial(1, rng(seed)),
+        b = SP.initial(4, rng(seed));
+      expect(shape(SK.next(a, []))).toBe(shape(SK.next(conceal(a), [])));
+      expect(shape(SAI.next(b, []))).toBe(shape(SAI.next(conceal(b), [])));
+    }
+  });
   it("las IA antiguas eligen para el jugador que realmente mueve", () => {
     const x: T.Board = ["X", "X", null, "O", "O", null, null, null, null];
     expect(T.bestMove(x, "X")).toBe(2);
