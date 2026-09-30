@@ -1252,3 +1252,255 @@ main {
 [data-theme="afternoon"] .board3d canvas {
   filter: sepia(0.12);
 }
+/* Quiet metadata, straight illustrations, and a common replay affordance. */
+.tile-players,
+.tile-category {
+  background: none;
+  backdrop-filter: none;
+  padding: 0;
+  text-shadow: 0 1px 2px #fff8;
+}
+.game-tile:hover .tile-players,
+.game-tile:hover .tile-category {
+  color: #fff;
+  text-shadow: none;
+}
+.game-tile.unavailable {
+  filter: grayscale(1);
+  opacity: 0.56;
+  cursor: default;
+}
+.game-tile.unavailable:hover {
+  opacity: 0.8;
+}
+.game-tile.unavailable .tile-title {
+  font-size: clamp(17px, 1.7vw, 28px);
+  padding: 18px;
+  text-align: center;
+}
+.quick-restart {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 9px 12px;
+  font-size: 12px;
+  min-height: 42px;
+}
+.quick-restart:hover {
+  background: var(--soft);
+  border-color: var(--green);
+}
+.game-surface .surface-controls {
+  padding-right: 158px;
+}
+.game-surface:not(:has(.surface-controls)) .play-area {
+  padding-bottom: 55px;
+}
+.about-identity {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 6px 0 20px;
+}
+.about-identity img {
+  width: 82px;
+  height: 82px;
+}
+.about-identity h3 {
+  font-size: 38px;
+  letter-spacing: -1px;
+  margin: 0 0 4px;
+}
+.about-identity p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.about-intro {
+  font-size: 17px;
+  line-height: 1.65;
+  margin: 0 0 22px;
+}
+.about-statline {
+  display: flex;
+  gap: 30px;
+  padding: 16px 0;
+  margin-bottom: 24px;
+  border-block: 1px solid var(--line);
+}
+.about-statline strong {
+  font-size: 28px;
+  display: block;
+  font-weight: 500;
+}
+.about-statline span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.about-link-list {
+  display: grid;
+  gap: 0;
+  margin: 0 0 20px;
+}
+.about-link-list a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+}
+.about-link-list a:hover {
+  color: var(--green);
+}
+.about-link-list a span {
+  flex: 1;
+}
+.about-link-list small {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+  font-size: 11px;
+}
+.about-credit {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.tic-board .expiring svg {
+  opacity: 0.35;
+}
+.tic-board .expiring:after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--muted);
+  bottom: 8px;
+  right: 8px;
+}
+.tic-board button {
+  position: relative;
+}
+@media (max-width: 650px) {
+  .quick-restart {
+    right: 8px;
+    bottom: 8px;
+    width: 42px;
+    height: 42px;
+    padding: 10px;
+  }
+  .quick-restart span {
+    display: none;
+  }
+  .game-surface .surface-controls {
+    padding-right: 55px;
+  }
+  .about-identity h3 {
+    font-size: 32px;
+  }
+  .about-statline {
+    gap: 22px;
+  }
+  .about-statline strong {
+    font-size: 24px;
+  }
+}
+@media (max-height: 500px) and (min-width: 650px) {
+  .quick-restart {
+    width: 40px;
+    height: 40px;
+    padding: 9px;
+    right: 5px;
+    bottom: 5px;
+  }
+  .quick-restart span {
+    display: none;
+  }
+  .game-surface .surface-controls {
+    padding-right: 50px;
+  }
+}
+.piece-drag-ghost {
+  position: fixed;
+  z-index: 150;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 10px #0005);
+  opacity: 0.94;
+}
+.piece-drag-ghost * {
+  pointer-events: none !important;
+}
+.piece-drag-ghost .playing-card {
+  background: #fbf7ed;
+  color: #1d2930;
+}
+.piece-drag-ghost .playing-card.red {
+  color: #a75149;
+}
+.piece-drag-ghost .checkers-disc {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+.piece-drag-ghost .chess-piece {
+  display: grid;
+  place-items: center;
+}
+.being-dragged {
+  opacity: 0.18 !important;
+}
+.dragging-piece,
+.dragging-piece * {
+  user-select: none !important;
+  cursor: grabbing !important;
+}
+[data-draggable] {
+  touch-action: none;
+  cursor: grab;
+}
+.drop-hover {
+  outline: 2px solid var(--green) !important;
+  outline-offset: -2px;
+}
+.board3d canvas {
+  touch-action: none;
+}
+.reversi-reserve {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.reversi-reserve .reserve-piece {
+  border: 0;
+  background: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+}
+.reversi-reserve .reserve-piece span {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+@media (max-width: 650px) {
+  .reversi-reserve > span {
+    max-width: 130px;
+  }
+}
+.header-popover {
+  max-height: calc(100dvh - var(--header-h) - 22px);
+  overflow: auto;
+}

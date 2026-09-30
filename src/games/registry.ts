@@ -1,4 +1,5 @@
-export type GameId =
+import { roadmapGames } from "./roadmap";
+export type PlayableGameId =
   | "chess"
   | "connect-four"
   | "go"
@@ -13,12 +14,13 @@ export type GameId =
   | "sudoku"
   | "2048"
   | "memory";
+export type GameId = PlayableGameId | (typeof roadmapGames)[number]["id"];
 export interface GameInfo {
   id: GameId;
   name: string;
   subtitle: string;
   category: string;
-  tags?: string[];
+  tags?: readonly string[];
   players: string;
   duration: string;
   ready: boolean;
@@ -68,7 +70,7 @@ export const games: GameInfo[] = [
   },
   {
     id: "checkers",
-    name: "Damas",
+    name: "Damas americanas",
     subtitle: "Salta hacia tu próxima victoria.",
     category: "Estrategia",
     players: "1–2 jugadores",
@@ -167,4 +169,5 @@ export const games: GameInfo[] = [
     ready: true,
     color: "rose",
   },
+  ...roadmapGames,
 ];

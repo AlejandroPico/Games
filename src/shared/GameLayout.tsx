@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from "react";
-import { Settings2, Info, Bot, Users, RotateCcw } from "lucide-react";
+import { type ReactNode, useState } from "react";
+import { Settings2, Info, Bot, Users } from "lucide-react";
 import { games, type GameId } from "../games/registry";
 import Overlay from "./Overlay";
+import QuickRestart from "./QuickRestart";
 type Props = {
   id: GameId;
   children: ReactNode;
@@ -18,8 +19,11 @@ type Props = {
 };
 export default function GameLayout(p: Props) {
   const game = games.find((g) => g.id === p.id)!;
-  const [settings, setSettings] = useState(false),
-    [rules, setRules] = useState(false);
+  const [rules, setRules] = useState(false);
+  const restart = () => {
+    p.onReset();
+    p.onStart();
+  };
   return (
     <div className={"game-page mini-game " + p.id}>
       <section
@@ -33,7 +37,7 @@ export default function GameLayout(p: Props) {
             <button
               className="icon-button"
               aria-label="Ajustes de partida"
-              onClick={() => setSettings(true)}
+              onClick={p.onReset}
             >
               <Settings2 size={20} />
             </button>
@@ -50,54 +54,32 @@ export default function GameLayout(p: Props) {
         {p.started && p.controls && (
           <div className="surface-controls">{p.controls}</div>
         )}
-        {(!p.started || settings) && (
+        {p.started && <QuickRestart onRestart={restart} />}
+        {!p.started && (
           <Overlay
-            title={p.started ? "Ajustes de partida" : "Nueva partida"}
-            onClose={() => {
-              if (p.started) setSettings(false);
-              else location.hash = "";
-            }}
+            title="Ajustes de partida"
+            onClose={() => (location.hash = "")}
           >
-            {!p.started ? (
-              <>
-                {p.setMode && (
-                  <div className="mode-selector">
-                    <button
-                      className={p.mode === "ai" ? "selected" : ""}
-                      onClick={() => p.setMode!("ai")}
-                    >
-                      <Bot size={20} /> Contra la IA
-                    </button>
-                    <button
-                      className={p.mode === "local" ? "selected" : ""}
-                      onClick={() => p.setMode!("local")}
-                    >
-                      <Users size={20} /> Dos jugadores
-                    </button>
-                  </div>
-                )}
-                {p.menu}
+            {p.setMode && (
+              <div className="mode-selector">
                 <button
-                  className="primary full"
-                  onClick={() => {
-                    p.onStart();
-                    setSettings(false);
-                  }}
+                  className={p.mode === "ai" ? "selected" : ""}
+                  onClick={() => p.setMode!("ai")}
                 >
-                  Empezar partida
+                  <Bot size={20} /> Contra la IA
                 </button>
-              </>
-            ) : (
-              <button
-                className="secondary full"
-                onClick={() => {
-                  p.onReset();
-                  setSettings(false);
-                }}
-              >
-                <RotateCcw size={18} /> Nueva partida
-              </button>
+                <button
+                  className={p.mode === "local" ? "selected" : ""}
+                  onClick={() => p.setMode!("local")}
+                >
+                  <Users size={20} /> Dos jugadores
+                </button>
+              </div>
             )}
+            {p.menu}
+            <button className="primary full" onClick={p.onStart}>
+              Empezar partida
+            </button>
           </Overlay>
         )}
         {rules && (

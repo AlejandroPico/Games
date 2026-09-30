@@ -10,6 +10,9 @@ type Props = {
   selected?: Square | null;
   legal?: Square[];
   onSquare?: (s: Square) => void;
+  canDrag?: (s: Square) => boolean;
+  onDragStart?: (s: Square) => void;
+  onMove?: (from: Square, to: Square) => boolean;
   flipped?: boolean;
   night?: boolean;
   decorative?: boolean;
@@ -402,22 +405,122 @@ export default function Board3D(props: Props) {
     observer.observe(host);
     resize();
     const raycaster = new THREE.Raycaster();
-    const click = (event: PointerEvent) => {
-      if (!current.current.onSquare) return;
+    const ray = (event: PointerEvent) => {
       const bounds = renderer.domElement.getBoundingClientRect();
       raycaster.setFromCamera(
         new THREE.Vector2(
           ((event.clientX - bounds.left) / bounds.width) * 2 - 1,
-          (-(event.clientY - bounds.top) / bounds.height) * 2 + 1,
+          -((event.clientY - bounds.top) / bounds.height) * 2 + 1,
         ),
         camera,
       );
+    };
+    const squareAt = (event: PointerEvent): Square | null => {
+      ray(event);
+      const point = raycaster.ray.intersectPlane(
+        new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.12),
+        new THREE.Vector3(),
+      );
+      if (
+        !point ||
+        point.x < -4 ||
+        point.x >= 4 ||
+        point.z < -4 ||
+        point.z >= 4
+      )
+        return null;
+      return (String.fromCharCode(97 + Math.floor(point.x + 4)) +
+        (8 - Math.floor(point.z + 4))) as Square;
+    };
+    let dragging: {
+      id: number;
+      from: Square;
+      model: THREE.Object3D;
+      x: number;
+      y: number;
+      moved: boolean;
+    } | null = null;
+    const down = (event: PointerEvent) => {
+      if (!event.isPrimary || event.button !== 0 || !current.current.onSquare)
+        return;
+      ray(event);
+      const hit = raycaster
+        .intersectObjects(pieces.children, true)
+        .find((h) => h.object.userData.square);
+      const from = hit?.object.userData.square as Square | undefined;
+      if (!from || !current.current.canDrag?.(from)) return;
+      const model = pieces.children.find(
+        (p) =>
+          p.children[0]?.userData.square === from || p.userData.square === from,
+      );
+      if (!model) return;
+      dragging = {
+        id: event.pointerId,
+        from,
+        model,
+        x: event.clientX,
+        y: event.clientY,
+        moved: false,
+      };
+      renderer.domElement.setPointerCapture(event.pointerId);
+    };
+    const movePointer = (event: PointerEvent) => {
+      if (!dragging || dragging.id !== event.pointerId) return;
+      if (
+        !dragging.moved &&
+        Math.hypot(event.clientX - dragging.x, event.clientY - dragging.y) < 6
+      )
+        return;
+      if (!dragging.moved) {
+        dragging.moved = true;
+        dragging.model.userData.dragging = true;
+        current.current.onDragStart?.(dragging.from);
+      }
+      event.preventDefault();
+      ray(event);
+      const point = raycaster.ray.intersectPlane(
+        new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.3),
+        new THREE.Vector3(),
+      );
+      if (point) {
+        dragging.model.position.copy(point);
+        dragging.model.position.y = 0.3;
+      }
+    };
+    const cancel = () => {
+      if (dragging) {
+        dragging.model.userData.dragging = false;
+        dragging.model.position.copy(dragging.model.userData.target);
+        if (renderer.domElement.hasPointerCapture(dragging.id))
+          renderer.domElement.releasePointerCapture(dragging.id);
+        dragging = null;
+      }
+    };
+    const up = (event: PointerEvent) => {
+      if (dragging && event.pointerId !== dragging.id) return;
+      if (dragging?.moved) {
+        const from = dragging.from,
+          to = squareAt(event);
+        cancel();
+        if (to) current.current.onMove?.(from, to);
+        return;
+      }
+      cancel();
+      if (!current.current.onSquare) return;
+      ray(event);
       const hit = raycaster
         .intersectObjects([...pieces.children, ...tiles], true)
         .find((h) => h.object.userData.square);
       if (hit) current.current.onSquare(hit.object.userData.square);
     };
-    renderer.domElement.addEventListener("pointerup", click);
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") cancel();
+    };
+    renderer.domElement.addEventListener("pointerdown", down);
+    renderer.domElement.addEventListener("pointermove", movePointer);
+    renderer.domElement.addEventListener("pointerup", up);
+    renderer.domElement.addEventListener("pointercancel", cancel);
+    window.addEventListener("keydown", escape);
     let visible = true;
     const visibilityObserver = new IntersectionObserver((entries) => {
       visible = entries[0]?.isIntersecting ?? true;
@@ -429,6 +532,7 @@ export default function Board3D(props: Props) {
     renderer.setAnimationLoop(() => {
       if (!visible || document.hidden) return;
       pieces.children.forEach((p) => {
+        if (p.userData.dragging) return;
         const target = p.userData.target as THREE.Vector3;
         if (reducedMotion) p.position.copy(target);
         else p.position.lerp(target, 0.16);
@@ -440,7 +544,12 @@ export default function Board3D(props: Props) {
       observer.disconnect();
       visibilityObserver.disconnect();
       renderer.setAnimationLoop(null);
-      renderer.domElement.removeEventListener("pointerup", click);
+      cancel();
+      renderer.domElement.removeEventListener("pointerdown", down);
+      renderer.domElement.removeEventListener("pointermove", movePointer);
+      renderer.domElement.removeEventListener("pointerup", up);
+      renderer.domElement.removeEventListener("pointercancel", cancel);
+      window.removeEventListener("keydown", escape);
       scene.traverse((o) => {
         if (o instanceof THREE.Mesh) {
           o.geometry.dispose();

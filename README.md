@@ -1,21 +1,24 @@
 # Games
 
-Colección de **14 juegos jugables** en el navegador. React, TypeScript y Three.js. Sitio estático para GitHub Pages, sin claves ni servidor propio.
+Colección de juegos de todo tipo: mesa, tablero, cartas, lógica, estrategia, memoria y puzles. Reúne clásicos, juegos tradicionales de distintas culturas e ideas nuevas, y está preparada para crecer con más modalidades y experiencias. Se juega en el navegador, con inteligencia artificial o en compañía según el juego.
+
+Desarrollada con React, TypeScript y Three.js. Sitio estático para GitHub Pages, sin claves ni servidor propio.
 
 ## Interfaz
 
-- Catálogo de fichas cuadradas con arte del juego, nombre sobre la imagen, jugadores y categoría. El ajedrez utiliza un tablero 3D real.
+- Catálogo de fichas cuadradas con arte alineado, nombre sobre la imagen, jugadores y categoría integrados sin recuadros. Las ideas pendientes tienen fichas deshabilitadas en gris. El ajedrez utiliza un tablero 3D real.
 - Barra superior fija con búsqueda, filtros de categorías combinables, iluminación y acerca de. Portfolio y repositorio dentro de acerca de.
-- Temas día, tarde, noche y automático. El automático usa el reloj local y una estimación estacional; opcionalmente calcula amanecer y anochecer con la ubicación. Sin ubicación, la estimación estacional corresponde al hemisferio norte. No mide luz ambiental ni meteorología.
-- La ubicación se solicita únicamente al pulsar «Ajustar con mi ubicación», se guarda en este navegador y se puede olvidar desde el mismo menú.
+- Temas día, tarde, noche y automático. El automático solicita ubicación mediante el permiso del navegador y calcula amanecer y anochecer. Guarda coordenadas aproximadas solo en este navegador. Si no hay permiso, usa el reloj local y una estimación estacional para el hemisferio norte. No mide luz ambiental ni meteorología.
 - Partidas ocupando el espacio bajo la barra, sin desplazamiento de página. Ajustes e instrucciones se abren sobre la mesa; los paneles largos pueden desplazarse internamente.
+- Nueva partida en la esquina inferior derecha: reinicia directamente con las opciones seleccionadas. El botón de ajustes abre el mismo menú completo de entrada.
+- Arrastre además de clic en ajedrez 2D/3D, damas y solitario, incluyendo secuencias de cartas; en reversi se puede arrastrar la ficha de reserva a una casilla legal.
 - Navegación mediante fragmentos: volver desde un juego regresa a la colección; desde la colección se conserva el comportamiento del navegador o del sistema.
 - Aplicación PWA instalable y preparada para jugar sin conexión tras completar la primera descarga. Salas de ajedrez requieren Internet.
 - `favicon.svg` en la raíz es la fuente del icono; la compilación lo copia a `public/favicon.svg`. Incluye iconos PNG de instalación y versión maskable.
 
 ## Juegos
 
-Ajedrez, Conecta 4, tres en raya, reversi, damas, mancala, batalla naval, solitario, buscaminas, sudoku, 2048, parejas, Go y Parchís. No hay fichas de juegos pendientes. Variantes y modos: [docs/GAMES.md](docs/GAMES.md).
+Ajedrez, Conecta 4, tres en raya, reversi, damas, mancala, batalla naval, solitario, buscaminas, sudoku, 2048, parejas, Go y Parchís. Las fichas grises reservan las ideas de [docs/ROADMAP.md](docs/ROADMAP.md) y no abren partidas. Tres en raya incluye una variante continua: cada jugador conserva sus tres últimas marcas; al colocar la cuarta desaparece la más antigua. Variantes y modos: [docs/GAMES.md](docs/GAMES.md).
 
 Ajedrez ofrece tablero 3D y 2D, Stockfish 19 Lite Single con cuatro dificultades, dos jugadores locales y salas privadas mediante PeerJS. Incluye práctica sin reloj, relojes 3+2, 5+3, 10+5 y 15+10, guardado local, reanudación e importación/exportación PGN.
 
@@ -55,7 +58,7 @@ Las partidas locales se pausan al cerrar la vista; no se trata de un reloj de to
 
 ## Multijugador
 
-Las salas de ajedrez son privadas, sin listado público. PeerJS Cloud proporciona señalización y WebRTC comunica a los navegadores. El anfitrión es blancas y solo entra un rival. Ambos validan jugadas y estado previo. Una desconexión detiene el juego; no hay reconexión persistente, cuentas ni sincronización de relojes. No es un sistema competitivo contra trampas.
+Las salas de ajedrez son privadas, sin listado público. PeerJS Cloud proporciona señalización y WebRTC comunica a los navegadores. El anfitrión es blancas y solo entra un rival. Ambos validan jugadas y estado previo. El botón de nueva partida propone una revancha que el rival debe aceptar, sin abandonar la sala. Una desconexión detiene el juego; no hay reconexión persistente, cuentas ni sincronización de relojes. No es un sistema competitivo contra trampas.
 
 Algunas redes necesitan TURN para conectar; el servicio gratuito no garantiza disponibilidad. Salas persistentes, partidas recuperables y relojes de torneo requieren un backend externo: Pages sirve archivos estáticos. [PeerJS](https://peerjs.com/docs/) y [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
 

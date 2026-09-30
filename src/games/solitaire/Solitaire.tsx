@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { RotateCcw, Lightbulb } from "lucide-react";
 import GameLayout from "../../shared/GameLayout";
+import { usePieceDrag } from "../../shared/usePieceDrag";
 import {
   initial,
   drawCards,
@@ -92,9 +93,40 @@ export default function Solitaire() {
         ".",
     );
   };
+  const drag = usePieceDrag<Source>({
+    canDrag: (source) => started && !win && moving(state, source).length > 0,
+    elements: (source, element) =>
+      source.kind === "column"
+        ? [
+            ...element.parentElement!.querySelectorAll<HTMLElement>(
+              "[data-card-index]",
+            ),
+          ].filter((e) => Number(e.dataset.cardIndex) >= source.index)
+        : [element],
+    onDrop: (source, element) => {
+      if (!element) return false;
+      const target = {
+        kind: element.dataset.drop as Target["kind"],
+        pile: Number(element.dataset.pile),
+      };
+      const next = move(state, source, target);
+      if (!next) return false;
+      update(next);
+      return true;
+    },
+  });
   const card = (c: Card, source: Source, offset?: number) => (
     <button
       key={source.index}
+      {...drag.bind(source)}
+      data-draggable={c.up ? "" : undefined}
+      data-card-index={source.index}
+      data-drop={
+        source.kind === "column" || source.kind === "foundation"
+          ? source.kind
+          : undefined
+      }
+      data-pile={source.pile}
       disabled={!started || !c.up || win}
       className={
         "playing-card " +
@@ -124,7 +156,9 @@ export default function Solitaire() {
                 : "base")
           : "Carta boca abajo"
       }
-      onClick={() => choose(source)}
+      onClick={() => {
+        if (!drag.suppressClick()) choose(source);
+      }}
       onDoubleClick={() => auto(source)}
     >
       {c.up ? (
@@ -207,7 +241,7 @@ export default function Solitaire() {
           </button>
         </div>
       }
-      rules="Solitario Klondike: forma columnas descendentes alternando rojo y negro. Puedes mover secuencias descubiertas completas y solo un rey puede ocupar una columna vacía. Las bases se construyen por palo, del as al rey. Haz clic en una carta o secuencia y luego en su destino; doble clic envía una carta a su base cuando es posible. El mazo roba una o tres cartas y se puede reciclar sin límite. Las cartas de base pueden volver al tablero. Algunas reparticiones no tienen solución."
+      rules="Solitario Klondike: forma columnas descendentes alternando rojo y negro. Puedes mover secuencias descubiertas completas y solo un rey puede ocupar una columna vacía. Las bases se construyen por palo, del as al rey. Arrastra una carta o secuencia hasta su destino, o haz clic en la selección y después en el destino; doble clic envía una carta a su base cuando es posible. El mazo roba una o tres cartas y se puede reciclar sin límite. Las cartas de base pueden volver al tablero. Algunas reparticiones no tienen solución."
     >
       <div
         className="solitaire-table"
@@ -250,7 +284,12 @@ export default function Solitaire() {
           </div>
           <div className="spacer" />
           {state.foundations.map((f, pile) => (
-            <div key={pile} className="foundation-pile">
+            <div
+              key={pile}
+              className="foundation-pile"
+              data-drop="foundation"
+              data-pile={pile}
+            >
               {f.length ? (
                 card(f.at(-1)!, {
                   kind: "foundation",
@@ -265,7 +304,10 @@ export default function Solitaire() {
                     "Base de " +
                     ["picas", "corazones", "diamantes", "tréboles"][pile]
                   }
-                  onClick={() => place({ kind: "foundation", pile })}
+                  onClick={() => {
+                    if (!drag.suppressClick())
+                      place({ kind: "foundation", pile });
+                  }}
                 >
                   {suits[pile]}
                 </button>
@@ -278,6 +320,8 @@ export default function Solitaire() {
             <div
               key={pile}
               className="solitaire-column"
+              data-drop="column"
+              data-pile={pile}
               style={{
                 height:
                   "calc(var(--card-height) + var(--card-step) * " +
@@ -289,7 +333,9 @@ export default function Solitaire() {
                 disabled={!started}
                 className="card-placeholder"
                 aria-label={"Columna " + (pile + 1) + " vacía"}
-                onClick={() => place({ kind: "column", pile })}
+                onClick={() => {
+                  if (!drag.suppressClick()) place({ kind: "column", pile });
+                }}
               >
                 K
               </button>

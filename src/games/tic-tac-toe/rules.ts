@@ -43,3 +43,79 @@ export function bestMove(b: Board): number {
   }
   return move;
 }
+
+export type ContinuousState = {
+  board: Board;
+  queues: Record<Mark, number[]>;
+  turn: Mark;
+};
+export const initialContinuous = (): ContinuousState => ({
+  board: Array(9).fill(null),
+  queues: { X: [], O: [] },
+  turn: "X",
+});
+export function placeMark(
+  s: ContinuousState,
+  index: number,
+  continuous = true,
+): ContinuousState | null {
+  if (
+    !Number.isInteger(index) ||
+    index < 0 ||
+    index > 8 ||
+    s.board[index] ||
+    winner(s.board)
+  )
+    return null;
+  const board = [...s.board],
+    queue = [...s.queues[s.turn]];
+  if (continuous && queue.length === 3) board[queue.shift()!] = null;
+  board[index] = s.turn;
+  queue.push(index);
+  return {
+    board,
+    queues: { ...s.queues, [s.turn]: queue },
+    turn: s.turn === "X" ? "O" : "X",
+  };
+}
+// Finite search handles repeated positions without declaring the actual game drawn.
+export function bestContinuousMove(s: ContinuousState, depth = 8): number {
+  const key = (p: ContinuousState) =>
+    p.turn + ":" + p.queues.X.join(",") + "|" + p.queues.O.join(",");
+  function search(p: ContinuousState, left: number, path: Set<string>): number {
+    const w = winner(p.board);
+    if (w) return w.mark === "O" ? 100 + left : -100 - left;
+    const k = key(p);
+    if (path.has(k)) return 0;
+    if (!left)
+      return lines.reduce((n, l) => {
+        const x = l.filter((i) => p.board[i] === "X").length,
+          o = l.filter((i) => p.board[i] === "O").length;
+        return n + (x ? 0 : o * o) - (o ? 0 : x * x);
+      }, 0);
+
+    const nextPath = new Set(path);
+    nextPath.add(k);
+    let value = p.turn === "O" ? -Infinity : Infinity;
+    for (const i of [4, 0, 2, 6, 8, 1, 3, 5, 7]) {
+      const next = placeMark(p, i);
+      if (!next) continue;
+      const v = search(next, left - 1, nextPath);
+      value = p.turn === "O" ? Math.max(value, v) : Math.min(value, v);
+    }
+    if (!Number.isFinite(value)) value = 0;
+    return value;
+  }
+  let chosen = -1,
+    value = -Infinity;
+  for (const i of [4, 0, 2, 6, 8, 1, 3, 5, 7]) {
+    const next = placeMark(s, i);
+    if (!next) continue;
+    const v = search(next, depth - 1, new Set([key(s)]));
+    if (v > value) {
+      value = v;
+      chosen = i;
+    }
+  }
+  return chosen;
+}

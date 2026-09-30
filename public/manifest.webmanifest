@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Games",
   "short_name": "Games",
-  "description": "Catorce juegos de mesa en tu bolsillo.",
+  "description": "Una colección de juegos de mesa, tablero, cartas, lógica y estrategia para jugar donde quieras.",
   "lang": "es",
   "start_url": "./",
   "scope": "./",

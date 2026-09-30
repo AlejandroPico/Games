@@ -1,7 +1,17 @@
 import Peer, { type DataConnection } from "peerjs";
 export type WireMessage = {
   v: 1;
-  type: "hello" | "move" | "resign" | "offer" | "accept" | "decline" | "claim";
+  type:
+    | "hello"
+    | "move"
+    | "resign"
+    | "offer"
+    | "accept"
+    | "decline"
+    | "claim"
+    | "restart"
+    | "restart-ok"
+    | "restart-no";
   before?: string;
   ply?: number;
   from?: string;
@@ -72,9 +82,17 @@ export class RoomPeer {
         this.onReady();
       } else if (
         this.hello &&
-        ["move", "resign", "offer", "accept", "decline", "claim"].includes(
-          m.type,
-        )
+        [
+          "move",
+          "resign",
+          "offer",
+          "accept",
+          "decline",
+          "claim",
+          "restart",
+          "restart-ok",
+          "restart-no",
+        ].includes(m.type)
       )
         this.onData(m);
     });

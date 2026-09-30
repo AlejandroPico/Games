@@ -1,50 +1,66 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
-import { winner, bestMove, type Board, type Mark } from "./rules";
+import { useAI } from "../../shared/useAI";
+import AIWorker from "./ai.worker?worker";
+import { winner, initialContinuous, placeMark } from "./rules";
 export default function TicTacToe() {
-  const [board, setBoard] = useState<Board>(Array(9).fill(null)),
-    [turn, setTurn] = useState<Mark>("X"),
+  const [state, setState] = useState(initialContinuous),
     [mode, setMode] = useState<"ai" | "local">("ai"),
-    [started, setStarted] = useState(false);
-  const win = winner(board),
-    draw = board.every(Boolean) && !win,
+    [started, setStarted] = useState(false),
+    [continuous, setContinuous] = useState(false);
+  const win = winner(state.board),
+    draw = !continuous && state.board.every(Boolean) && !win,
     over = Boolean(win || draw);
-  useEffect(() => {
-    if (!started || mode !== "ai" || turn !== "O" || over) return;
-    const timer = setTimeout(() => {
-      const next = [...board];
-      next[bestMove(board)] = "O";
-      setBoard(next);
-      setTurn("X");
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [board, turn, mode, started, over]);
-  const reset = () => {
-    setBoard(Array(9).fill(null));
-    setTurn("X");
-    setStarted(false);
-  };
+  const input = useMemo(() => ({ state, continuous }), [state, continuous]);
+  const { busy, error } = useAI<typeof input, number>(
+    AIWorker,
+    input,
+    started && mode === "ai" && state.turn === "O" && !over,
+    (i) => setState((s) => placeMark(s, i, continuous) || s),
+  );
   return (
     <GameLayout
       id="tic-tac-toe"
       started={started}
       onStart={() => setStarted(true)}
-      onReset={reset}
+      onReset={() => {
+        setState(initialContinuous());
+        setStarted(false);
+      }}
       mode={mode}
       setMode={setMode}
+      menu={
+        <label className="field-label">
+          Tipo de partida
+          <select
+            value={continuous ? "continuous" : "classic"}
+            onChange={(e) => setContinuous(e.target.value === "continuous")}
+          >
+            <option value="classic">Clásica · tablero de nueve casillas</option>
+            <option value="continuous">
+              Continua · tres marcas por jugador
+            </option>
+          </select>
+        </label>
+      }
       status={
-        win
+        error ||
+        (win
           ? "Gana " + win.mark
           : draw
             ? "Empate: ¡bien defendido!"
-            : turn === "O" && mode === "ai"
+            : busy
               ? "La IA está pensando…"
-              : "Turno de " + turn
+              : "Turno de " +
+                state.turn +
+                (continuous && state.queues[state.turn].length === 3
+                  ? " · desaparece la marca más antigua"
+                  : ""))
       }
-      rules="Coloca tres marcas iguales en una línea horizontal, vertical o diagonal. X comienza. La IA calcula hasta el final y nunca pierde si juega correctamente."
+      rules="Alinea tres marcas en horizontal, vertical o diagonal. X comienza. En el modo continuo cada jugador conserva hasta tres marcas: al poner la cuarta en una casilla vacía desaparece su marca más antigua, antes de comprobar la victoria. La marca que desaparecerá se ve atenuada. No hay empate por tablero lleno ni por repetición; se sigue hasta que alguien gane. La IA clásica calcula el final; la continua busca varias jugadas por adelantado."
     >
       <div className="tic-board">
-        {board.map((mark, i) => (
+        {state.board.map((mark, i) => (
           <button
             key={i}
             aria-label={"Casilla " + (i + 1) + (mark ? ", " + mark : ", vacía")}
@@ -52,15 +68,20 @@ export default function TicTacToe() {
               !started ||
               Boolean(mark) ||
               over ||
-              (mode === "ai" && turn === "O")
+              (mode === "ai" && state.turn === "O")
             }
-            className={(mark || "") + (win?.line.includes(i) ? " winning" : "")}
-            onClick={() => {
-              const next = [...board];
-              next[i] = turn;
-              setBoard(next);
-              setTurn(turn === "X" ? "O" : "X");
-            }}
+            className={
+              (mark || "") +
+              (win?.line.includes(i) ? " winning" : "") +
+              (continuous &&
+              !over &&
+              mark === state.turn &&
+              state.queues[state.turn].length === 3 &&
+              state.queues[state.turn][0] === i
+                ? " expiring"
+                : "")
+            }
+            onClick={() => setState((s) => placeMark(s, i, continuous) || s)}
           >
             {mark === "X" ? (
               <svg viewBox="0 0 100 100">
@@ -76,7 +97,6 @@ export default function TicTacToe() {
           </button>
         ))}
       </div>
-      <div className="stage-caption">Tres casillas. Una buena idea.</div>
     </GameLayout>
   );
 }

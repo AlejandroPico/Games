@@ -1,16 +1,16 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
   Sun,
   Sunset,
   Moon,
-  Monitor,
   Users,
   SlidersHorizontal,
   Info,
   X,
   Github,
-  MapPin,
+  ExternalLink,
+  UserRound,
   Download,
 } from "lucide-react";
 import { Chess } from "chess.js";
@@ -18,6 +18,8 @@ import { games, type GameId } from "./games/registry";
 import Board3D from "./games/chess/Board3D";
 import GameBoundary from "./shared/GameBoundary";
 import Overlay from "./shared/Overlay";
+import AutoThemeIcon from "./shared/AutoThemeIcon";
+import RoadmapArt from "./shared/RoadmapArt";
 import {
   automaticTheme,
   type ThemeMode,
@@ -72,7 +74,7 @@ export default function App() {
     [locationNote, setLocationNote] = useState(""),
     [install, setInstall] = useState<InstallEvent | null>(null);
   const active = route.split("?")[0],
-    game = games.find((g) => g.id === active),
+    game = games.find((g) => g.id === active && g.ready),
     ExtraGame = extraGames[active as GameId];
   const theme = mode === "auto" ? automaticTheme(now, solarLocation) : mode;
   const preview = useMemo(
@@ -126,7 +128,9 @@ export default function App() {
   }, []);
   useEffect(() => {
     if (
-      games.some((g) => g.id === location.hash.slice(1).split("?")[0]) &&
+      games.some(
+        (g) => g.ready && g.id === location.hash.slice(1).split("?")[0],
+      ) &&
       !history.state?.games
     ) {
       const hash = location.hash;
@@ -145,6 +149,7 @@ export default function App() {
     window.addEventListener("hashchange", mark);
     return () => window.removeEventListener("hashchange", mark);
   }, []);
+  const locationAttempted = useRef(false);
   const shown = games.filter(
     (g) =>
       (!categories.length ||
@@ -159,12 +164,12 @@ export default function App() {
       setLocationNote("La ubicación no está disponible.");
       return;
     }
-    setLocationNote("Buscando ubicación…");
+    setLocationNote("");
     navigator.geolocation.getCurrentPosition(
       (p) => {
         const value = {
-          latitude: p.coords.latitude,
-          longitude: p.coords.longitude,
+          latitude: Math.round(p.coords.latitude * 10) / 10,
+          longitude: Math.round(p.coords.longitude * 10) / 10,
         };
         setSolarLocation(value);
         setNow(new Date());
@@ -177,6 +182,12 @@ export default function App() {
       { timeout: 10000, maximumAge: 86400000 },
     );
   };
+  useEffect(() => {
+    if (mode === "auto" && !locationAttempted.current) {
+      locationAttempted.current = true;
+      locate();
+    }
+  }, [mode, solarLocation]);
   return (
     <>
       <header className="site-header">
@@ -217,7 +228,7 @@ export default function App() {
             onClick={() => toggle("theme")}
           >
             {mode === "auto" ? (
-              <Monitor size={21} />
+              <AutoThemeIcon size={21} />
             ) : mode === "day" ? (
               <Sun size={21} />
             ) : mode === "afternoon" ? (
@@ -337,7 +348,7 @@ export default function App() {
                       ["day", "Día", Sun],
                       ["afternoon", "Tarde", Sunset],
                       ["night", "Noche", Moon],
-                      ["auto", "Automático", Monitor],
+                      ["auto", "Automático", AutoThemeIcon],
                     ] as const
                   ).map(([value, label, Icon]) => (
                     <button
@@ -352,31 +363,12 @@ export default function App() {
                   ))}
                 </div>
                 {mode === "auto" && (
-                  <>
-                    <p>
-                      {solarLocation
-                        ? "Según el sol en tu ubicación y la hora local."
-                        : "Según la hora local y la estación. Horario aproximado."}
-                    </p>
-                    <button className="text-button" onClick={locate}>
-                      <MapPin size={15} /> Ajustar con mi ubicación
-                    </button>
-                    {solarLocation && (
-                      <button
-                        className="text-button"
-                        onClick={() => {
-                          setSolarLocation(undefined);
-                          try {
-                            localStorage.removeItem("games-sun-location");
-                          } catch {}
-                          setLocationNote("");
-                        }}
-                      >
-                        Olvidar ubicación
-                      </button>
-                    )}
-                    <p role="status">{locationNote}</p>
-                  </>
+                  <p role="status">
+                    {solarLocation
+                      ? "Iluminación según el sol en tu ubicación."
+                      : locationNote ||
+                        "Iluminación automática según la hora local."}
+                  </p>
                 )}
               </>
             )}
@@ -406,7 +398,7 @@ export default function App() {
               {(query || categories.length > 0) && (
                 <div className="active-filters">
                   <span>
-                    {shown.length} juegos{query ? ' · "' + query + '"' : ""}
+                    Resultados{query ? ' · "' + query + '"' : ""}
                     {categories.length ? " · " + categories.join(", ") : ""}
                   </span>
                   <button
@@ -424,9 +416,14 @@ export default function App() {
                 {shown.map((g) => (
                   <button
                     key={g.id}
-                    className={"game-tile " + g.color}
-                    onClick={() => (location.hash = g.id)}
-                    aria-label={"Jugar a " + g.name}
+                    className={
+                      "game-tile " + g.color + (!g.ready ? " unavailable" : "")
+                    }
+                    disabled={!g.ready}
+                    onClick={() => {
+                      if (g.ready) location.hash = g.id;
+                    }}
+                    aria-label={(g.ready ? "Jugar a " : "Pendiente: ") + g.name}
                   >
                     <div className="tile-art">
                       {g.id === "chess" ? (
@@ -435,18 +432,22 @@ export default function App() {
                           night={theme === "night"}
                           decorative
                         />
-                      ) : (
+                      ) : g.ready ? (
                         <GameArt id={g.id} />
+                      ) : (
+                        <RoadmapArt id={g.id} category={g.category} />
                       )}
                     </div>
-                    <span className="tile-players" title={g.players}>
-                      <Users size={14} />
-                      <span>
-                        {g.players
-                          .replace(" jugadores", "")
-                          .replace(" jugador", "")}
+                    {g.ready && (
+                      <span className="tile-players" title={g.players}>
+                        <Users size={14} />
+                        <span>
+                          {g.players
+                            .replace(" jugadores", "")
+                            .replace(" jugador", "")}
+                        </span>
                       </span>
-                    </span>
+                    )}
                     <span className="tile-title">{g.name}</span>
                     <span className="tile-category">{g.category}</span>
                   </button>
@@ -465,30 +466,53 @@ export default function App() {
           onClose={() => setPanel(null)}
           className="site-overlay"
         >
-          <p className="rules-copy">
-            Una colección de juegos de mesa de Alejandro Pico. Catorce juegos
-            para jugar a tu ritmo, con rivales automáticos, modos locales y
-            salas privadas de ajedrez.
+          <div className="about-identity">
+            <img src="./favicon.svg" alt="" />
+            <div>
+              <h3>Games</h3>
+              <p>Una mesa. Muchas formas de jugar.</p>
+            </div>
+          </div>
+          <p className="about-intro">
+            Juegos de mesa, tablero, cartas, lógica y estrategia. Clásicos de
+            distintas culturas, puzles y nuevas formas de jugar. Una colección
+            personal de Alejandro Pico, abierta a seguir creciendo.
           </p>
-          <div className="about-links">
+          <div className="about-statline">
+            <div>
+              <strong>Tablero</strong>
+              <span>clásicos y estrategia</span>
+            </div>
+            <div>
+              <strong>Cartas y lógica</strong>
+              <span>solitarios, puzles y deducción</span>
+            </div>
+          </div>
+          <div className="about-link-list">
             <a
-              className="primary"
               href="https://alejandropico.github.io/Portfolio/"
               target="_blank"
               rel="noreferrer"
             >
-              Portfolio
+              <UserRound size={22} />
+              <span>
+                Portfolio<small>Más proyectos de Alejandro Pico</small>
+              </span>
+              <ExternalLink size={17} />
             </a>
             <a
-              className="secondary"
               href="https://github.com/AlejandroPico/Games"
               target="_blank"
               rel="noreferrer"
             >
-              <Github size={18} /> Repositorio
+              <Github size={22} />
+              <span>
+                Repositorio<small>Explora cómo está hecha la colección</small>
+              </span>
+              <ExternalLink size={17} />
             </a>
           </div>
-          {install ? (
+          {install && (
             <button
               className="secondary full"
               onClick={async () => {
@@ -499,17 +523,11 @@ export default function App() {
             >
               <Download size={18} /> Instalar Games
             </button>
-          ) : (
-            <p className="rules-copy">
-              Puedes instalar Games desde el menú del navegador. Una vez
-              cargada, la colección también funciona sin conexión; las salas
-              privadas necesitan Internet.
-            </p>
           )}
-          <small>
-            Proyecto de código abierto · GPLv3. Stockfish 19, chess.js y
-            Three.js. Cada juego indica su variante y reglas en su menú.
-          </small>
+          <div className="about-credit">
+            <span>Diseño y colección · Alejandro Pico</span>
+            <span>Código abierto · GPLv3</span>
+          </div>
         </Overlay>
       )}
     </>
@@ -540,10 +558,7 @@ function GameArt({ id }: { id: GameId }) {
             <feDropShadow dx="0" dy="12" stdDeviation="8" floodOpacity=".15" />
           </filter>
         </defs>
-        <g
-          transform="translate(91 18) rotate(-6 110 100)"
-          filter="url(#shadow)"
-        >
+        <g transform="translate(91 18)" filter="url(#shadow)">
           <rect x="4" y="10" width="214" height="165" rx="10" fill="#34566b" />
           <rect width="214" height="165" rx="10" fill="url(#frame)" />
           {Array.from({ length: 42 }, (_, i) => {
@@ -626,7 +641,7 @@ function GameArt({ id }: { id: GameId }) {
             <stop offset="1" stopColor="#efcf94" />
           </linearGradient>
         </defs>
-        <g transform="translate(104 25) rotate(-7 100 90)">
+        <g transform="translate(104 25)">
           <rect x="0" y="8" width="200" height="180" rx="5" fill="#b78d51" />
           <rect width="200" height="178" rx="5" fill="url(#wood)" />
           {Array.from({ length: 9 }, (_, i) => (
@@ -676,7 +691,7 @@ function GameArt({ id }: { id: GameId }) {
   if (id === "ludo")
     return (
       <svg viewBox="0 0 400 240" aria-hidden="true">
-        <g transform="translate(109 23) rotate(-9 90 90)">
+        <g transform="translate(109 23)">
           <rect x="-4" y="5" width="188" height="188" rx="8" fill="#c0a59c" />
           <rect width="180" height="180" rx="6" fill="#fff5e7" />
           {[
@@ -724,10 +739,7 @@ function GameArt({ id }: { id: GameId }) {
     return (
       <svg viewBox="0 0 400 240" aria-hidden="true">
         {[-23, -8, 9, 24].map((angle, i) => (
-          <g
-            key={i}
-            transform={`translate(${143 + i * 5} 36) rotate(${angle} 54 83)`}
-          >
+          <g key={i} transform={`translate(${110 + i * 30} 36)`}>
             <rect
               x="1"
               y="5"
@@ -775,7 +787,7 @@ function GameArt({ id }: { id: GameId }) {
     );
   return (
     <svg viewBox="0 0 400 240" aria-hidden="true">
-      <g transform="translate(119 27) rotate(-8 85 85)">
+      <g transform="translate(119 27)">
         {Array.from({ length: 25 }, (_, i) => {
           const x = (i % 5) * 33,
             y = Math.floor(i / 5) * 33;
@@ -831,7 +843,7 @@ function ExtraArt({ id }: { id: GameId }) {
     return (
       <svg viewBox="0 0 400 240" aria-hidden="true">
         <g
-          transform="translate(119 26) rotate(-8 80 80)"
+          transform="translate(119 26)"
           stroke="#5f796a"
           strokeWidth="7"
           strokeLinecap="round"
@@ -851,7 +863,7 @@ function ExtraArt({ id }: { id: GameId }) {
   if (id === "reversi" || id === "checkers")
     return (
       <svg viewBox="0 0 400 240" aria-hidden="true">
-        <g transform="translate(112 29) rotate(-7 90 90)">
+        <g transform="translate(112 29)">
           <rect width="176" height="176" rx="5" fill="#628475" />
           {Array.from({ length: 64 }, (_, i) => {
             const r = Math.floor(i / 8),
@@ -920,7 +932,7 @@ function ExtraArt({ id }: { id: GameId }) {
   if (id === "mancala")
     return (
       <svg viewBox="0 0 400 240" aria-hidden="true">
-        <g transform="translate(46 56) rotate(-6 152 60)">
+        <g transform="translate(46 56)">
           <rect y="5" width="310" height="122" rx="52" fill="#af8057" />
           <rect width="310" height="120" rx="50" fill="#cca775" />
           <ellipse cx="30" cy="60" rx="17" ry="36" fill="#a37b51" />
@@ -951,7 +963,7 @@ function ExtraArt({ id }: { id: GameId }) {
   if (id === "sudoku")
     return (
       <svg viewBox="0 0 400 240" aria-hidden="true">
-        <g transform="translate(113 25) rotate(-7 88 90)">
+        <g transform="translate(113 25)">
           <rect width="180" height="180" rx="4" fill="#fff9e9" />
           {Array.from({ length: 10 }, (_, i) => (
             <g
@@ -985,7 +997,7 @@ function ExtraArt({ id }: { id: GameId }) {
   if (id === "2048")
     return (
       <svg viewBox="0 0 400 240" aria-hidden="true">
-        <g transform="translate(110 24) rotate(-7 90 90)">
+        <g transform="translate(110 24)">
           <rect width="182" height="182" rx="9" fill="#b5a38b" />
           {[2, 4, 0, 2, 8, 16, 4, 0, 0, 32, 64, 4, 2, 0, 128, 256].map(
             (n, i) => (
@@ -1027,7 +1039,7 @@ function ExtraArt({ id }: { id: GameId }) {
   if (id === "memory")
     return (
       <svg viewBox="0 0 400 240" aria-hidden="true">
-        <g transform="translate(97 34) rotate(-6 100 90)">
+        <g transform="translate(97 34)">
           {Array.from({ length: 6 }, (_, i) => (
             <g key={i}>
               <rect
@@ -1056,7 +1068,7 @@ function ExtraArt({ id }: { id: GameId }) {
     );
   return (
     <svg viewBox="0 0 400 240" aria-hidden="true">
-      <g transform="translate(108 24) rotate(-7 90 90)">
+      <g transform="translate(108 24)">
         <rect width="180" height="180" rx="5" fill="#719bab" />
         {Array.from({ length: 11 }, (_, i) => (
           <path

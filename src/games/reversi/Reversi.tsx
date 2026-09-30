@@ -1,6 +1,7 @@
 import AIWorker from "./ai.worker?worker";
 import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
+import { usePieceDrag } from "../../shared/usePieceDrag";
 import { useAI } from "../../shared/useAI";
 import { initial, moves, play, count } from "./rules";
 export default function Reversi() {
@@ -33,6 +34,18 @@ export default function Reversi() {
       if (m) place(...m);
     },
   );
+  const drag = usePieceDrag<number>({
+    canDrag: () => started && !over && !busy && !(mode === "ai" && turn === 2),
+    onDrop: (_source, e) => {
+      if (!e) return false;
+      const i = Number(e.dataset.drop),
+        r = Math.floor(i / 8),
+        c = i % 8;
+      if (!legal.some(([rr, cc]) => rr === r && cc === c)) return false;
+      place(r, c);
+      return true;
+    },
+  });
   return (
     <GameLayout
       id="reversi"
@@ -60,6 +73,22 @@ export default function Reversi() {
               "Turno de " +
               (turn === 1 ? "negras" : "blancas"))
       }
+      controls={
+        <div className="reversi-reserve">
+          <button
+            {...drag.bind(turn)}
+            data-draggable=""
+            className="reserve-piece"
+            aria-label="Arrastrar nueva ficha"
+            disabled={!started || over || busy || (mode === "ai" && turn === 2)}
+          >
+            <span
+              className={"reversi-disc " + (turn === 1 ? "black" : "white")}
+            />
+          </button>
+          <span>Arrastra al tablero o pulsa una casilla.</span>
+        </div>
+      }
       stats={
         <div className="score-pair">
           <span>
@@ -77,6 +106,7 @@ export default function Reversi() {
           row.map((v, c) => (
             <button
               key={r + "-" + c}
+              data-drop={r * 8 + c}
               aria-label={
                 "Fila " +
                 (r + 1) +
@@ -95,7 +125,9 @@ export default function Reversi() {
                 (mode === "ai" && turn === 2) ||
                 !legal.some(([rr, cc]) => rr === r && cc === c)
               }
-              onClick={() => place(r, c)}
+              onClick={() => {
+                if (!drag.suppressClick()) place(r, c);
+              }}
             >
               {v ? (
                 <span

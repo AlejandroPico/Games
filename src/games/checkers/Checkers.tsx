@@ -1,6 +1,7 @@
 import AIWorker from "./ai.worker?worker";
 import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
+import { usePieceDrag } from "../../shared/usePieceDrag";
 import { useAI } from "../../shared/useAI";
 import { initial, moves, type Move } from "./rules";
 export default function Checkers() {
@@ -60,6 +61,24 @@ export default function Checkers() {
     }
     preview[path.at(-1)!] = moving;
   }
+  const drag = usePieceDrag<number>({
+    canDrag: (i) =>
+      started &&
+      !over &&
+      !busy &&
+      !(mode === "ai" && turn === 2) &&
+      (path.length > 1
+        ? path.at(-1) === i
+        : legal.some((m) => m.path[0] === i)),
+    onStart: (i) => choose(i),
+    elements: (_i, e) => [e.querySelector<HTMLElement>(".checkers-disc")!],
+    onDrop: (_from, e) => {
+      if (!e || !path.length || !targets.includes(Number(e.dataset.drop)))
+        return false;
+      choose(Number(e.dataset.drop));
+      return true;
+    },
+  });
   return (
     <GameLayout
       id="checkers"
@@ -94,12 +113,15 @@ export default function Checkers() {
                   (turn === 1 ? "rojas" : "verdes") +
                   (legal[0]?.captures.length ? " · captura obligatoria" : ""))
       }
-      rules="Damas inglesas, tablero 8×8. Las piezas normales avanzan y capturan en diagonal hacia delante. Las damas mueven y capturan una casilla en ambas direcciones. Capturar es obligatorio y hay que completar todos los saltos disponibles; puedes elegir cualquier cadena. Al coronar termina el turno. Ganas si el rival no puede mover. Tablas por triple repetición o 40 movimientos de cada jugador sin captura ni movimiento de pieza normal."
+      rules="Damas inglesas, tablero 8×8. Las piezas normales avanzan y capturan en diagonal hacia delante. Las damas mueven y capturan una casilla en ambas direcciones. Puedes arrastrar una pieza a su destino o seleccionar con clics; en una captura múltiple arrastra salto a salto. Capturar es obligatorio y hay que completar todos los saltos disponibles; puedes elegir cualquier cadena. Al coronar termina el turno. Ganas si el rival no puede mover. Tablas por triple repetición o 40 movimientos de cada jugador sin captura ni movimiento de pieza normal."
     >
       <div className="checkers-board">
         {preview.map((v, i) => (
           <button
             key={i}
+            {...drag.bind(i)}
+            data-draggable={v ? "" : undefined}
+            data-drop={i}
             aria-label={
               "Casilla " +
               (i + 1) +
@@ -109,7 +131,9 @@ export default function Checkers() {
             }
             disabled={!started || over || busy || (mode === "ai" && turn === 2)}
             className={(Math.floor(i / 8) + (i % 8)) % 2 ? "dark" : "light"}
-            onClick={() => choose(i)}
+            onClick={() => {
+              if (!drag.suppressClick()) choose(i);
+            }}
           >
             {v && (
               <span

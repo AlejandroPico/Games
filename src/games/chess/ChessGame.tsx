@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import Board3D from "./Board3D";
 import Overlay from "../../shared/Overlay";
+import QuickRestart from "../../shared/QuickRestart";
+import { usePieceDrag } from "../../shared/usePieceDrag";
 import { Settings2 } from "lucide-react";
 import { ChessEngine, type Level } from "./engine";
 import {
@@ -90,6 +92,9 @@ function readSave(): Save | null {
 }
 export default function ChessGame({ night }: { night: boolean }) {
   const [settings, setSettings] = useState(false);
+  const [restartOffer, setRestartOffer] = useState<"sent" | "received" | null>(
+    null,
+  );
 
   const [chess, setChess] = useState(() => new Chess()),
     [revision, setRevision] = useState(0),
@@ -126,9 +131,25 @@ export default function ChessGame({ night }: { night: boolean }) {
     room = useRef<RoomPeer | null>(null),
     audio = useRef<AudioContext | null>(null),
     lastTick = useRef(performance.now()),
-    state = useRef({ chess, config, outcome, connected, offer, phase });
+    state = useRef({
+      chess,
+      config,
+      outcome,
+      connected,
+      offer,
+      phase,
+      restartOffer,
+    });
   const clocksRef = useRef(clocks);
-  state.current = { chess, config, outcome, connected, offer, phase };
+  state.current = {
+    chess,
+    config,
+    outcome,
+    connected,
+    offer,
+    phase,
+    restartOffer,
+  };
   clocksRef.current = clocks;
   useEffect(
     () => () => {
@@ -341,6 +362,8 @@ export default function ChessGame({ night }: { night: boolean }) {
     setThinking(false);
     setFlipped(chosen.color === "b");
     setPhase("play");
+    setSettings(false);
+    setRestartOffer(null);
     setRevision((r) => r + 1);
     lastTick.current = performance.now();
   };
@@ -361,9 +384,58 @@ export default function ChessGame({ night }: { night: boolean }) {
       setError("No se ha podido recuperar la partida.");
     }
   };
+  const restartRoom = () => {
+    const next = new Chess();
+    next.setHeader("Event", "Games · Sala privada");
+    setChess(next);
+    setOutcome(null);
+    setSelected(null);
+    setPromotion(null);
+    setOffer(null);
+    setRestartOffer(null);
+    setClaimMode(false);
+    setError("");
+    setSettings(false);
+    setPhase("play");
+    setRevision((r) => r + 1);
+  };
+  const requestRestart = () => {
+    if (!connected || restartOffer) return;
+    room.current?.send({
+      v: 1,
+      type: "restart",
+      before: chess.fen(),
+      ply: chess.history().length,
+    });
+    setRestartOffer("sent");
+  };
   const receive = (m: WireMessage) => {
     const s = state.current;
-    if (s.phase !== "play" || s.config.mode !== "online" || s.outcome) return;
+    if (s.phase !== "play" || s.config.mode !== "online" || !s.connected)
+      return;
+    if (m.type === "restart-no") {
+      setRestartOffer(null);
+      return;
+    }
+    if (m.type === "restart" || m.type === "restart-ok") {
+      if (m.before !== s.chess.fen() || m.ply !== s.chess.history().length) {
+        room.current?.send({ v: 1, type: "restart-no" });
+        return;
+      }
+      if (m.type === "restart-ok") {
+        if (s.restartOffer === "sent") restartRoom();
+      } else if (s.restartOffer === "sent") {
+        room.current?.send({
+          v: 1,
+          type: "restart-ok",
+          before: s.chess.fen(),
+          ply: s.chess.history().length,
+        });
+        restartRoom();
+      } else setRestartOffer("received");
+      return;
+    }
+    if (s.outcome) return;
     if (m.type === "move") {
       if (
         m.before !== s.chess.fen() ||
@@ -438,6 +510,8 @@ export default function ChessGame({ night }: { night: boolean }) {
         setOutcome(null);
         setSelected(null);
         setOffer(null);
+        setRestartOffer(null);
+        setSettings(false);
         setConnected(true);
         setPhase("play");
         setFlipped(!host);
@@ -476,6 +550,7 @@ export default function ChessGame({ night }: { night: boolean }) {
     phase === "play" &&
     !outcome &&
     !thinking &&
+    !restartOffer &&
     ownTurn &&
     (config.mode !== "online" || connected);
   const square = (sq: Square) => {
@@ -500,6 +575,27 @@ export default function ChessGame({ night }: { night: boolean }) {
     }
     setSelected(chess.get(sq)?.color === chess.turn() ? sq : null);
   };
+  const dropPiece = (from: Square, to: Square) => {
+    if (!canPlay || chess.get(from)?.color !== chess.turn()) return false;
+    const legalMoves = chess
+      .moves({ square: from, verbose: true })
+      .filter((m) => m.to === to);
+    if (!legalMoves.length) return false;
+    if (legalMoves.some((m) => m.promotion)) setPromotion({ from, to });
+    else if (claimMode) sendClaim({ from, to });
+    else {
+      apply(from, to);
+      beep();
+    }
+    return true;
+  };
+  const drag = usePieceDrag<Square>({
+    canDrag: (from) => canPlay && chess.get(from)?.color === chess.turn(),
+    onStart: (from) => setSelected(from),
+    elements: (_from, e) => [e.querySelector<HTMLElement>(".chess-piece")!],
+    onDrop: (from, e) =>
+      e ? dropPiece(from, e.dataset.drop as Square) : false,
+  });
   const undo = () => {
     if (config.mode === "online" || !chess.history().length) return;
     engine.current?.destroy();
@@ -602,10 +698,22 @@ export default function ChessGame({ night }: { night: boolean }) {
             <button
               className="icon-button"
               aria-label="Ajustes de partida"
-              onClick={() => setSettings(true)}
+              onClick={() => {
+                setPhase("menu");
+                setSettings(false);
+              }}
             >
               <Settings2 size={20} />
             </button>
+            {phase === "play" && (
+              <button
+                className="icon-button"
+                aria-label="Acciones e historial"
+                onClick={() => setSettings(true)}
+              >
+                <ChevronDown size={20} />
+              </button>
+            )}
             <button
               className="icon-button"
               aria-label="Cómo jugar"
@@ -653,6 +761,11 @@ export default function ChessGame({ night }: { night: boolean }) {
               selected={selected}
               legal={legal}
               onSquare={square}
+              onMove={dropPiece}
+              canDrag={(from) =>
+                canPlay && chess.get(from)?.color === chess.turn()
+              }
+              onDragStart={(from) => setSelected(from)}
               flipped={flipped}
               night={night}
               lastMove={last}
@@ -675,7 +788,12 @@ export default function ChessGame({ night }: { night: boolean }) {
                     return (
                       <button
                         key={sq}
-                        onClick={() => square(sq)}
+                        {...drag.bind(sq)}
+                        data-drop={sq}
+                        data-draggable={p ? "" : undefined}
+                        onClick={() => {
+                          if (!drag.suppressClick()) square(sq);
+                        }}
                         aria-label={
                           sq +
                           (p
@@ -773,9 +891,19 @@ export default function ChessGame({ night }: { night: boolean }) {
             </div>
           </div>
         </section>
+        {phase === "play" && (
+          <QuickRestart
+            onRestart={() =>
+              config.mode === "online" ? requestRestart() : start(config)
+            }
+            disabled={
+              config.mode === "online" && (!connected || Boolean(restartOffer))
+            }
+          />
+        )}
         {(phase === "menu" || settings) && (
           <Overlay
-            title={phase === "menu" ? "Nueva partida" : "Ajustes de partida"}
+            title="Ajustes de partida"
             onClose={() => {
               if (phase === "menu") location.hash = "";
               else setSettings(false);
@@ -1192,6 +1320,38 @@ export default function ChessGame({ night }: { night: boolean }) {
           </Overlay>
         )}
       </div>
+      {restartOffer && connected && (
+        <Overlay
+          title="Otra partida"
+          onClose={() => {
+            room.current?.send({ v: 1, type: "restart-no" });
+            setRestartOffer(null);
+          }}
+          className="site-overlay"
+        >
+          <p className="rules-copy">
+            {restartOffer === "sent"
+              ? "Esperando a que tu rival acepte otra partida."
+              : "Tu rival propone empezar otra partida con los mismos colores y ajustes."}
+          </p>
+          {restartOffer === "received" && (
+            <button
+              className="primary full"
+              onClick={() => {
+                room.current?.send({
+                  v: 1,
+                  type: "restart-ok",
+                  before: chess.fen(),
+                  ply: chess.history().length,
+                });
+                restartRoom();
+              }}
+            >
+              Empezar otra partida
+            </button>
+          )}
+        </Overlay>
+      )}
       {promotion && (
         <div className="modal-backdrop">
           <div
