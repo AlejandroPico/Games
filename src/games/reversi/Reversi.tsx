@@ -1,3 +1,4 @@
+import { useObservation } from "../../shared/Observation";
 import AIWorker from "./ai.worker?worker";
 import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
@@ -5,6 +6,7 @@ import { usePieceDrag } from "../../shared/usePieceDrag";
 import { useAI } from "../../shared/useAI";
 import { initial, moves, play, count } from "./rules";
 export default function Reversi() {
+  const { watching } = useObservation();
   const [board, setBoard] = useState(initial),
     [turn, setTurn] = useState(1),
     [started, setStarted] = useState(false),
@@ -26,16 +28,20 @@ export default function Reversi() {
       );
     }
   };
-  const { busy, error } = useAI<number[][], [number, number] | null>(
+  const { busy, error } = useAI<
+    { board: number[][]; turn: number },
+    [number, number] | null
+  >(
     AIWorker,
-    board,
-    started && mode === "ai" && turn === 2 && !over,
+    useMemo(() => ({ board, turn }), [board, turn]),
+    started && (watching || (mode === "ai" && turn === 2)) && !over,
     (m) => {
       if (m) place(...m);
     },
   );
   const drag = usePieceDrag<number>({
-    canDrag: () => started && !over && !busy && !(mode === "ai" && turn === 2),
+    canDrag: () =>
+      started && !over && !busy && !(watching || (mode === "ai" && turn === 2)),
     onDrop: (_source, e) => {
       if (!e) return false;
       const i = Number(e.dataset.drop),
@@ -80,7 +86,13 @@ export default function Reversi() {
             data-draggable=""
             className="reserve-piece"
             aria-label="Arrastrar nueva ficha"
-            disabled={!started || over || busy || (mode === "ai" && turn === 2)}
+            disabled={
+              !started ||
+              over ||
+              busy ||
+              watching ||
+              (mode === "ai" && turn === 2)
+            }
           >
             <span
               className={"reversi-disc " + (turn === 1 ? "black" : "white")}
@@ -122,6 +134,7 @@ export default function Reversi() {
                 !started ||
                 over ||
                 busy ||
+                watching ||
                 (mode === "ai" && turn === 2) ||
                 !legal.some(([rr, cc]) => rr === r && cc === c)
               }

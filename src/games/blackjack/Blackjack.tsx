@@ -1,8 +1,10 @@
+import { useObservation, useAutoplay } from "../../shared/Observation";
 import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import HandCards from "../../shared/HandCards";
 import { initial, total, insurance, act, canSplit } from "./rules";
 export default function Blackjack() {
+  const { watching } = useObservation();
   const [bet, setBet] = useState(20),
     [soft17, setSoft17] = useState(false),
     [state, setState] = useState(() => initial()),
@@ -14,6 +16,38 @@ export default function Blackjack() {
     const n = act(state, a);
     if (n) setState(n);
   };
+  useAutoplay(started && watching && !over, state, () => {
+    if (state.phase === "insurance") {
+      setState(insurance(state, false));
+      return;
+    }
+    const mine = total(hand.cards),
+      up = Math.min(10, state.dealer[0].rank === 1 ? 11 : state.dealer[0].rank);
+    if (canSplit(state) && [1, 8].includes(hand.cards[0].rank)) {
+      take("split");
+      return;
+    }
+    if (
+      hand.cards.length === 2 &&
+      !hand.split &&
+      state.bank >= hand.bet &&
+      (mine.value === 11 || (!mine.soft && mine.value === 10 && up < 10))
+    ) {
+      take("double");
+      return;
+    }
+    take(
+      mine.soft
+        ? mine.value >= 19 || (mine.value === 18 && up < 9)
+          ? "stand"
+          : "hit"
+        : mine.value >= 17 ||
+            (mine.value >= 13 && up <= 6) ||
+            (mine.value === 12 && up >= 4 && up <= 6)
+          ? "stand"
+          : "hit",
+    );
+  });
   return (
     <GameLayout
       id="blackjack-21"

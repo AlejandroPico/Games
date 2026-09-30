@@ -1,8 +1,10 @@
+import { useObservation, useAutoplay } from "../../shared/Observation";
 import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { initial, free, match, hint, arrange, type Tile } from "./rules";
 import MahjongFace from "./MahjongFace";
 export default function Mahjong() {
+  const { watching } = useObservation();
   const [tiles, setTiles] = useState(() => initial()),
     [started, setStarted] = useState(false),
     [selection, setSelection] = useState<number[]>([]),
@@ -23,6 +25,14 @@ export default function Mahjong() {
     }
     setSelection([id]);
   };
+  useAutoplay(started && watching && !win, tiles, () => {
+    const pair = hint(tiles);
+    if (pair) {
+      const next = match(tiles, pair[0], pair[1]);
+      if (next) setTiles(next);
+    } else
+      setMessage("La IA se detuvo: no hay parejas libres. Puedes reiniciar.");
+  });
   return (
     <GameLayout
       id="mahjong-solitario"

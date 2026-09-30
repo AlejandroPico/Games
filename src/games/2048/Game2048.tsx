@@ -1,3 +1,4 @@
+import { useObservation, useAutoplay } from "../../shared/Observation";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -18,6 +19,7 @@ import {
   type Grid,
 } from "./rules";
 export default function Game2048() {
+  const { watching } = useObservation();
   const [board, setBoard] = useState(initial),
     [score, setScore] = useState(0),
     [started, setStarted] = useState(false),
@@ -49,6 +51,7 @@ export default function Game2048() {
         s: "down",
       };
       if (
+        !watching &&
         started &&
         keys[e.key] &&
         !(
@@ -63,6 +66,10 @@ export default function Game2048() {
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
   }, [board, started, lost, score]);
+  useAutoplay(started && watching && !lost, board, () => {
+    const d = suggest(board);
+    if (d) move(d);
+  });
   return (
     <GameLayout
       id="2048"

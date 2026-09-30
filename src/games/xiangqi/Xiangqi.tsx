@@ -1,3 +1,4 @@
+import { useObservation, useAutoplay } from "../../shared/Observation";
 import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import Overlay from "../../shared/Overlay";
@@ -18,6 +19,7 @@ import {
   type Move,
 } from "./rules";
 export default function Xiangqi() {
+  const { watching } = useObservation();
   const [state, setState] = useState(initial),
     [started, setStarted] = useState(false),
     [mode, setMode] = useState<"ai" | "local">("ai"),
@@ -29,6 +31,9 @@ export default function Xiangqi() {
     over = outcome || result(state),
     review = over === "Repetición · revisión",
     input = useMemo(() => ({ state, depth }), [state, depth]);
+  useAutoplay(started && watching && review, state, () =>
+    setOutcome("Tablas acordadas por repetición en modo observación"),
+  );
   const commit = (m: Move) => {
     setState((s) => apply(s, m));
     setSelected(null);
@@ -36,13 +41,19 @@ export default function Xiangqi() {
   const { busy, error } = useAI(
     Worker,
     input,
-    started && mode === "ai" && state.turn === 2 && !over && !confirm,
+    started &&
+      (watching || (mode === "ai" && state.turn === 2)) &&
+      !over &&
+      !confirm,
     (m: Move | null) => {
       if (m) commit(m);
     },
   );
   const canPlay =
-    started && !over && !busy && !(mode === "ai" && state.turn === 2);
+    started &&
+    !over &&
+    !busy &&
+    !(watching || (mode === "ai" && state.turn === 2));
   const select = (i: number) => {
     const m = options.find((m) => m.from === selected && m.to === i);
     if (m) commit(m);

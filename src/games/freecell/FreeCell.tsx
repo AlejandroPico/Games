@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useObservation } from "../../shared/Observation";
+import { useAI } from "../../shared/useAI";
+import Worker from "./ai.worker?worker";
+import { publicKey } from "./autoplay";
+import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import CardColumns from "../../shared/CardColumns";
 import CardFace from "../../shared/CardFace";
@@ -14,6 +18,8 @@ import {
   type Target,
 } from "./rules";
 export default function FreeCell() {
+  const { watching } = useObservation();
+  const [visited, setVisited] = useState<string[]>([]);
   const [state, setState] = useState(initial),
     [started, setStarted] = useState(false),
     [selected, setSelected] = useState<Source | null>(null),
@@ -26,6 +32,16 @@ export default function FreeCell() {
     setSelected(null);
     setMessage("");
   };
+  const input = useMemo(() => ({ state, visited }), [state, visited]);
+  useAI(Worker, input, started && watching && !win, (n: State | null) => {
+    if (n) {
+      setVisited((v) => [...v, publicKey(state)].slice(-1500));
+      update(n);
+    } else
+      setMessage(
+        "La IA se ha detenido: no encuentra una continuación nueva. Puedes iniciar otra partida.",
+      );
+  });
   const place = (t: Target) => {
     if (!selected) return;
     const n = move(state, selected, t);
@@ -76,10 +92,12 @@ export default function FreeCell() {
       id="solitario-carta-blanca-freecell"
       started={started}
       onStart={() => {
+        setVisited([]);
         setState(initial());
         setStarted(true);
       }}
       onReset={() => {
+        setVisited([]);
         setStarted(false);
         setSelected(null);
         setHistory([]);

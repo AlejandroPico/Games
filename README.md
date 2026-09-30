@@ -10,15 +10,17 @@ Desarrollada con React, TypeScript y Three.js. Sitio estático para GitHub Pages
 - Barra superior fija con búsqueda, filtros de categorías combinables, iluminación y acerca de. Portfolio y repositorio dentro de acerca de.
 - Temas día, tarde, noche y automático. El automático solicita ubicación mediante el permiso del navegador y calcula amanecer y anochecer. Guarda coordenadas aproximadas solo en este navegador. Si no hay permiso, usa el reloj local y una estimación estacional para el hemisferio norte. No mide luz ambiental ni meteorología.
 - Partidas ocupando el espacio bajo la barra, sin desplazamiento de página. Ajustes e instrucciones se abren sobre la mesa; los paneles largos pueden desplazarse internamente.
+- Ayudas detalladas con objetivo, preparación, turnos, ejemplos, final y referencias donde existen. El interrogante abre Cómo jugar; información abre Acerca de.
+- Todos los juegos incluyen Solo inteligencia artificial: observación de todos los participantes o resolución automática en solitarios, con pausa y velocidad.
 - Nueva partida en la esquina inferior derecha: reinicia directamente con las opciones seleccionadas. El botón de ajustes abre el mismo menú completo de entrada.
-- Arrastre además de clic en ajedrez 2D/3D, damas americanas e internacionales, Shogi, Xiangqi y los solitarios, incluyendo secuencias de cartas; en reversi se puede arrastrar la ficha de reserva a una casilla legal.
+- Arrastre además de clic en ajedrez 2D/3D, damas americanas e internacionales, Shogi, Xiangqi y Backgammon, y los solitarios, incluyendo secuencias de cartas; en reversi se puede arrastrar la ficha de reserva a una casilla legal.
 - Navegación mediante fragmentos: volver desde un juego regresa a la colección; desde la colección se conserva el comportamiento del navegador o del sistema.
 - Aplicación PWA instalable y preparada para jugar sin conexión tras completar la primera descarga. Salas de ajedrez requieren Internet.
 - `favicon.svg` en la raíz es la fuente del icono; la compilación lo copia a `public/favicon.svg`. Incluye iconos PNG de instalación y versión maskable.
 
 ## Juegos
 
-Ajedrez, Conecta 4, tres en raya, reversi, damas americanas e internacionales, mancala, batalla naval, solitario Klondike, Spider, Carta Blanca, buscaminas, sudoku, 2048, parejas, Go, Parchís, Shogi, Xiangqi, blackjack, mus, brisca, mahjong solitario, Yahtzee, Mastermind y Quarto. Las fichas grises reservan las ideas de [docs/ROADMAP.md](docs/ROADMAP.md) y no abren partidas. Tres en raya incluye una variante continua: cada jugador conserva sus tres últimas marcas; al colocar la cuarta desaparece la más antigua. Variantes y modos: [docs/GAMES.md](docs/GAMES.md).
+Ajedrez, Conecta 4, tres en raya, reversi, damas americanas e internacionales, mancala, batalla naval, solitario Klondike, Spider, Carta Blanca, buscaminas, sudoku, 2048, parejas, Go, Parchís, Shogi, Xiangqi, blackjack, mus, brisca, mahjong solitario, Yahtzee, Mastermind y Quarto; Ahorcado, CruzaPalabras, Basta / Tutti Frutti, Adivina la Palabra, Cajas / Timbiriche, Gomoku, Palabras Encadenadas, Conecta 5 / Pente, El Diccionario, Hex, Brotes, Colonizadores y Backgammon. Las fichas grises reservan las ideas de [docs/ROADMAP.md](docs/ROADMAP.md) y no abren partidas. Tres en raya incluye una variante continua: cada jugador conserva sus tres últimas marcas; al colocar la cuarta desaparece la más antigua. Variantes y modos: [docs/GAMES.md](docs/GAMES.md) y [docs/REPERTOIRE.md](docs/REPERTOIRE.md).
 
 Ajedrez ofrece tablero 3D y 2D, Stockfish 19 Lite Single con cuatro dificultades, dos jugadores locales y salas privadas mediante PeerJS. Incluye práctica sin reloj, relojes 3+2, 5+3, 10+5 y 15+10, guardado local, reanudación e importación/exportación PGN.
 
@@ -44,9 +46,9 @@ La compilación genera un Service Worker con una versión basada en el contenido
 
 ## Estructura y colaboración
 
-Cada juego vive en `src/games/<id>/`, con reglas, IA y componentes independientes. Registro: `src/games/registry.ts`; navegación: `src/App.tsx`; presentación compartida: `src/shared/GameLayout.tsx` y `src/shared/Overlay.tsx`; estilos: `src/styles.css`, `src/redesign.css` y `src/new-games.css` (mesas de los juegos añadidos).
+Cada juego vive en `src/games/<id>/`, con reglas, IA y componentes independientes. Registro: `src/games/registry.ts`; navegación: `src/App.tsx`; presentación compartida: `src/shared/GameLayout.tsx` y `src/shared/Overlay.tsx`; estilos: `src/styles.css`, `src/redesign.css` y `src/new-games.css` y `src/expansion.css` (mesas de los juegos añadidos).
 
-Para añadir un juego: crear su carpeta, registrar metadatos, añadir importación diferida y comprobar sus reglas. No marcar `ready: true` hasta que sea jugable. Si necesita persistencia, usar claves propias con versión; no compartir partidas entre juegos. IndexedDB permite bases locales grandes. SQLite requeriría WASM o un servicio externo y no es necesario para esta entrega.
+Para añadir un juego: crear su carpeta, registrar metadatos, añadir importación diferida, guía específica en `src/shared/guides.ts`, modo de observación y comprobar sus reglas. La observación se comparte mediante `ObservationProvider`, `useAutoplay` y `useAI`; las decisiones siguen en cada juego. No marcar `ready: true` hasta que sea jugable. Si necesita persistencia, usar claves propias con versión; no compartir partidas entre juegos. IndexedDB permite bases locales grandes. SQLite requeriría WASM o un servicio externo y no es necesario para esta entrega.
 
 Formato común: `pnpm exec prettier --write src tests scripts`.
 

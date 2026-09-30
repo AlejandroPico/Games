@@ -1,16 +1,18 @@
+import { useObservation } from "../../shared/Observation";
 import AIWorker from "./ai.worker?worker";
 import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
 import { initial, sow, legal, type State } from "./rules";
 export default function Mancala() {
+  const { watching } = useObservation();
   const [state, setState] = useState(initial),
     [started, setStarted] = useState(false),
     [mode, setMode] = useState<"ai" | "local">("ai");
   const { busy, error } = useAI<State, number>(
     AIWorker,
     state,
-    started && mode === "ai" && state.turn === 2 && !state.over,
+    started && (watching || (mode === "ai" && state.turn === 2)) && !state.over,
     (pit) => {
       const next = sow(state, pit);
       if (next) setState(next);
@@ -32,6 +34,7 @@ export default function Mancala() {
         !started ||
         busy ||
         !legal(state).includes(i) ||
+        watching ||
         (mode === "ai" && state.turn === 2)
       }
       aria-label={

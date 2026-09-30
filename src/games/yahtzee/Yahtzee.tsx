@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useObservation, useAutoplay } from "../../shared/Observation";
+import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import Die from "../../shared/Die";
 import {
@@ -14,32 +15,27 @@ import {
   aiCategory,
 } from "./rules";
 export default function Yahtzee() {
+  const { watching } = useObservation();
   const [opponent, setOpponent] = useState("solo"),
     [state, setState] = useState(() => initial()),
     [started, setStarted] = useState(false);
   const over = finished(state),
-    ai = opponent === "ai" && state.turn === 1,
+    ai = watching || (opponent === "ai" && state.turn === 1),
     allowed = choices(state),
     joker =
       state.dice.every((v) => v === state.dice[0]) &&
       state.sheets[state.turn][11] !== null;
-  useEffect(() => {
-    if (!started || !ai || over) return;
-    const timer = setTimeout(() => {
-      if (state.rolls === 3) setState((s) => score(s, aiCategory(s)) || s);
-      else
-        setState(
-          (s) => roll({ ...s, held: s.rolls ? aiHolds(s) : s.held }) || s,
-        );
-    }, 450);
-    return () => clearTimeout(timer);
-  }, [state, started, ai, over]);
+  useAutoplay(started && ai && !over, state, () => {
+    if (state.rolls === 3) setState((s) => score(s, aiCategory(s)) || s);
+    else
+      setState((s) => roll({ ...s, held: s.rolls ? aiHolds(s) : s.held }) || s);
+  });
   return (
     <GameLayout
       id="yahtzee-la-generala"
       started={started}
       onStart={() => {
-        setState(initial(opponent === "solo" ? 1 : 2));
+        setState(initial(!watching && opponent === "solo" ? 1 : 2));
         setStarted(true);
       }}
       onReset={() => setStarted(false)}

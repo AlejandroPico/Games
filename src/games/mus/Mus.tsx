@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useObservation, useAutoplay } from "../../shared/Observation";
+import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import HandCards from "../../shared/HandCards";
 import {
@@ -13,6 +14,7 @@ import {
 } from "./rules";
 const playerNames = ["Tú", "Rival 1", "Compañero", "Rival 2"];
 export default function Mus() {
+  const { watching } = useObservation();
   const [state, setState] = useState(() => initial()),
     [eight, setEight] = useState(true),
     [target, setTarget] = useState(40),
@@ -23,7 +25,7 @@ export default function Mus() {
     [revealed, setRevealed] = useState("");
   const over = state.phase === "over",
     show = over || state.phase === "showdown",
-    human = mode === "local" || state.turn === 0,
+    human = !watching && (mode === "local" || state.turn === 0),
     view = mode === "local" ? state.turn : 0,
     context =
       state.round + ":" + state.phase + ":" + state.lance + ":" + state.turn,
@@ -35,14 +37,9 @@ export default function Mus() {
       setSelected([]);
     }
   };
-  useEffect(() => {
-    if (!started || human || show) return;
-    const timer = setTimeout(
-      () => setState((s) => act(s, aiAction(s)) || s),
-      420,
-    );
-    return () => clearTimeout(timer);
-  }, [state, started, human, show]);
+  useAutoplay(started && !human && !show, state, () =>
+    setState((s) => act(s, aiAction(s)) || s),
+  );
   const canAct = human && visible && !show,
     lc = lances(state)[state.lance] || "recuento";
   const nextHand = () => {
@@ -59,6 +56,11 @@ export default function Mus() {
     setSelected([]);
     setRevealed("");
   };
+  useAutoplay(
+    started && watching && state.phase === "showdown",
+    state,
+    nextHand,
+  );
   return (
     <GameLayout
       id="mus"

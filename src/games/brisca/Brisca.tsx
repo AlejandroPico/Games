@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useObservation, useAutoplay } from "../../shared/Observation";
+import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import CardFace from "../../shared/CardFace";
 import HandCards from "../../shared/HandCards";
@@ -13,6 +14,7 @@ import {
   aiMove,
 } from "./rules";
 export default function Brisca() {
+  const { watching } = useObservation();
   const [state, setState] = useState(() => initial()),
     [started, setStarted] = useState(false),
     [mode, setMode] = useState<"ai" | "local">("ai"),
@@ -23,19 +25,23 @@ export default function Brisca() {
     reveal = revealed === privacyKey;
   const over = state.hands.every((h) => !h.length) && !state.trick.length,
     baza = winner(state),
-    human = mode === "local" || state.turn === 0;
-  useEffect(() => {
-    if (!started || over || mode !== "ai") return;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    if (state.trick.length === 2 && baza === 1)
-      timer = setTimeout(() => setState((s) => collect(swap(s) || s)), 650);
-    else if (state.trick.length < 2 && state.turn === 1)
-      timer = setTimeout(() => {
-        const i = aiMove(state.hands[1], state.trick[0]?.card, state.suit);
-        setState((s) => play(s, i) || s);
-      }, 450);
-    return () => clearTimeout(timer);
-  }, [state, started, mode, over, baza]);
+    human = !watching && (mode === "local" || state.turn === 0);
+  useAutoplay(
+    started &&
+      !over &&
+      (watching ||
+        (mode === "ai" &&
+          (state.trick.length === 2 ? baza === 1 : state.turn === 1))),
+    state,
+    () => {
+      if (state.trick.length === 2) setState((s) => collect(swap(s) || s));
+      else
+        setState(
+          (s) =>
+            play(s, aiMove(s.hands[s.turn], s.trick[0]?.card, s.suit)) || s,
+        );
+    },
+  );
   return (
     <GameLayout
       id="brisca"

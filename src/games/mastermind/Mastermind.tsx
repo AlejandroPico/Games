@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useObservation, useAutoplay } from "../../shared/Observation";
+import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
 import Worker from "./ai.worker?worker";
 import { feedback, secret, type Row } from "./rules";
 const colors = ["Coral", "Azul", "Verde", "Ocre", "Violeta", "Marfil"];
 export default function Mastermind() {
+  const { watching } = useObservation();
   const [started, setStarted] = useState(false),
     [role, setRole] = useState("breaker"),
     [repeats, setRepeats] = useState(true),
@@ -22,14 +24,14 @@ export default function Mastermind() {
   const { busy, error } = useAI(
     Worker,
     input,
-    started && !over && !pending && (role === "maker" || help),
+    started && !over && !pending && (watching || role === "maker" || help),
     (next: number[] | null) => {
       setHelp(false);
       if (!next) {
         setMessage("No queda ningún código compatible.");
         return;
       }
-      if (role === "maker") setPending(next);
+      if (watching || role === "maker") setPending(next);
       else {
         setGuess(next);
         setMessage(
@@ -38,14 +40,18 @@ export default function Mastermind() {
       }
     },
   );
-  useEffect(() => {
-    if (!pending || !started) return;
-    const timer = setTimeout(() => {
-      setHistory((h) => [...h, { guess: pending, ...feedback(code, pending) }]);
+  useAutoplay(
+    Boolean(pending) && started,
+    pending,
+    () => {
+      setHistory((h) => [
+        ...h,
+        { guess: pending!, ...feedback(code, pending!) },
+      ]);
       setPending(null);
-    }, 650);
-    return () => clearTimeout(timer);
-  }, [pending, started, code]);
+    },
+    650,
+  );
   const submit = () => {
     if (guess.some((v) => v === null)) return;
     if (!repeats && new Set(guess).size < 4) {
@@ -64,11 +70,11 @@ export default function Mastermind() {
       id="mastermind"
       started={started}
       onStart={() => {
-        if (!validCode && role === "maker") {
+        if (!watching && !validCode && role === "maker") {
           setMessage("El código debe usar colores distintos.");
           return;
         }
-        setCode(role === "maker" ? [...chosen] : secret(repeats));
+        setCode(!watching && role === "maker" ? [...chosen] : secret(repeats));
         setStarted(true);
         setMessage("");
       }}

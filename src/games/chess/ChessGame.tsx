@@ -1,3 +1,9 @@
+import {
+  useObservation,
+  ObservationChoice,
+  ObservationControls,
+} from "../../shared/Observation";
+import GameGuide from "../../shared/GameGuide";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Chess, type Square, type PieceSymbol, type Color } from "chess.js";
 import {
@@ -16,7 +22,7 @@ import {
   ChevronDown,
   Volume2,
   VolumeX,
-  Info,
+  CircleHelp,
   X,
 } from "lucide-react";
 import Board3D from "./Board3D";
@@ -91,6 +97,7 @@ function readSave(): Save | null {
   }
 }
 export default function ChessGame({ night }: { night: boolean }) {
+  const { watching, paused, delay, setWatching } = useObservation();
   const [settings, setSettings] = useState(false);
   const [restartOffer, setRestartOffer] = useState<"sent" | "received" | null>(
     null,
@@ -258,10 +265,15 @@ export default function ChessGame({ night }: { night: boolean }) {
       phase !== "play" ||
       outcome ||
       config.mode !== "ai" ||
-      chess.turn() === config.color
-    )
+      (!watching && chess.turn() === config.color) ||
+      (watching && paused)
+    ) {
+      setThinking(false);
       return;
+    }
     let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const began = performance.now();
     const instance = new ChessEngine();
     engine.current = instance;
     setThinking(true);
@@ -274,11 +286,22 @@ export default function ChessGame({ night }: { night: boolean }) {
         if (cancelled) return;
         if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(move))
           throw new Error("Stockfish no ha devuelto una jugada válida.");
-        apply(
-          move.slice(0, 2) as Square,
-          move.slice(2, 4) as Square,
-          (move[4] || "q") as PieceSymbol,
-        );
+        const perform = () => {
+          if (!cancelled) {
+            apply(
+              move.slice(0, 2) as Square,
+              move.slice(2, 4) as Square,
+              (move[4] || "q") as PieceSymbol,
+            );
+            setThinking(false);
+          }
+        };
+        if (watching)
+          timer = setTimeout(
+            perform,
+            Math.max(0, delay - (performance.now() - began)),
+          );
+        else perform();
       })
       .catch((e) => {
         if (!cancelled) setError(e.message);
@@ -288,12 +311,14 @@ export default function ChessGame({ night }: { night: boolean }) {
       });
     return () => {
       cancelled = true;
+      clearTimeout(timer);
       instance.destroy();
       engine.current = null;
     };
-  }, [revision, phase, config, chess, outcome, apply]);
+  }, [revision, phase, config, chess, outcome, apply, watching, paused, delay]);
   useEffect(() => {
-    if (phase !== "play" || outcome || !config.minutes) return;
+    if (phase !== "play" || outcome || !config.minutes || (watching && paused))
+      return;
     lastTick.current = performance.now();
     const timer = setInterval(() => {
       const now = performance.now(),
@@ -309,7 +334,7 @@ export default function ChessGame({ night }: { night: boolean }) {
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [phase, outcome, config.minutes, chess]);
+  }, [phase, outcome, config.minutes, chess, watching, paused]);
   useEffect(() => {
     if (phase !== "play" || config.mode === "online") return;
     const persist = () => {
@@ -545,7 +570,8 @@ export default function ChessGame({ night }: { night: boolean }) {
     setPromotion(null);
     setClaimMode(false);
   };
-  const ownTurn = config.mode === "local" || chess.turn() === config.color;
+  const ownTurn =
+    !watching && (config.mode === "local" || chess.turn() === config.color);
   const canPlay =
     phase === "play" &&
     !outcome &&
@@ -659,17 +685,19 @@ export default function ChessGame({ night }: { night: boolean }) {
             ? "Juegan blancas"
             : "Juegan negras";
   const label = (color: Color) =>
-    config.mode === "ai"
-      ? color === config.color
-        ? "Tú"
-        : "Stockfish 19"
-      : config.mode === "online"
+    watching
+      ? "Stockfish · " + (color === "w" ? "blancas" : "negras")
+      : config.mode === "ai"
         ? color === config.color
           ? "Tú"
-          : "Tu rival"
-        : color === "w"
-          ? "Jugador 1"
-          : "Jugador 2";
+          : "Stockfish 19"
+        : config.mode === "online"
+          ? color === config.color
+            ? "Tú"
+            : "Tu rival"
+          : color === "w"
+            ? "Jugador 1"
+            : "Jugador 2";
   const captured = (color: Color) =>
     history
       .filter((m) => m.color === color && m.captured)
@@ -687,14 +715,17 @@ export default function ChessGame({ night }: { night: boolean }) {
           <div role="status">
             {phase === "menu"
               ? "Elige cómo jugar"
-              : outcome?.reason ||
-                (thinking
-                  ? "Stockfish está pensando…"
-                  : chess.turn() === "w"
-                    ? "Juegan blancas"
-                    : "Juegan negras")}
+              : watching && paused
+                ? "Observación en pausa"
+                : outcome?.reason ||
+                  (thinking
+                    ? "Stockfish está pensando…"
+                    : chess.turn() === "w"
+                      ? "Juegan blancas"
+                      : "Juegan negras")}
           </div>
           <div>
+            {phase === "play" && <ObservationControls />}
             <button
               className="icon-button"
               aria-label="Ajustes de partida"
@@ -719,7 +750,7 @@ export default function ChessGame({ night }: { night: boolean }) {
               aria-label="Cómo jugar"
               onClick={() => setRules(true)}
             >
-              <Info size={20} />
+              <CircleHelp size={20} />
             </button>
           </div>
         </div>
@@ -958,11 +989,14 @@ export default function ChessGame({ night }: { night: boolean }) {
                     ].map((m) => (
                       <button
                         key={m.id}
-                        className={config.mode === m.id ? "selected" : ""}
+                        className={
+                          !watching && config.mode === m.id ? "selected" : ""
+                        }
                         onClick={() => {
                           room.current?.destroy();
                           room.current = null;
                           setRoomStatus("");
+                          setWatching(false);
                           setConfig({ ...config, mode: m.id as Mode });
                         }}
                       >
@@ -974,6 +1008,18 @@ export default function ChessGame({ night }: { night: boolean }) {
                         <span className="radio" />
                       </button>
                     ))}
+                    <div
+                      onClick={() =>
+                        setConfig((c) => ({
+                          ...c,
+                          mode: "ai",
+                          minutes: 0,
+                          increment: 0,
+                        }))
+                      }
+                    >
+                      <ObservationChoice />
+                    </div>
                   </div>
                   {config.mode === "ai" && (
                     <>
@@ -1024,6 +1070,7 @@ export default function ChessGame({ night }: { night: boolean }) {
                       <label className="field-label">
                         Ritmo de juego
                         <select
+                          disabled={watching}
                           value={config.minutes + "+" + config.increment}
                           onChange={(e) => {
                             const [minutes, increment] = e.target.value
@@ -1449,56 +1496,7 @@ export default function ChessGame({ night }: { night: boolean }) {
             </button>
             <div className="eyebrow">64 CASILLAS, UN OBJETIVO</div>
             <h2 id="rules-title">Cómo jugar al ajedrez</h2>
-            <p>
-              Da jaque mate al rey rival. Selecciona una pieza para ver sus
-              movimientos legales; después, elige su destino. Puedes cambiar
-              entre las vistas 3D y 2D en cualquier momento.
-            </p>
-            <dl>
-              <dt>Movimientos especiales</dt>
-              <dd>
-                Enroque corto y largo cuando el rey no está en jaque y no cruza
-                casillas atacadas. Captura al paso inmediatamente después de un
-                avance doble. Promoción a dama, torre, alfil o caballo.
-              </dd>
-              <dt>Finales de partida</dt>
-              <dd>
-                Jaque mate, abandono y pérdida por tiempo. Ahogado y material
-                insuficiente terminan en tablas. La quíntuple repetición y 75
-                movimientos sin captura ni movimiento de peón producen tablas
-                automáticas; el mate tiene prioridad.
-              </dd>
-              <dt>Reclamar tablas</dt>
-              <dd>
-                La triple repetición y 50 movimientos permiten reclamar, no
-                terminan la partida automáticamente. Usa «Reclamar con jugada»
-                para indicar el movimiento que completaría la condición. Las
-                posiciones muertas excepcionales con bloqueos se pueden resolver
-                mediante una oferta de tablas.
-              </dd>
-              <dt>Reloj y práctica</dt>
-              <dd>
-                El reloj comienza al iniciar la partida. El incremento se añade
-                tras cada jugada. Deshacer está disponible en prácticas sin
-                reloj. El guardado es local a este navegador; al salir, las
-                partidas locales se pausan.
-              </dd>
-              <dt>Jugar con amigos</dt>
-              <dd>
-                Crea una sala y comparte su código. Tu amigo elige «Unirme a una
-                sala». Las salas privadas no tienen reloj; no se pueden
-                recuperar tras cerrar la página y una desconexión detiene el
-                juego.
-              </dd>
-            </dl>
-            <a
-              href="https://handbook.fide.com/chapter/e012023"
-              target="_blank"
-              rel="noreferrer"
-              className="text-button"
-            >
-              Consultar las reglas FIDE <ArrowRight size={14} />
-            </a>
+            <GameGuide id="chess" />
           </div>
         </div>
       )}

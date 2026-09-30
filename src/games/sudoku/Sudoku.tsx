@@ -1,8 +1,12 @@
+import { useObservation } from "../../shared/Observation";
+import { useAI } from "../../shared/useAI";
+import Worker from "./ai.worker?worker";
 import { useEffect, useState } from "react";
 import { Lightbulb, RotateCcw, Eraser } from "lucide-react";
 import GameLayout from "../../shared/GameLayout";
 import { generate, valid, complete, type Puzzle } from "./rules";
 export default function Sudoku() {
+  const { watching } = useObservation();
   const [puzzle, setPuzzle] = useState<Puzzle>(() => generate(36)),
     [board, setBoard] = useState(puzzle.givens),
     [selected, setSelected] = useState<number | null>(null),
@@ -35,6 +39,7 @@ export default function Sudoku() {
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
       if (
+        watching ||
         !started ||
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLSelectElement
@@ -81,6 +86,21 @@ export default function Sudoku() {
     setSelected(i);
     setMessage("Pista: esta casilla contiene un " + puzzle.solution[i] + ".");
   };
+  useAI(
+    Worker,
+    board,
+    started && watching && !win,
+    (next: { index: number; value: number } | null) => {
+      if (next && next.index >= 0) {
+        setBoard((b) => b.map((v, i) => (i === next.index ? next.value : v)));
+        setSelected(next.index);
+        setMessage("Deducción y búsqueda desde las pistas visibles.");
+      } else
+        setMessage(
+          "La posición no admite solución: revisa las entradas o reinicia.",
+        );
+    },
+  );
   return (
     <GameLayout
       id="sudoku"

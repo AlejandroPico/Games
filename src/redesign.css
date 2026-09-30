@@ -1504,3 +1504,49 @@ main {
   max-height: calc(100dvh - var(--header-h) - 22px);
   overflow: auto;
 }
+
+/* Every title, including wrapped names, shares the same optical centre. */
+.game-tile .tile-title {
+  text-align: center;
+  padding: 24px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.observation-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.observation-controls > span {
+  font-size: 11px;
+  white-space: nowrap;
+}
+.observation-controls select {
+  width: 72px;
+  padding: 3px;
+  font-size: 11px;
+}
+.game-guide h3 {
+  font-size: 17px;
+  margin: 24px 0 8px;
+}
+.game-guide p {
+  line-height: 1.7;
+  margin: 0;
+  color: var(--muted);
+}
+.game-guide section:first-child h3 {
+  margin-top: 0;
+}
+@media (max-width: 600px) {
+  .observation-controls > span {
+    display: none;
+  }
+  .surface-bar > div:first-child {
+    min-width: 0;
+    font-size: 11px;
+  }
+  .observation-controls select {
+    width: 57px;
+  }
+}

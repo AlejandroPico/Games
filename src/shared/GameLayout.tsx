@@ -1,5 +1,11 @@
 import { type ReactNode, useState } from "react";
-import { Settings2, Info, Bot, Users } from "lucide-react";
+import { Settings2, CircleHelp, Bot, Users } from "lucide-react";
+import {
+  useObservation,
+  ObservationChoice,
+  ObservationControls,
+} from "./Observation";
+import GameGuide from "./GameGuide";
 import { games, type GameId } from "../games/registry";
 import Overlay from "./Overlay";
 import QuickRestart from "./QuickRestart";
@@ -18,6 +24,7 @@ type Props = {
   menu?: ReactNode;
 };
 export default function GameLayout(p: Props) {
+  const observation = useObservation();
   const game = games.find((g) => g.id === p.id)!;
   const [rules, setRules] = useState(false);
   const restart = () => {
@@ -31,8 +38,15 @@ export default function GameLayout(p: Props) {
         aria-label={"Mesa de " + game.name}
       >
         <div className="surface-bar">
-          <div role="status">{p.started ? p.status : "Elige cómo jugar"}</div>
+          <div role="status">
+            {p.started
+              ? observation.watching && observation.paused
+                ? "En pausa · " + p.status
+                : p.status
+              : "Elige cómo jugar"}
+          </div>
           <div>
+            {p.started && <ObservationControls />}
             {p.stats}
             <button
               className="icon-button"
@@ -46,13 +60,17 @@ export default function GameLayout(p: Props) {
               aria-label="Cómo jugar"
               onClick={() => setRules(true)}
             >
-              <Info size={20} />
+              <CircleHelp size={20} />
             </button>
           </div>
         </div>
-        <div className="play-area">{p.children}</div>
+        <div className="play-area" inert={observation.watching}>
+          {p.children}
+        </div>
         {p.started && p.controls && (
-          <div className="surface-controls">{p.controls}</div>
+          <div className="surface-controls" inert={observation.watching}>
+            {p.controls}
+          </div>
         )}
         {p.started && <QuickRestart onRestart={restart} />}
         {!p.started && (
@@ -60,20 +78,43 @@ export default function GameLayout(p: Props) {
             title="Ajustes de partida"
             onClose={() => (location.hash = "")}
           >
-            {p.setMode && (
+            {p.setMode ? (
               <div className="mode-selector">
                 <button
-                  className={p.mode === "ai" ? "selected" : ""}
-                  onClick={() => p.setMode!("ai")}
+                  className={
+                    !observation.watching && p.mode === "ai" ? "selected" : ""
+                  }
+                  onClick={() => {
+                    observation.setWatching(false);
+                    p.setMode!("ai");
+                  }}
                 >
                   <Bot size={20} /> Contra la IA
                 </button>
                 <button
-                  className={p.mode === "local" ? "selected" : ""}
-                  onClick={() => p.setMode!("local")}
+                  className={
+                    !observation.watching && p.mode === "local"
+                      ? "selected"
+                      : ""
+                  }
+                  onClick={() => {
+                    observation.setWatching(false);
+                    p.setMode!("local");
+                  }}
                 >
-                  <Users size={20} /> Dos jugadores
+                  <Users size={20} /> Jugadores locales
                 </button>
+                <ObservationChoice />
+              </div>
+            ) : (
+              <div className="mode-selector">
+                <button
+                  className={!observation.watching ? "selected" : ""}
+                  onClick={() => observation.setWatching(false)}
+                >
+                  Jugar
+                </button>
+                <ObservationChoice />
               </div>
             )}
             {p.menu}
@@ -84,7 +125,7 @@ export default function GameLayout(p: Props) {
         )}
         {rules && (
           <Overlay title="Cómo jugar" onClose={() => setRules(false)}>
-            <p className="rules-copy">{p.rules}</p>
+            <GameGuide id={p.id} summary={p.rules} />
           </Overlay>
         )}
       </section>

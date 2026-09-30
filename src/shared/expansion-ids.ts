@@ -1,0 +1,15 @@
+export const expansionIds = [
+  "el-ahorcado",
+  "cruzapalabras",
+  "basta-tutti-frutti",
+  "adivina-la-palabra",
+  "cajas-timbiriche-dots-and-boxes",
+  "gomoku",
+  "palabras-encadenadas",
+  "conecta-5-pente",
+  "el-diccionario",
+  "hex",
+  "sprouts-brotes",
+  "colonizadores",
+  "backgammon",
+];

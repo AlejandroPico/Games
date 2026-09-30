@@ -25,7 +25,20 @@ export type PlayableGameId =
   | "mahjong-solitario"
   | "yahtzee-la-generala"
   | "mastermind"
-  | "quarto";
+  | "quarto"
+  | "el-ahorcado"
+  | "cruzapalabras"
+  | "basta-tutti-frutti"
+  | "adivina-la-palabra"
+  | "cajas-timbiriche-dots-and-boxes"
+  | "gomoku"
+  | "palabras-encadenadas"
+  | "conecta-5-pente"
+  | "el-diccionario"
+  | "hex"
+  | "sprouts-brotes"
+  | "colonizadores"
+  | "backgammon";
 export type GameId = PlayableGameId | (typeof roadmapGames)[number]["id"];
 export interface GameInfo {
   id: GameId;
@@ -39,6 +52,55 @@ export interface GameInfo {
   color: string;
 }
 const enabledGames: Record<string, Partial<GameInfo>> = {
+  "el-ahorcado": { name: "El Ahorcado", players: "1 jugador", ready: true },
+  cruzapalabras: {
+    name: "CruzaPalabras",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+  "basta-tutti-frutti": {
+    name: "Basta / Tutti Frutti",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+  "adivina-la-palabra": {
+    name: "Adivina la Palabra",
+    players: "1 jugador",
+    ready: true,
+  },
+  "cajas-timbiriche-dots-and-boxes": {
+    name: "Cajas / Timbiriche",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+  gomoku: { name: "Gomoku", players: "1–2 jugadores", ready: true },
+  "palabras-encadenadas": {
+    name: "Palabras Encadenadas",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+  "conecta-5-pente": {
+    name: "Conecta 5 / Pente",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+  "el-diccionario": {
+    name: "El Diccionario",
+    players: "1–4 jugadores",
+    ready: true,
+  },
+  hex: { name: "Hex", players: "1–2 jugadores", ready: true },
+  "sprouts-brotes": {
+    name: "Sprouts / Brotes",
+    players: "1–2 jugadores",
+    ready: true,
+  },
+  colonizadores: {
+    name: "Colonizadores",
+    players: "1–4 jugadores",
+    ready: true,
+  },
+  backgammon: { name: "Backgammon", players: "1–2 jugadores", ready: true },
   "damas-internacionales": {
     name: "Damas internacionales",
     players: "1–2 jugadores",

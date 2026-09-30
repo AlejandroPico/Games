@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useObservation } from "../../shared/Observation";
+import { useAI } from "../../shared/useAI";
+import Worker from "./ai.worker?worker";
+import { publicKey } from "./autoplay";
+import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import CardColumns from "../../shared/CardColumns";
 import { usePieceDrag } from "../../shared/usePieceDrag";
@@ -12,6 +16,8 @@ import {
   type Source,
 } from "./rules";
 export default function Spider() {
+  const { watching } = useObservation();
+  const [visited, setVisited] = useState<string[]>([]);
   const [state, setState] = useState(() => initial()),
     [suits, setSuits] = useState<1 | 2 | 4>(1),
     [started, setStarted] = useState(false),
@@ -25,6 +31,16 @@ export default function Spider() {
     setSelected(null);
     setMessage("");
   };
+  const input = useMemo(() => ({ state, visited }), [state, visited]);
+  useAI(Worker, input, started && watching && !win, (n: State | null) => {
+    if (n) {
+      setVisited((v) => [...v, publicKey(state)].slice(-1500));
+      update(n);
+    } else
+      setMessage(
+        "La IA se ha detenido: no encuentra una continuación nueva. Puedes iniciar otra partida.",
+      );
+  });
   const place = (pile: number) => {
     if (!selected) return;
     const n = move(state, selected, pile);
@@ -59,10 +75,12 @@ export default function Spider() {
       id="solitario-spider"
       started={started}
       onStart={() => {
+        setVisited([]);
         setState(initial(suits));
         setStarted(true);
       }}
       onReset={() => {
+        setVisited([]);
         setStarted(false);
         setSelected(null);
         setHistory([]);

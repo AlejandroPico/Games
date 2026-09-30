@@ -1,3 +1,4 @@
+import ExpansionArt, { expansionIds } from "./shared/ExpansionArt";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
@@ -17,6 +18,7 @@ import { Chess } from "chess.js";
 import { games, type GameId } from "./games/registry";
 import Board3D from "./games/chess/Board3D";
 import GameBoundary from "./shared/GameBoundary";
+import { ObservationProvider } from "./shared/Observation";
 import Overlay from "./shared/Overlay";
 import AutoThemeIcon from "./shared/AutoThemeIcon";
 import RoadmapArt from "./shared/RoadmapArt";
@@ -29,6 +31,19 @@ import {
 const ChessGame = lazy(() => import("./games/chess/ChessGame"));
 const ConnectFour = lazy(() => import("./games/connect-four/ConnectFour"));
 const extraGames: Partial<Record<GameId, ReturnType<typeof lazy>>> = {
+  "el-ahorcado": lazy(() => import("./games/hangman/Hangman")),
+  cruzapalabras: lazy(() => import("./games/crosswords/Crosswords")),
+  "basta-tutti-frutti": lazy(() => import("./games/basta/Basta")),
+  "adivina-la-palabra": lazy(() => import("./games/word-guess/WordGuess")),
+  "cajas-timbiriche-dots-and-boxes": lazy(() => import("./games/boxes/Boxes")),
+  gomoku: lazy(() => import("./games/gomoku/Gomoku")),
+  "palabras-encadenadas": lazy(() => import("./games/word-chain/WordChain")),
+  "conecta-5-pente": lazy(() => import("./games/pente/Pente")),
+  "el-diccionario": lazy(() => import("./games/dictionary/Dictionary")),
+  hex: lazy(() => import("./games/hex/Hex")),
+  "sprouts-brotes": lazy(() => import("./games/sprouts/Sprouts")),
+  colonizadores: lazy(() => import("./games/colonizers/Colonizers")),
+  backgammon: lazy(() => import("./games/backgammon/Backgammon")),
   "tic-tac-toe": lazy(() => import("./games/tic-tac-toe/TicTacToe")),
   reversi: lazy(() => import("./games/reversi/Reversi")),
   checkers: lazy(() => import("./games/checkers/Checkers")),
@@ -394,87 +409,95 @@ export default function App() {
       </header>
       <main className={game ? "game-main" : "collection-main"}>
         <GameBoundary key={active}>
-          {active === "chess" ? (
-            <Suspense
-              fallback={<div className="loading">Cargando ajedrez…</div>}
-            >
-              <ChessGame night={theme === "night"} />
-            </Suspense>
-          ) : active === "connect-four" ? (
-            <Suspense
-              fallback={<div className="loading">Cargando Conecta 4…</div>}
-            >
-              <ConnectFour />
-            </Suspense>
-          ) : ExtraGame ? (
-            <Suspense fallback={<div className="loading">Cargando juego…</div>}>
-              <ExtraGame />
-            </Suspense>
-          ) : (
-            <section className="collection" aria-label="Colección de juegos">
-              {(query || categories.length > 0) && (
-                <div className="active-filters">
-                  <span>
-                    Resultados{query ? ' · "' + query + '"' : ""}
-                    {categories.length ? " · " + categories.join(", ") : ""}
-                  </span>
-                  <button
-                    className="text-button"
-                    onClick={() => {
-                      setQuery("");
-                      setCategories([]);
-                    }}
-                  >
-                    Limpiar filtros <X size={14} />
-                  </button>
-                </div>
-              )}
-              <div className="game-grid">
-                {shown.map((g) => (
-                  <button
-                    key={g.id}
-                    className={
-                      "game-tile " + g.color + (!g.ready ? " unavailable" : "")
-                    }
-                    disabled={!g.ready}
-                    onClick={() => {
-                      if (g.ready) location.hash = g.id;
-                    }}
-                    aria-label={(g.ready ? "Jugar a " : "Pendiente: ") + g.name}
-                  >
-                    <div className="tile-art">
-                      {g.id === "chess" ? (
-                        <Board3D
-                          chess={preview}
-                          night={theme === "night"}
-                          decorative
-                        />
-                      ) : g.ready ? (
-                        <GameArt id={g.id} />
-                      ) : (
-                        <RoadmapArt id={g.id} category={g.category} />
-                      )}
-                    </div>
-                    {g.ready && (
-                      <span className="tile-players" title={g.players}>
-                        <Users size={14} />
-                        <span>
-                          {g.players
-                            .replace(" jugadores", "")
-                            .replace(" jugador", "")}
+          <ObservationProvider>
+            {active === "chess" ? (
+              <Suspense
+                fallback={<div className="loading">Cargando ajedrez…</div>}
+              >
+                <ChessGame night={theme === "night"} />
+              </Suspense>
+            ) : active === "connect-four" ? (
+              <Suspense
+                fallback={<div className="loading">Cargando Conecta 4…</div>}
+              >
+                <ConnectFour />
+              </Suspense>
+            ) : ExtraGame ? (
+              <Suspense
+                fallback={<div className="loading">Cargando juego…</div>}
+              >
+                <ExtraGame />
+              </Suspense>
+            ) : (
+              <section className="collection" aria-label="Colección de juegos">
+                {(query || categories.length > 0) && (
+                  <div className="active-filters">
+                    <span>
+                      Resultados{query ? ' · "' + query + '"' : ""}
+                      {categories.length ? " · " + categories.join(", ") : ""}
+                    </span>
+                    <button
+                      className="text-button"
+                      onClick={() => {
+                        setQuery("");
+                        setCategories([]);
+                      }}
+                    >
+                      Limpiar filtros <X size={14} />
+                    </button>
+                  </div>
+                )}
+                <div className="game-grid">
+                  {shown.map((g) => (
+                    <button
+                      key={g.id}
+                      className={
+                        "game-tile " +
+                        g.color +
+                        (!g.ready ? " unavailable" : "")
+                      }
+                      disabled={!g.ready}
+                      onClick={() => {
+                        if (g.ready) location.hash = g.id;
+                      }}
+                      aria-label={
+                        (g.ready ? "Jugar a " : "Pendiente: ") + g.name
+                      }
+                    >
+                      <div className="tile-art">
+                        {g.id === "chess" ? (
+                          <Board3D
+                            chess={preview}
+                            night={theme === "night"}
+                            decorative
+                          />
+                        ) : g.ready ? (
+                          <GameArt id={g.id} />
+                        ) : (
+                          <RoadmapArt id={g.id} category={g.category} />
+                        )}
+                      </div>
+                      {g.ready && (
+                        <span className="tile-players" title={g.players}>
+                          <Users size={14} />
+                          <span>
+                            {g.players
+                              .replace(" jugadores", "")
+                              .replace(" jugador", "")}
+                          </span>
                         </span>
-                      </span>
-                    )}
-                    <span className="tile-title">{g.name}</span>
-                    <span className="tile-category">{g.category}</span>
-                  </button>
-                ))}
-              </div>
-              {!shown.length && (
-                <p className="empty-state">No hay juegos con esos filtros.</p>
-              )}
-            </section>
-          )}
+                      )}
+                      <span className="tile-title">{g.name}</span>
+                      <span className="tile-category">{g.category}</span>
+                    </button>
+                  ))}
+                </div>
+                {!shown.length && (
+                  <p className="empty-state">No hay juegos con esos filtros.</p>
+                )}
+              </section>
+            )}
+          </ObservationProvider>
         </GameBoundary>
       </main>
       {panel === "about" && (
@@ -552,6 +575,7 @@ export default function App() {
 }
 
 function GameArt({ id }: { id: GameId }) {
+  if (expansionIds.includes(id)) return <ExpansionArt id={id} />;
   if (newGameIds.includes(id)) return <NewGameArt id={id} />;
   if (
     ![

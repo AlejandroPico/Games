@@ -1,5 +1,8 @@
+import { useAI } from "../../shared/useAI";
+import Worker from "./ai.worker?worker";
+import { useObservation } from "../../shared/Observation";
 import GameLayout from "../../shared/GameLayout";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,18 +13,25 @@ import {
 } from "lucide-react";
 import { emptyGrid, drop, winningLine, type Player } from "./rules";
 export default function ConnectFour() {
+  const { watching } = useObservation();
   const [grid, setGrid] = useState(emptyGrid),
     [mode, setMode] = useState<"ai" | "local">("ai"),
     [turn, setTurn] = useState<Player>(1),
     [playing, setPlaying] = useState(false),
-    [thinking, setThinking] = useState(false),
     [difficulty, setDifficulty] = useState(5),
     [moves, setMoves] = useState<number[][][]>([]);
   const win = winningLine(grid),
     draw = !win && grid[0].every(Boolean),
     over = Boolean(win || draw);
   const play = (col: number) => {
-    if (!playing || over || thinking || (mode === "ai" && turn === 2)) return;
+    if (
+      !playing ||
+      over ||
+      thinking ||
+      watching ||
+      (mode === "ai" && turn === 2)
+    )
+      return;
     const next = drop(grid, col, turn);
     if (next) {
       setMoves((m) => [...m, grid]);
@@ -29,41 +39,27 @@ export default function ConnectFour() {
       setTurn(turn === 1 ? 2 : 1);
     }
   };
-  useEffect(() => {
-    if (!playing || mode !== "ai" || turn !== 2 || over) return;
-    const worker = new Worker(new URL("./ai.worker.ts", import.meta.url), {
-      type: "module",
-    });
-    setThinking(true);
-    worker.onmessage = (e) => {
-      const next = drop(grid, e.data, 2);
+  const input = useMemo(
+    () => ({ grid, depth: difficulty, turn }),
+    [grid, difficulty, turn],
+  );
+  const { busy: thinking, error } = useAI(
+    Worker,
+    input,
+    playing && !over && (watching || (mode === "ai" && turn === 2)),
+    (col: number) => {
+      const next = drop(grid, col, turn);
       if (next) {
         setMoves((m) => [...m, grid]);
         setGrid(next);
-        setTurn(1);
+        setTurn(turn === 1 ? 2 : 1);
       }
-      setThinking(false);
-    };
-    worker.onerror = () => {
-      const col = grid[0].findIndex((v) => !v),
-        next = drop(grid, col, 2);
-      if (next) {
-        setMoves((m) => [...m, grid]);
-        setGrid(next);
-        setTurn(1);
-      }
-      setThinking(false);
-    };
-    worker.postMessage({ grid, depth: difficulty });
-    return () => {
-      worker.terminate();
-    };
-  }, [grid, mode, turn, playing, over, difficulty]);
+    },
+  );
   const start = () => {
     setGrid(emptyGrid());
     setTurn(1);
     setPlaying(true);
-    setThinking(false);
     setMoves([]);
   };
   const undo = () => {
@@ -72,7 +68,6 @@ export default function ConnectFour() {
     setGrid(moves[Math.max(0, moves.length - count)]);
     setMoves((m) => m.slice(0, -count));
     setTurn(mode === "ai" ? 1 : turn === 1 ? 2 : 1);
-    setThinking(false);
   };
   return (
     <GameLayout
@@ -83,20 +78,21 @@ export default function ConnectFour() {
       mode={mode}
       setMode={setMode}
       status={
-        win
+        error ||
+        (win
           ? "Gana " +
             (win.player === 1
-              ? mode === "ai"
+              ? mode === "ai" && !watching
                 ? "el jugador"
                 : "el jugador 1"
-              : mode === "ai"
+              : mode === "ai" && !watching
                 ? "la IA"
                 : "el jugador 2")
           : draw
             ? "Empate"
             : thinking
               ? "La IA está pensando…"
-              : "Turno de " + (turn === 1 ? "rojas" : "doradas")
+              : "Turno de " + (turn === 1 ? "rojas" : "doradas"))
       }
       menu={
         mode === "ai" && (

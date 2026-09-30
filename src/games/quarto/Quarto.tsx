@@ -1,3 +1,4 @@
+import { useObservation } from "../../shared/Observation";
 import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
@@ -5,13 +6,15 @@ import Worker from "./ai.worker?worker";
 import QuartoPiece from "./QuartoPiece";
 import { initial, apply, pieceName, type Action } from "./rules";
 export default function Quarto() {
+  const { watching } = useObservation();
   const [state, setState] = useState(() => initial()),
     [started, setStarted] = useState(false),
     [mode, setMode] = useState<"ai" | "local">("ai"),
     [automatic, setAutomatic] = useState(true),
     [message, setMessage] = useState("");
   const over = state.winner !== null,
-    canPlay = started && !over && !(mode === "ai" && state.turn === 2);
+    canPlay =
+      started && !over && !(watching || (mode === "ai" && state.turn === 2));
   const move = (a: Action) => {
     const n = apply(state, a);
     if (n) {
@@ -22,7 +25,7 @@ export default function Quarto() {
   const { busy, error } = useAI(
     Worker,
     state,
-    started && mode === "ai" && state.turn === 2 && !over,
+    started && (watching || (mode === "ai" && state.turn === 2)) && !over,
     (a: Action | null) => {
       if (a) move(a);
     },

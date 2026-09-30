@@ -100,14 +100,14 @@ function minimax(
   }
   return best;
 }
-export function bestMove(grid: Grid, depth = 5): number {
-  let best = -Infinity,
+export function bestMove(grid: Grid, depth = 5, player: Player = 2): number {
+  let best = player === 2 ? -Infinity : Infinity,
     column = -1;
   for (const c of order) {
-    const next = drop(grid, c, 2);
+    const next = drop(grid, c, player);
     if (!next) continue;
-    const score = minimax(next, depth - 1, false, -Infinity, Infinity);
-    if (score > best) {
+    const score = minimax(next, depth - 1, player === 1, -Infinity, Infinity);
+    if (player === 2 ? score > best : score < best) {
       best = score;
       column = c;
     }

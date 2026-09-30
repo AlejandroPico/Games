@@ -1,9 +1,11 @@
+import { useObservation, useAutoplay } from "../../shared/Observation";
 import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
 import AIWorker from "./ai.worker?worker";
 import { initial, play, pass, group, score, type State } from "./rules";
 export default function GoGame() {
+  const { watching } = useObservation();
   const [size, setSize] = useState(9),
     [state, setState] = useState(() => initial()),
     [started, setStarted] = useState(false),
@@ -14,7 +16,9 @@ export default function GoGame() {
   const { busy, error } = useAI<State, number | null>(
     AIWorker,
     state,
-    started && mode === "ai" && state.turn === 2 && state.phase === "play",
+    started &&
+      (watching || (mode === "ai" && state.turn === 2)) &&
+      state.phase === "play",
     (i) => setState((s) => (i === null ? pass(s) : play(s, i) || pass(s))),
   );
   const result = score(state, dead),
@@ -24,7 +28,8 @@ export default function GoGame() {
       !started ||
       state.phase === "over" ||
       busy ||
-      (mode === "ai" && state.turn === 2 && state.phase === "play")
+      ((watching || (mode === "ai" && state.turn === 2)) &&
+        state.phase === "play")
     )
       return;
     if (state.phase === "scoring") {
@@ -46,12 +51,13 @@ export default function GoGame() {
       setNotice("Jugada ilegal: ocupación, suicidio o repetición del tablero.");
   };
   const confirm = () => {
-    if (mode === "ai" || approved.length === 1) {
+    if (watching || mode === "ai" || approved.length === 1) {
       setState((s) => ({ ...s, phase: "over" }));
       return;
     }
     setApproved([1]);
   };
+  useAutoplay(started && watching && state.phase === "scoring", state, confirm);
   return (
     <GameLayout
       id="go"
@@ -105,7 +111,7 @@ export default function GoGame() {
         state.phase === "play" ? (
           <button
             className="secondary"
-            disabled={busy || (mode === "ai" && state.turn === 2)}
+            disabled={busy || watching || (mode === "ai" && state.turn === 2)}
             onClick={() => {
               setState(pass(state));
               setNotice("");

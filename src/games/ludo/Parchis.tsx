@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useObservation, useAutoplay } from "../../shared/Observation";
+import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import {
   initial,
@@ -47,23 +48,19 @@ function die() {
   return (n[0] % 6) + 1;
 }
 export default function Parchis() {
+  const { watching } = useObservation();
   const [players, setPlayers] = useState(4),
     [humans, setHumans] = useState(1),
     [state, setState] = useState(() => initial()),
     [started, setStarted] = useState(false);
-  const ai = started && state.turn >= humans && state.phase !== "over",
+  const ai =
+      started && (watching || state.turn >= humans) && state.phase !== "over",
     legal = legalMoves(state);
-  useEffect(() => {
-    if (!ai) return;
-    const timer = setTimeout(
-      () =>
-        setState((s) =>
-          s.phase === "roll" ? roll(s, die()) : move(s, bestMove(s)!),
-        ),
-      600,
-    );
-    return () => clearTimeout(timer);
-  }, [state, ai]);
+  useAutoplay(ai, state, () =>
+    setState((s) =>
+      s.phase === "roll" ? roll(s, die()) : move(s, bestMove(s)!),
+    ),
+  );
   const label = names[colorIndex(state.turn, state.players)];
   return (
     <GameLayout

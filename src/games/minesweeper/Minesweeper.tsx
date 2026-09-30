@@ -1,8 +1,10 @@
+import { useObservation, useAutoplay } from "../../shared/Observation";
 import { useEffect, useState } from "react";
 import { Flag, Lightbulb, MousePointer2 } from "lucide-react";
 import GameLayout from "../../shared/GameLayout";
 import { empty, generate, reveal, chord, won, hint } from "./rules";
 export default function Minesweeper() {
+  const { watching } = useObservation();
   const [size, setSize] = useState(9),
     [mines, setMines] = useState(10),
     [cells, setCells] = useState(() => empty(9)),
@@ -69,6 +71,23 @@ export default function Minesweeper() {
       );
     }
   };
+  useAutoplay(started && watching && !over, cells, () => {
+    if (!generated) {
+      help();
+      return;
+    }
+    const h = hint(cells, size);
+    if (h) {
+      if (h.type === "mine") flag(h.index);
+      else setCells(reveal(cells, h.index, size));
+      return;
+    }
+    const options = cells.flatMap((c, i) => (!c.open && !c.flag ? [i] : []));
+    if (options.length) {
+      open(options[Math.floor(Math.random() * options.length)]);
+      setMessage("Sin deducción segura: la IA asumió un riesgo.");
+    }
+  });
   return (
     <GameLayout
       id="minesweeper"

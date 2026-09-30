@@ -14,7 +14,7 @@ export function winner(b: Board) {
   const line = lines.find((l) => b[l[0]] && l.every((i) => b[i] === b[l[0]]));
   return line ? { mark: b[line[0]]!, line } : null;
 }
-export function bestMove(b: Board): number {
+export function bestMove(b: Board, player: Mark = "O"): number {
   function search(board: Board, turn: Mark, depth: number): number {
     const w = winner(board);
     if (w) return w.mark === "O" ? 10 - depth : depth - 10;
@@ -30,13 +30,13 @@ export function bestMove(b: Board): number {
     return value;
   }
   let move = -1,
-    score = -Infinity;
+    score = player === "O" ? -Infinity : Infinity;
   for (const i of [4, 0, 2, 6, 8, 1, 3, 5, 7]) {
     if (b[i]) continue;
     const next = [...b];
-    next[i] = "O";
-    const value = search(next, "X", 0);
-    if (value > score) {
+    next[i] = player;
+    const value = search(next, player === "O" ? "X" : "O", 0);
+    if (player === "O" ? value > score : value < score) {
       score = value;
       move = i;
     }
@@ -107,12 +107,12 @@ export function bestContinuousMove(s: ContinuousState, depth = 8): number {
     return value;
   }
   let chosen = -1,
-    value = -Infinity;
+    value = s.turn === "O" ? -Infinity : Infinity;
   for (const i of [4, 0, 2, 6, 8, 1, 3, 5, 7]) {
     const next = placeMark(s, i);
     if (!next) continue;
     const v = search(next, depth - 1, new Set([key(s)]));
-    if (v > value) {
+    if (s.turn === "O" ? v > value : v < value) {
       value = v;
       chosen = i;
     }

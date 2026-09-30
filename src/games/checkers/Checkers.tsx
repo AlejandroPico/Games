@@ -1,3 +1,4 @@
+import { useObservation } from "../../shared/Observation";
 import AIWorker from "./ai.worker?worker";
 import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
@@ -5,6 +6,7 @@ import { usePieceDrag } from "../../shared/usePieceDrag";
 import { useAI } from "../../shared/useAI";
 import { initial, moves, type Move } from "./rules";
 export default function Checkers() {
+  const { watching } = useObservation();
   const [board, setBoard] = useState(initial),
     [turn, setTurn] = useState(1),
     [started, setStarted] = useState(false),
@@ -25,10 +27,10 @@ export default function Checkers() {
     setQuiet(m.captures.length || v <= 2 ? 0 : quiet + 1);
     setSeen((s) => [...s, m.board.join(",") + nextTurn]);
   };
-  const { busy, error } = useAI<number[], Move | null>(
+  const { busy, error } = useAI<{ board: number[]; turn: number }, Move | null>(
     AIWorker,
-    board,
-    started && mode === "ai" && turn === 2 && !over,
+    useMemo(() => ({ board, turn }), [board, turn]),
+    started && (watching || (mode === "ai" && turn === 2)) && !over,
     (m) => {
       if (m) apply(m);
     },
@@ -66,7 +68,7 @@ export default function Checkers() {
       started &&
       !over &&
       !busy &&
-      !(mode === "ai" && turn === 2) &&
+      !(watching || (mode === "ai" && turn === 2)) &&
       (path.length > 1
         ? path.at(-1) === i
         : legal.some((m) => m.path[0] === i)),
@@ -129,7 +131,13 @@ export default function Checkers() {
                 ? ", " + (v % 2 ? "roja" : "verde") + (v > 2 ? " coronada" : "")
                 : ", vacía")
             }
-            disabled={!started || over || busy || (mode === "ai" && turn === 2)}
+            disabled={
+              !started ||
+              over ||
+              busy ||
+              watching ||
+              (mode === "ai" && turn === 2)
+            }
             className={(Math.floor(i / 8) + (i % 8)) % 2 ? "dark" : "light"}
             onClick={() => {
               if (!drag.suppressClick()) choose(i);

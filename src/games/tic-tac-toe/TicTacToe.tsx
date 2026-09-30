@@ -1,9 +1,11 @@
+import { useObservation } from "../../shared/Observation";
 import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
 import AIWorker from "./ai.worker?worker";
 import { winner, initialContinuous, placeMark } from "./rules";
 export default function TicTacToe() {
+  const { watching } = useObservation();
   const [state, setState] = useState(initialContinuous),
     [mode, setMode] = useState<"ai" | "local">("ai"),
     [started, setStarted] = useState(false),
@@ -15,7 +17,7 @@ export default function TicTacToe() {
   const { busy, error } = useAI<typeof input, number>(
     AIWorker,
     input,
-    started && mode === "ai" && state.turn === "O" && !over,
+    started && (watching || (mode === "ai" && state.turn === "O")) && !over,
     (i) => setState((s) => placeMark(s, i, continuous) || s),
   );
   return (
@@ -68,6 +70,7 @@ export default function TicTacToe() {
               !started ||
               Boolean(mark) ||
               over ||
+              watching ||
               (mode === "ai" && state.turn === "O")
             }
             className={

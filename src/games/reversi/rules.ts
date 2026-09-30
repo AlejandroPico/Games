@@ -61,7 +61,11 @@ export function play(b: Board, r: number, c: number, p: number): Board | null {
 export function count(b: Board, p: number) {
   return b.flat().filter((v) => v === p).length;
 }
-export function bestMove(b: Board, depth = 4): [number, number] | null {
+export function bestMove(
+  b: Board,
+  depth = 4,
+  player = 2,
+): [number, number] | null {
   const weights = [
     [100, -25, 10, 5, 5, 10, -25, 100],
     [-25, -45, -2, -2, -2, -2, -45, -25],
@@ -109,10 +113,16 @@ export function bestMove(b: Board, depth = 4): [number, number] | null {
     return value;
   }
   let choice: [number, number] | null = null,
-    score = -Infinity;
-  for (const [r, c] of moves(b, 2)) {
-    const s = search(play(b, r, c, 2)!, 1, depth - 1, -Infinity, Infinity);
-    if (s > score) {
+    score = player === 2 ? -Infinity : Infinity;
+  for (const [r, c] of moves(b, player)) {
+    const s = search(
+      play(b, r, c, player)!,
+      3 - player,
+      depth - 1,
+      -Infinity,
+      Infinity,
+    );
+    if (player === 2 ? s > score : s < score) {
       score = s;
       choice = [r, c];
     }

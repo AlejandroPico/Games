@@ -1,3 +1,4 @@
+import { useObservation } from "../../shared/Observation";
 import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import Overlay from "../../shared/Overlay";
@@ -18,6 +19,7 @@ import {
   type Move,
 } from "./rules";
 export default function Shogi() {
+  const { watching } = useObservation();
   const [state, setState] = useState(initial),
     [started, setStarted] = useState(false),
     [mode, setMode] = useState<"ai" | "local">("ai"),
@@ -39,13 +41,19 @@ export default function Shogi() {
   const { busy, error } = useAI(
     Worker,
     input,
-    started && mode === "ai" && state.turn === 2 && !over && !decision,
+    started &&
+      (watching || (mode === "ai" && state.turn === 2)) &&
+      !over &&
+      !decision,
     (m: Move | null) => {
       if (m) commit(m);
     },
   );
   const canPlay =
-    started && !over && !busy && !(mode === "ai" && state.turn === 2);
+    started &&
+    !over &&
+    !busy &&
+    !(watching || (mode === "ai" && state.turn === 2));
   const select = (i: number) => {
     if (!canPlay) return;
     const candidates = options.filter(

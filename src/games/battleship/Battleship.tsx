@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useObservation, useAutoplay } from "../../shared/Observation";
+import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import GameLayout from "../../shared/GameLayout";
 import { createFleet, fire, defeated, target, lengths } from "./rules";
 export default function Battleship() {
+  const { watching } = useObservation();
   const [own, setOwn] = useState(createFleet),
     [enemy, setEnemy] = useState(createFleet),
     [shots, setShots] = useState<number[]>(Array(100).fill(0)),
@@ -13,32 +15,35 @@ export default function Battleship() {
   const won = defeated(enemy, shots),
     lost = defeated(own, received),
     over = won || lost;
-  useEffect(() => {
-    if (!started || turn !== 2 || over) return;
-    const timer = setTimeout(() => {
+  useAutoplay(
+    started && !over && (watching || turn === 2),
+    turn === 1 ? shots : received,
+    () => {
+      const fleet = turn === 1 ? enemy : own,
+        visible = turn === 1 ? shots : received;
       const remaining = lengths.filter(
         (_, id) =>
-          !own
+          !fleet
             .map((v, i) => (v === id ? i : -1))
             .filter((i) => i !== -1)
-            .every((i) => received[i] === 3),
+            .every((i) => visible[i] === 3),
       );
-      const index = target(received, remaining),
-        result = fire(own, received, index);
+      const result = fire(fleet, visible, target(visible, remaining));
       if (result) {
-        setReceived(result.shots);
+        if (turn === 1) setShots(result.shots);
+        else setReceived(result.shots);
+        setTurn(3 - turn);
         setMessage(
           result.sunk !== null
-            ? "La IA ha hundido un barco tuyo."
+            ? "Barco hundido."
             : result.hit
-              ? "La IA ha tocado tu flota."
-              : "La IA dispara al agua.",
+              ? "Tocado."
+              : "Agua.",
         );
-        setTurn(1);
       }
-    }, 450);
-    return () => clearTimeout(timer);
-  }, [started, turn, over, received, own]);
+    },
+    450,
+  );
   const shoot = (i: number) => {
     if (turn !== 1 || !started || over) return;
     const result = fire(enemy, shots, i);

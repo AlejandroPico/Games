@@ -68,7 +68,7 @@ export function moves(b: Board, p: number): Move[] {
     }
   return result;
 }
-export function bestMove(b: Board, depth = 5): Move | null {
+export function bestMove(b: Board, depth = 5, player = 2): Move | null {
   function evaluate(board: Board) {
     return board.reduce(
       (score, v, i) =>
@@ -109,10 +109,10 @@ export function bestMove(b: Board, depth = 5): Move | null {
     return best;
   }
   let chosen: Move | null = null,
-    value = -Infinity;
-  for (const m of moves(b, 2)) {
-    const score = search(m.board, 1, depth - 1, -Infinity, Infinity);
-    if (score > value) {
+    value = player === 2 ? -Infinity : Infinity;
+  for (const m of moves(b, player)) {
+    const score = search(m.board, 3 - player, depth - 1, -Infinity, Infinity);
+    if (player === 2 ? score > value : score < value) {
       value = score;
       chosen = m;
     }

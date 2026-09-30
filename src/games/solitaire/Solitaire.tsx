@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useObservation } from "../../shared/Observation";
+import { useAI } from "../../shared/useAI";
+import Worker from "./ai.worker?worker";
+import { publicKey } from "./autoplay";
+import { useMemo, useState } from "react";
 import { RotateCcw, Lightbulb } from "lucide-react";
 import GameLayout from "../../shared/GameLayout";
 import { usePieceDrag } from "../../shared/usePieceDrag";
@@ -19,6 +23,8 @@ const suits = ["♠", "♥", "♦", "♣"],
   rank = (n: number) =>
     (({ 1: "A", 11: "J", 12: "Q", 13: "K" }) as Record<number, string>)[n] || n;
 export default function Solitaire() {
+  const { watching } = useObservation();
+  const [visited, setVisited] = useState<string[]>([]);
   const [state, setState] = useState<State>(initial),
     [started, setStarted] = useState(false),
     [draw, setDraw] = useState<1 | 3>(1),
@@ -34,6 +40,16 @@ export default function Solitaire() {
     setMessage("");
     setMoves((m) => m + 1);
   };
+  const input = useMemo(() => ({ state, visited }), [state, visited]);
+  useAI(Worker, input, started && watching && !win, (n: State | null) => {
+    if (n) {
+      setVisited((v) => [...v, publicKey(state)].slice(-1500));
+      update(n);
+    } else
+      setMessage(
+        "La IA se ha detenido: no encuentra una continuación nueva. Puedes iniciar otra partida.",
+      );
+  });
   const place = (target: Target) => {
     if (!selected) return;
     const next = move(state, selected, target);
@@ -183,10 +199,12 @@ export default function Solitaire() {
       id="solitaire"
       started={started}
       onStart={() => {
+        setVisited([]);
         setState(initial(draw));
         setStarted(true);
       }}
       onReset={() => {
+        setVisited([]);
         setState(initial(draw));
         setStarted(false);
         setSelected(null);

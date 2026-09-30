@@ -1,3 +1,4 @@
+import { useObservation } from "../../shared/Observation";
 import { useMemo, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
@@ -5,6 +6,7 @@ import { usePieceDrag } from "../../shared/usePieceDrag";
 import Worker from "./ai.worker?worker";
 import { initial, moves, apply, result, owner, type Move } from "./rules";
 export default function InternationalDraughts() {
+  const { watching } = useObservation();
   const [state, setState] = useState(initial),
     [started, setStarted] = useState(false),
     [mode, setMode] = useState<"ai" | "local">("ai"),
@@ -20,7 +22,7 @@ export default function InternationalDraughts() {
   const { busy, error } = useAI(
     Worker,
     input,
-    started && mode === "ai" && state.turn === 2 && !over,
+    started && (watching || (mode === "ai" && state.turn === 2)) && !over,
     (m: Move | null) => {
       if (m) commit(m);
     },
@@ -47,7 +49,10 @@ export default function InternationalDraughts() {
     preview[path.at(-1)!] = state.board[path[0]];
   }
   const canPlay =
-    started && !over && !busy && !(mode === "ai" && state.turn === 2);
+    started &&
+    !over &&
+    !busy &&
+    !(watching || (mode === "ai" && state.turn === 2));
   const drag = usePieceDrag<number>({
     canDrag: (i) =>
       canPlay &&

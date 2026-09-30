@@ -10,7 +10,7 @@ Ideas de la lista original, organizadas para ampliar la colección. Las ya imple
 - [x] **Go (Weiqi)**: Colocación de piedras para rodear territorio y capturar fichas rivales.
 - [x] **Shogi (Ajedrez Japonés)**: Las piezas capturadas se pueden reintroducir en el campo de juego.
 - [x] **Xiangqi (Ajedrez Chino)**: Piezas con movimientos únicos (como el Cañón) cruzando un río central.
-- [ ] **Backgammon**: Movimiento de fichas guiado por dados, bloqueos y retornos a la casilla de salida.
+- [x] **Backgammon**: Movimiento de fichas guiado por dados, bloqueos y retornos a la casilla de salida.
 - [x] **Othello / Reversi**: Volteo de fichas atrapadas entre dos piezas del color contrario.
 - [x] **Mancala (Kalaha)**: Siembra y captura de semillas en pequeños huecos.
 - [ ] **Damas Chinas**: Carrera de salto de piezas sobre un tablero con forma de estrella.
@@ -37,7 +37,7 @@ Ideas de la lista original, organizadas para ampliar la colección. Las ya imple
 
 ## Eurogames
 
-- [ ] **Colonizadores (Estilo Catan)**: Gestión de mano, comercio entre jugadores y construcción de rutas sobre hexágonos.
+- [x] **Colonizadores (Estilo Catan)**: Variante inicial propia: recursos públicos, banco 4:1 y construcción de rutas sobre hexágonos; sin comercio privado ni cartas de desarrollo.
 - [ ] **Tierras de Losetas (Estilo Carcassonne)**: Colocación de losetas cuadradas y control de zonas (caminos, castillos).
 - [ ] **Rutas de Vapor (Estilo ¡Aventureros al tren!)**: Recolección de sets de cartas de colores para reclamar conexiones ferroviarias.
 - [ ] **El Mercado de Joyas (Estilo Splendor)**: Compra de motores de producción (engine building) mediante fichas de recursos.
@@ -127,17 +127,17 @@ Ideas de la lista original, organizadas para ampliar la colección. Las ya imple
 - [x] **Tres en Raya (Tic-Tac-Toe)**: Alinear tres marcas en un entorno de 3x3.
 - [x] **Conecta 4**: Soltar fichas por gravedad en columnas buscando líneas de 4.
 - [x] **Hundir la Flota (Batalla Naval)**: Adivinar coordenadas geográficas en cuadrículas ocultas de 10x10.
-- [ ] **El Ahorcado**: Descubrir palabras letra a letra antes de que se completen los fallos del dibujo.
-- [ ] **CruzaPalabras (Estilo Scrabble)**: Tableros con multiplicadores de puntos donde se forman palabras entrelazadas con letras puntuadas.
-- [ ] **Basta / Tutti Frutti**: Formulario multijugador rápido para escribir categorías (Nombre, Color, País) que empiecen por una letra dada.
-- [ ] **Adivina la Palabra (Estilo Wordle)**: Intentos limitados para adivinar una palabra secreta recibiendo feedback de letras correctas (verde) o descolocadas (amarillo).
-- [ ] **Cajas / Timbiriche (Dots and Boxes)**: Unir puntos con líneas por turnos; el que cierre un cuadrado de 4 lados se lo anota.
-- [ ] **Gomoku**: Alinear cinco piezas consecutivas en un tablero de ajedrez o Go.
-- [ ] **Palabras Encadenadas**: Introducir palabras por turnos que comiencen por la última sílaba de la palabra anterior.
-- [ ] **Conecta 5 (Pente)**: Variante del gomoku con capturas de parejas de fichas del rival.
-- [ ] **El Diccionario (Estilo Fictionary)**: Inventar definiciones falsas para una palabra real desconocida y votar cuál es la verdadera.
-- [ ] **Hex**: Conectar tus dos extremos del tablero de celdas romboidales antes de que el rival conecte los suyos.
-- [ ] **Sprouts (Brotes)**: Juego matemático de dibujar líneas entre puntos sin que se crucen ni acumulen más de 3 conexiones por punto.
+- [x] **El Ahorcado**: Descubrir palabras letra a letra antes de que se completen los fallos del dibujo.
+- [x] **CruzaPalabras (Estilo Scrabble)**: Tableros con multiplicadores de puntos donde se forman palabras entrelazadas con letras puntuadas.
+- [x] **Basta / Tutti Frutti**: Formulario multijugador rápido para escribir categorías (Nombre, Color, País) que empiecen por una letra dada.
+- [x] **Adivina la Palabra (Estilo Wordle)**: Intentos limitados para adivinar una palabra secreta recibiendo feedback de letras correctas (verde) o descolocadas (amarillo).
+- [x] **Cajas / Timbiriche (Dots and Boxes)**: Unir puntos con líneas por turnos; el que cierre un cuadrado de 4 lados se lo anota.
+- [x] **Gomoku**: Alinear cinco piezas consecutivas en un tablero de ajedrez o Go.
+- [x] **Palabras Encadenadas**: Introducir palabras por turnos que comiencen por la última sílaba de la palabra anterior.
+- [x] **Conecta 5 (Pente)**: Variante del gomoku con capturas de parejas de fichas del rival.
+- [x] **El Diccionario (Estilo Fictionary)**: Inventar definiciones falsas para una palabra real desconocida y votar cuál es la verdadera.
+- [x] **Hex**: Conectar tus dos extremos del tablero de celdas romboidales antes de que el rival conecte los suyos.
+- [x] **Sprouts (Brotes)**: Brotes sobre cuadrícula: variante digital finita de conexiones sin cruces y capacidad máxima de tres por punto.
 
 ## Dados
 

@@ -5,5 +5,5 @@ self.onmessage = (
   self.postMessage(
     e.data.continuous
       ? bestContinuousMove(e.data.state)
-      : bestMove(e.data.state.board),
+      : bestMove(e.data.state.board, e.data.state.turn),
   );

@@ -66,10 +66,10 @@ export function bestMove(s: State, depth = 6): number {
     return best;
   }
   let chosen = -1,
-    score = -Infinity;
+    score = s.turn === 2 ? -Infinity : Infinity;
   for (const pit of legal(s)) {
     const n = search(sow(s, pit)!, depth - 1, -Infinity, Infinity);
-    if (n > score) {
+    if (s.turn === 2 ? n > score : n < score) {
       score = n;
       chosen = pit;
     }

@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useObservation, useAutoplay } from "../../shared/Observation";
+import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { deck, choice } from "./rules";
 export default function Memory() {
+  const { watching } = useObservation();
   const [cards, setCards] = useState(deck),
     [matched, setMatched] = useState<number[]>([]),
     [flipped, setFlipped] = useState<number[]>([]),
@@ -18,22 +20,26 @@ export default function Memory() {
     setKnown((k) => ({ ...k, [i]: cards[i] }));
     setFlipped((f) => [...f, i]);
   };
-  useEffect(() => {
-    if (flipped.length !== 2) return;
-    const timer = setTimeout(() => {
+  useAutoplay(
+    started && flipped.length === 2,
+    flipped,
+    () => {
       setRounds((r) => r + 1);
       if (cards[flipped[0]] === cards[flipped[1]]) {
         setMatched((m) => [...m, ...flipped]);
         setScores((s) => s.map((v, i) => (i === turn - 1 ? v + 1 : v)));
-      } else if (mode !== "solo") setTurn((t) => 3 - t);
+      } else if (watching || mode !== "solo") setTurn((t) => 3 - t);
       setFlipped([]);
-    }, 700);
-    return () => clearTimeout(timer);
-  }, [flipped, cards, turn, mode]);
-  useEffect(() => {
-    if (!started || over || mode !== "ai" || turn !== 2 || flipped.length >= 2)
-      return;
-    const timer = setTimeout(() => {
+    },
+    700,
+  );
+  useAutoplay(
+    started &&
+      !over &&
+      (watching || (mode === "ai" && turn === 2)) &&
+      flipped.length < 2,
+    flipped,
+    () => {
       const i = choice(
         known,
         cards
@@ -42,9 +48,9 @@ export default function Memory() {
         flipped[0],
       );
       if (i >= 0) reveal(i);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [started, over, mode, turn, flipped, matched, known, cards]);
+    },
+    400,
+  );
   return (
     <GameLayout
       id="memory"
@@ -75,7 +81,7 @@ export default function Memory() {
       }
       status={
         over
-          ? mode === "solo"
+          ? !watching && mode === "solo"
             ? "¡Todas las parejas encontradas!"
             : scores[0] === scores[1]
               ? "Empate"
