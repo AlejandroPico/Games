@@ -1,18 +1,22 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation } from "../../shared/Observation";
 import AIWorker from "./ai.worker?worker";
-import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
 import { initial, sow, legal, type State } from "./rules";
 export default function Mancala() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai");
+  const [state, setState] = useRoomState("state", initial),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai");
   const { busy, error } = useAI<State, number>(
     AIWorker,
     state,
-    started && (watching || (mode === "ai" && state.turn === 2)) && !state.over,
+    started &&
+      (watching ||
+        room.machine(state.turn - 1, mode === "ai" && state.turn === 2)) &&
+      !state.over,
     (pit) => {
       const next = sow(state, pit);
       if (next) setState(next);
@@ -35,7 +39,7 @@ export default function Mancala() {
         busy ||
         !legal(state).includes(i) ||
         watching ||
-        (mode === "ai" && state.turn === 2)
+        room.machine(state.turn - 1, mode === "ai" && state.turn === 2)
       }
       aria-label={
         "Cuenco " +
@@ -71,6 +75,7 @@ export default function Mancala() {
   );
   return (
     <GameLayout
+      roomTurn={state.turn - 1}
       id="mancala"
       started={started}
       onStart={() => setStarted(true)}

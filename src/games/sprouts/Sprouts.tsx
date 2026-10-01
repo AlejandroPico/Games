@@ -1,18 +1,21 @@
-import { useState } from "react";
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import GameLayout from "../../shared/GameLayout";
 import { useObservation } from "../../shared/Observation";
 import { useAI } from "../../shared/useAI";
 import Worker from "./ai.worker?worker";
 import { initial, route, play } from "./rules";
 export default function Sprouts() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [count, setCount] = useState(3),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [chosen, setChosen] = useState<number[]>([]),
-    [variant, setVariant] = useState(0);
-  const ai = watching || (mode === "ai" && state.turn === 2),
+  const [state, setState] = useRoomState("state", initial),
+    [count, setCount] = useRoomState("count", 3),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [chosen, setChosen] = useRoomState<number[]>("chosen", []),
+    [variant, setVariant] = useRoomState("variant", 0);
+  const ai =
+      watching ||
+      room.machine(state.turn - 1, mode === "ai" && state.turn === 2),
     preview =
       chosen.length === 2 ? route(state, chosen[0], chosen[1], variant) : null;
   const { busy, error } = useAI(
@@ -31,6 +34,7 @@ export default function Sprouts() {
       .join(" ");
   return (
     <GameLayout
+      roomTurn={state.turn - 1}
       id="sprouts-brotes"
       started={started}
       mode={mode}

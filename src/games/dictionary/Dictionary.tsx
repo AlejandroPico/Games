@@ -1,4 +1,8 @@
-import { useState } from "react";
+import {
+  useRoomState,
+  useTableRoom,
+  SeatOptions,
+} from "../../shared/TableRoom";
 import GameLayout from "../../shared/GameLayout";
 import { useObservation, useAutoplay } from "../../shared/Observation";
 import {
@@ -11,13 +15,20 @@ import {
   entry,
 } from "./rules";
 export default function Dictionary() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [players, setPlayers] = useState(3),
-    [started, setStarted] = useState(false),
-    [text, setText] = useState("");
-  const ai = watching || (mode === "ai" && state.turn > 0);
+  const [state, setState] = useRoomState("state", initial),
+    [humans, setHumans] = useRoomState("humans", 1),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [players, setPlayers] = useRoomState("players", 3),
+    [started, setStarted] = useRoomState("started", false),
+    [text, setText] = useRoomState("text", "");
+  const ai =
+    watching ||
+    room.machine(
+      state.turn,
+      mode === "ai" && state.turn >= Math.min(humans, players),
+    );
   useAutoplay(
     started && ai && (state.phase === "bluff" || state.phase === "vote"),
     state,
@@ -45,10 +56,18 @@ export default function Dictionary() {
   );
   return (
     <GameLayout
+      roomTurn={
+        state.phase === "result" || state.phase === "over" ? 0 : state.turn
+      }
+      roomPlayers={players}
+      privateTable={state.phase === "bluff" || state.phase === "vote"}
       id="el-diccionario"
       started={started}
       mode={mode}
-      setMode={setMode}
+      setMode={(m) => {
+        setMode(m);
+        setHumans(m === "local" ? players : 1);
+      }}
       onReset={() => setStarted(false)}
       onStart={() => {
         setState(initial(players));
@@ -56,17 +75,30 @@ export default function Dictionary() {
         setStarted(true);
       }}
       menu={
-        <label className="field-label">
-          Participantes
-          <select
-            value={players}
-            onChange={(e) => setPlayers(Number(e.target.value))}
-          >
-            {[2, 3, 4].map((n) => (
-              <option key={n}>{n}</option>
-            ))}
-          </select>
-        </label>
+        <>
+          {" "}
+          <SeatOptions
+            count={players}
+            mode={watching ? "solo" : mode}
+            humans={Math.min(humans, players)}
+            onHumans={(n) => {
+              setHumans(n);
+              setMode(n === players ? "local" : "ai");
+            }}
+          />
+          <label className="field-label">
+            Participantes
+            <select
+              value={players}
+              disabled={room.online}
+              onChange={(e) => setPlayers(Number(e.target.value))}
+            >
+              {[2, 3, 4].map((n) => (
+                <option key={n}>{n}</option>
+              ))}
+            </select>
+          </label>
+        </>
       }
       status={
         state.phase === "over"

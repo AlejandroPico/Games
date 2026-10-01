@@ -1,5 +1,6 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation, useAutoplay } from "../../shared/Observation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import GameLayout from "../../shared/GameLayout";
 import Overlay from "../../shared/Overlay";
 import { useAI } from "../../shared/useAI";
@@ -19,14 +20,15 @@ import {
   type Move,
 } from "./rules";
 export default function Xiangqi() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [depth, setDepth] = useState(2),
-    [selected, setSelected] = useState<number | null>(null),
-    [outcome, setOutcome] = useState(""),
-    [confirm, setConfirm] = useState(false);
+  const [state, setState] = useRoomState("state", initial),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [depth, setDepth] = useRoomState("depth", 2),
+    [selected, setSelected] = useRoomState<number | null>("selected", null),
+    [outcome, setOutcome] = useRoomState("outcome", ""),
+    [confirm, setConfirm] = useRoomState("confirm", false);
   const options = useMemo(() => legal(state), [state]),
     over = outcome || result(state),
     review = over === "Repetición · revisión",
@@ -42,7 +44,8 @@ export default function Xiangqi() {
     Worker,
     input,
     started &&
-      (watching || (mode === "ai" && state.turn === 2)) &&
+      (watching ||
+        room.machine(state.turn - 1, mode === "ai" && state.turn === 2)) &&
       !over &&
       !confirm,
     (m: Move | null) => {
@@ -53,7 +56,10 @@ export default function Xiangqi() {
     started &&
     !over &&
     !busy &&
-    !(watching || (mode === "ai" && state.turn === 2));
+    !(
+      watching ||
+      room.machine(state.turn - 1, mode === "ai" && state.turn === 2)
+    );
   const select = (i: number) => {
     const m = options.find((m) => m.from === selected && m.to === i);
     if (m) commit(m);
@@ -74,6 +80,7 @@ export default function Xiangqi() {
   });
   return (
     <GameLayout
+      roomTurn={state.turn - 1}
       id="xiangqi-ajedrez-chino"
       started={started}
       onStart={() => setStarted(true)}

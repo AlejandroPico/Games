@@ -1,17 +1,19 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation } from "../../shared/Observation";
 import AIWorker from "./ai.worker?worker";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { usePieceDrag } from "../../shared/usePieceDrag";
 import { useAI } from "../../shared/useAI";
 import { initial, moves, play, count } from "./rules";
 export default function Reversi() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [board, setBoard] = useState(initial),
-    [turn, setTurn] = useState(1),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [passes, setPasses] = useState("");
+  const [board, setBoard] = useRoomState("board", initial),
+    [turn, setTurn] = useRoomState("turn", 1),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [passes, setPasses] = useRoomState("passes", "");
   const legal = useMemo(() => moves(board, turn), [board, turn]);
   const over = !legal.length && !moves(board, 3 - turn).length;
   const place = (r: number, c: number) => {
@@ -34,14 +36,19 @@ export default function Reversi() {
   >(
     AIWorker,
     useMemo(() => ({ board, turn }), [board, turn]),
-    started && (watching || (mode === "ai" && turn === 2)) && !over,
+    started &&
+      (watching || room.machine(turn - 1, mode === "ai" && turn === 2)) &&
+      !over,
     (m) => {
       if (m) place(...m);
     },
   );
   const drag = usePieceDrag<number>({
     canDrag: () =>
-      started && !over && !busy && !(watching || (mode === "ai" && turn === 2)),
+      started &&
+      !over &&
+      !busy &&
+      !(watching || room.machine(turn - 1, mode === "ai" && turn === 2)),
     onDrop: (_source, e) => {
       if (!e) return false;
       const i = Number(e.dataset.drop),
@@ -54,6 +61,7 @@ export default function Reversi() {
   });
   return (
     <GameLayout
+      roomTurn={turn - 1}
       id="reversi"
       started={started}
       onStart={() => setStarted(true)}
@@ -91,7 +99,7 @@ export default function Reversi() {
               over ||
               busy ||
               watching ||
-              (mode === "ai" && turn === 2)
+              room.machine(turn - 1, mode === "ai" && turn === 2)
             }
           >
             <span
@@ -135,7 +143,7 @@ export default function Reversi() {
                 over ||
                 busy ||
                 watching ||
-                (mode === "ai" && turn === 2) ||
+                room.machine(turn - 1, mode === "ai" && turn === 2) ||
                 !legal.some(([rr, cc]) => rr === r && cc === c)
               }
               onClick={() => {

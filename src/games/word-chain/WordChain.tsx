@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import GameLayout from "../../shared/GameLayout";
 import { useObservation, useAutoplay } from "../../shared/Observation";
 import { initial, play, required, legal, choose, concede } from "./rules";
 export default function WordChain() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [started, setStarted] = useState(false),
-    [text, setText] = useState(""),
-    [message, setMessage] = useState("");
+  const [state, setState] = useRoomState("state", initial),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [started, setStarted] = useRoomState("started", false),
+    [text, setText] = useRoomState("text", ""),
+    [message, setMessage] = useRoomState("message", "");
   const over = state.winner !== null,
-    ai = watching || (mode === "ai" && state.turn === 1);
+    ai =
+      watching || room.machine(state.turn, mode === "ai" && state.turn === 1);
   const submit = (w: string) => {
     const n = play(state, w);
     if (n) {
@@ -29,6 +31,7 @@ export default function WordChain() {
   });
   return (
     <GameLayout
+      roomTurn={state.turn}
       id="palabras-encadenadas"
       started={started}
       mode={mode}

@@ -1,20 +1,26 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation } from "../../shared/Observation";
-import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
 import Worker from "./ai.worker?worker";
 import QuartoPiece from "./QuartoPiece";
 import { initial, apply, pieceName, type Action } from "./rules";
 export default function Quarto() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(() => initial()),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [automatic, setAutomatic] = useState(true),
-    [message, setMessage] = useState("");
+  const [state, setState] = useRoomState("state", () => initial()),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [automatic, setAutomatic] = useRoomState("automatic", true),
+    [message, setMessage] = useRoomState("message", "");
   const over = state.winner !== null,
     canPlay =
-      started && !over && !(watching || (mode === "ai" && state.turn === 2));
+      started &&
+      !over &&
+      !(
+        watching ||
+        room.machine(state.turn - 1, mode === "ai" && state.turn === 2)
+      );
   const move = (a: Action) => {
     const n = apply(state, a);
     if (n) {
@@ -25,13 +31,17 @@ export default function Quarto() {
   const { busy, error } = useAI(
     Worker,
     state,
-    started && (watching || (mode === "ai" && state.turn === 2)) && !over,
+    started &&
+      (watching ||
+        room.machine(state.turn - 1, mode === "ai" && state.turn === 2)) &&
+      !over,
     (a: Action | null) => {
       if (a) move(a);
     },
   );
   return (
     <GameLayout
+      roomTurn={state.turn - 1}
       id="quarto"
       started={started}
       onStart={() => {

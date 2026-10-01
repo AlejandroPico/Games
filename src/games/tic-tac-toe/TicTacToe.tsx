@@ -1,15 +1,17 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation } from "../../shared/Observation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
 import AIWorker from "./ai.worker?worker";
 import { winner, initialContinuous, placeMark } from "./rules";
 export default function TicTacToe() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initialContinuous),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [started, setStarted] = useState(false),
-    [continuous, setContinuous] = useState(false);
+  const [state, setState] = useRoomState("state", initialContinuous),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [started, setStarted] = useRoomState("started", false),
+    [continuous, setContinuous] = useRoomState("continuous", false);
   const win = winner(state.board),
     draw = !continuous && state.board.every(Boolean) && !win,
     over = Boolean(win || draw);
@@ -17,11 +19,18 @@ export default function TicTacToe() {
   const { busy, error } = useAI<typeof input, number>(
     AIWorker,
     input,
-    started && (watching || (mode === "ai" && state.turn === "O")) && !over,
+    started &&
+      (watching ||
+        room.machine(
+          state.turn === "X" ? 0 : 1,
+          mode === "ai" && state.turn === "O",
+        )) &&
+      !over,
     (i) => setState((s) => placeMark(s, i, continuous) || s),
   );
   return (
     <GameLayout
+      roomTurn={state.turn === "X" ? 0 : 1}
       id="tic-tac-toe"
       started={started}
       onStart={() => setStarted(true)}
@@ -71,7 +80,10 @@ export default function TicTacToe() {
               Boolean(mark) ||
               over ||
               watching ||
-              (mode === "ai" && state.turn === "O")
+              room.machine(
+                state.turn === "X" ? 0 : 1,
+                mode === "ai" && state.turn === "O",
+              )
             }
             className={
               (mark || "") +

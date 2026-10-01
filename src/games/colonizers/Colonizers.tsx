@@ -1,4 +1,8 @@
-import { useState } from "react";
+import {
+  useRoomState,
+  useTableRoom,
+  SeatOptions,
+} from "../../shared/TableRoom";
 import GameLayout from "../../shared/GameLayout";
 import Die from "../../shared/Die";
 import { useObservation } from "../../shared/Observation";
@@ -24,18 +28,31 @@ import {
 const colors = ["#bd5149", "#377cba", "#d0a333", "#48836d"],
   land = ["#52846a", "#b77759", "#9ea96c", "#cbb268", "#819099", "#d4b887"];
 export default function Colonizers() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [started, setStarted] = useState(false),
-    [players, setPlayers] = useState(3),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [tool, setTool] = useState<"settlement" | "road" | "city">("settlement"),
-    [give, setGive] = useState(0),
-    [take, setTake] = useState(3),
-    [discarded, setDiscarded] = useState<number[]>(Array(5).fill(0)),
-    [message, setMessage] = useState("");
+  const [state, setState] = useRoomState("state", initial),
+    [started, setStarted] = useRoomState("started", false),
+    [players, setPlayers] = useRoomState("players", 3),
+    [humans, setHumans] = useRoomState("humans", 1),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [tool, setTool] = useRoomState<"settlement" | "road" | "city">(
+      "tool",
+      "settlement",
+    ),
+    [give, setGive] = useRoomState("give", 0),
+    [take, setTake] = useRoomState("take", 3),
+    [discarded, setDiscarded] = useRoomState<number[]>(
+      "discarded",
+      Array(5).fill(0),
+    ),
+    [message, setMessage] = useRoomState("message", "");
   const active = actor(state),
-    ai = watching || (mode === "ai" && active !== 0),
+    ai =
+      watching ||
+      room.machine(
+        active,
+        mode === "ai" && active >= Math.min(humans, players),
+      ),
     hs = state.hands[active];
   const { busy, error } = useAI(
     Worker,
@@ -64,10 +81,15 @@ export default function Colonizers() {
     pos = (x: number, y: number) => [280 + x * 55, 225 + y * 55];
   return (
     <GameLayout
+      roomTurn={active}
+      roomPlayers={players}
       id="colonizadores"
       started={started}
       mode={mode}
-      setMode={setMode}
+      setMode={(m) => {
+        setMode(m);
+        setHumans(m === "local" ? players : 1);
+      }}
       onReset={() => setStarted(false)}
       onStart={() => {
         setState(initial(players));
@@ -77,6 +99,16 @@ export default function Colonizers() {
       }}
       menu={
         <>
+          {" "}
+          <SeatOptions
+            count={players}
+            mode={watching ? "solo" : mode}
+            humans={Math.min(humans, players)}
+            onHumans={(n) => {
+              setHumans(n);
+              setMode(n === players ? "local" : "ai");
+            }}
+          />
           <p className="rules-copy">
             Variante original inspirada en los eurogames de colonización.
             Objetivo: 8 puntos. Producción, caminos, poblados, ciudades, ladrón
@@ -87,6 +119,7 @@ export default function Colonizers() {
             Participantes
             <select
               value={players}
+              disabled={room.online}
               onChange={(e) => setPlayers(Number(e.target.value))}
             >
               {[3, 4].map((n) => (

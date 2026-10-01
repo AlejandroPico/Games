@@ -1,37 +1,47 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation, useAutoplay } from "../../shared/Observation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
 import Worker from "./ai.worker?worker";
 import { feedback, secret, type Row } from "./rules";
 const colors = ["Coral", "Azul", "Verde", "Ocre", "Violeta", "Marfil"];
 export default function Mastermind() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [started, setStarted] = useState(false),
-    [role, setRole] = useState("breaker"),
-    [repeats, setRepeats] = useState(true),
-    [chosen, setChosen] = useState([0, 1, 2, 3]),
-    [code, setCode] = useState(() => secret()),
-    [history, setHistory] = useState<Row[]>([]),
-    [guess, setGuess] = useState<(number | null)[]>(Array(4).fill(null)),
-    [slot, setSlot] = useState(0),
-    [help, setHelp] = useState(false),
-    [pending, setPending] = useState<number[] | null>(null),
-    [message, setMessage] = useState("");
+  const [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [setting, setSetting] = useRoomState("setting", false),
+    [role, setRole] = useRoomState("role", "breaker"),
+    [repeats, setRepeats] = useRoomState("repeats", true),
+    [chosen, setChosen] = useRoomState("chosen", [0, 1, 2, 3]),
+    [code, setCode] = useRoomState("code", () => secret()),
+    [history, setHistory] = useRoomState<Row[]>("history", []),
+    [guess, setGuess] = useRoomState<(number | null)[]>(
+      "guess",
+      Array(4).fill(null),
+    ),
+    [slot, setSlot] = useRoomState("slot", 0),
+    [help, setHelp] = useRoomState("help", false),
+    [pending, setPending] = useRoomState<number[] | null>("pending", null),
+    [message, setMessage] = useRoomState("message", "");
   const won = history.at(-1)?.exact === 4,
     over = won || history.length === 10,
+    breaker = mode === "local" ? !setting : role === "breaker",
+    machine = watching || room.machine(1, mode === "ai" && role === "maker"),
+    showCode = over || setting || (mode === "ai" && role === "maker"),
     input = useMemo(() => ({ history, repeats }), [history, repeats]);
   const { busy, error } = useAI(
     Worker,
     input,
-    started && !over && !pending && (watching || role === "maker" || help),
+    started && !setting && !over && !pending && (machine || help),
     (next: number[] | null) => {
       setHelp(false);
       if (!next) {
         setMessage("No queda ningún código compatible.");
         return;
       }
-      if (watching || role === "maker") setPending(next);
+      if (machine) setPending(next);
       else {
         setGuess(next);
         setMessage(
@@ -67,19 +77,26 @@ export default function Mastermind() {
   const validCode = repeats || new Set(chosen).size === 4;
   return (
     <GameLayout
+      roomTurn={setting ? 0 : 1}
+      privateTable={!over}
       id="mastermind"
+      mode={mode}
+      setMode={setMode}
       started={started}
       onStart={() => {
-        if (!watching && !validCode && role === "maker") {
+        if (mode === "ai" && !watching && !validCode && role === "maker") {
           setMessage("El código debe usar colores distintos.");
           return;
         }
         setCode(!watching && role === "maker" ? [...chosen] : secret(repeats));
+        setSetting(mode === "local" && !watching);
+        if (mode === "local") setChosen([0, 1, 2, 3]);
         setStarted(true);
         setMessage("");
       }}
       onReset={() => {
         setStarted(false);
+        setSetting(false);
         setHistory([]);
         setGuess(Array(4).fill(null));
         setSlot(0);
@@ -89,8 +106,8 @@ export default function Mastermind() {
       }}
       menu={
         <>
-          <label className="field-label">
-            Modo
+          <label className="field-label" hidden={mode !== "ai"}>
+            Tu papel contra la IA
             <select value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="breaker">Descifrar el código</option>
               <option value="maker">Crear un código para la IA</option>
@@ -106,7 +123,7 @@ export default function Mastermind() {
               <option value="no">Todos distintos</option>
             </select>
           </label>
-          {role === "maker" && (
+          {mode === "ai" && role === "maker" && (
             <div className="code-config">
               {chosen.map((c, i) => (
                 <label key={i}>
@@ -134,17 +151,30 @@ export default function Mastermind() {
       }
       status={
         error ||
-        (won
-          ? "¡Código resuelto!"
-          : over
-            ? "Se agotaron los intentos."
-            : busy
-              ? "La IA está analizando las pistas…"
-              : message ||
-                "Negro: color y posición. Blanco: color en otra posición.")
+        (setting
+          ? "Jugador 1: crea un código secreto; después juega el jugador 2."
+          : won
+            ? "¡Código resuelto!"
+            : over
+              ? "Se agotaron los intentos."
+              : busy
+                ? "La IA está analizando las pistas…"
+                : message ||
+                  "Negro: color y posición. Blanco: color en otra posición.")
       }
       controls={
-        role === "breaker" ? (
+        setting ? (
+          <button
+            disabled={!validCode}
+            onClick={() => {
+              setCode([...chosen]);
+              setSetting(false);
+              setMessage("");
+            }}
+          >
+            Ocultar código y comenzar
+          </button>
+        ) : breaker ? (
           <>
             <button
               disabled={over || busy || guess.some((v) => v === null)}
@@ -164,26 +194,22 @@ export default function Mastermind() {
     >
       <div
         className={
-          "mastermind-table" + (role === "maker" || over ? " readonly" : "")
+          "mastermind-table" +
+          ((!breaker && !setting) || over ? " readonly" : "")
         }
       >
         <div
           className="secret-code"
           aria-label={
-            over || role === "maker"
-              ? "Código secreto visible"
-              : "Código secreto oculto"
+            showCode ? "Código secreto visible" : "Código secreto oculto"
           }
         >
-          {code.map((c, i) => (
+          {(setting ? chosen : code).map((c, i) => (
             <span
               key={i}
-              className={
-                "code-peg " +
-                (over || role === "maker" ? "peg-" + c : "concealed")
-              }
+              className={"code-peg " + (showCode ? "peg-" + c : "concealed")}
             >
-              {over || role === "maker" ? "" : "?"}
+              {showCode ? "" : "?"}
             </span>
           ))}
         </div>
@@ -231,10 +257,10 @@ export default function Mastermind() {
             );
           })}
         </div>
-        {role === "breaker" && !over && (
+        {(breaker || setting) && !over && (
           <>
             <div className="code-draft">
-              {guess.map((v, i) => (
+              {(setting ? chosen : guess).map((v, i) => (
                 <button
                   key={i}
                   disabled={busy}
@@ -262,7 +288,9 @@ export default function Mastermind() {
                   disabled={busy}
                   className={"code-peg peg-" + c}
                   onClick={() => {
-                    setGuess((g) => g.map((v, i) => (i === slot ? c : v)));
+                    if (setting)
+                      setChosen((g) => g.map((v, i) => (i === slot ? c : v)));
+                    else setGuess((g) => g.map((v, i) => (i === slot ? c : v)));
                     setSlot((s) => (s + 1) % 4);
                   }}
                 />

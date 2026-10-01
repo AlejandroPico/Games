@@ -1,16 +1,19 @@
-import { useState } from "react";
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import GameLayout from "../../shared/GameLayout";
 import { useObservation } from "../../shared/Observation";
 import { useAI } from "../../shared/useAI";
 import Worker from "./ai.worker?worker";
 import { initial, play } from "./rules";
 export default function Pente() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai");
+  const [state, setState] = useRoomState("state", initial),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai");
   const over = Boolean(state.winner),
-    ai = watching || (mode === "ai" && state.turn === 2);
+    ai =
+      watching ||
+      room.machine(state.turn - 1, mode === "ai" && state.turn === 2);
   const { busy, error } = useAI(
     Worker,
     state,
@@ -19,6 +22,7 @@ export default function Pente() {
   );
   return (
     <GameLayout
+      roomTurn={state.turn - 1}
       id="conecta-5-pente"
       mode={mode}
       setMode={setMode}

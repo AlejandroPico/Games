@@ -1,15 +1,18 @@
-import { useState } from "react";
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import GameLayout from "../../shared/GameLayout";
 import { useObservation, useAutoplay } from "../../shared/Observation";
 import { initial, play, finished, bestMove } from "./rules";
 export default function Boxes() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [started, setStarted] = useState(false),
-    [size, setSize] = useState(4),
-    [mode, setMode] = useState<"ai" | "local">("ai");
+  const [state, setState] = useRoomState("state", initial),
+    [started, setStarted] = useRoomState("started", false),
+    [size, setSize] = useRoomState("size", 4),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai");
   const over = finished(state),
-    ai = watching || (mode === "ai" && state.turn === 2);
+    ai =
+      watching ||
+      room.machine(state.turn - 1, mode === "ai" && state.turn === 2);
   useAutoplay(started && ai && !over, state, () =>
     setState((s) => play(s, bestMove(s)) || s),
   );
@@ -19,6 +22,7 @@ export default function Boxes() {
     h = n * (n + 1);
   return (
     <GameLayout
+      roomTurn={state.turn - 1}
       id="cajas-timbiriche-dots-and-boxes"
       started={started}
       mode={mode}

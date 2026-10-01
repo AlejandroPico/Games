@@ -1008,18 +1008,20 @@ export default function ChessGame({ night }: { night: boolean }) {
                         <span className="radio" />
                       </button>
                     ))}
-                    <div
-                      onClick={() =>
+                    <ObservationChoice
+                      onChoose={() => {
+                        room.current?.destroy();
+                        room.current = null;
+                        setRoomStatus("");
+                        setConnected(false);
                         setConfig((c) => ({
                           ...c,
                           mode: "ai",
                           minutes: 0,
                           increment: 0,
-                        }))
-                      }
-                    >
-                      <ObservationChoice />
-                    </div>
+                        }));
+                      }}
+                    />
                   </div>
                   {config.mode === "ai" && (
                     <>

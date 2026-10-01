@@ -1,3 +1,4 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useEffect, useRef, useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useObservation, useAutoplay } from "../../shared/Observation";
@@ -10,19 +11,42 @@ import {
   acceptedWords,
 } from "./rules";
 export default function Basta() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [started, setStarted] = useState(false),
-    [values, setValues] = useState<string[]>(Array(4).fill("")),
-    [seconds, setSeconds] = useState(60);
-  const ai = watching || (mode === "ai" && state.turn === 1);
+  const [state, setState] = useRoomState("state", initial),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [started, setStarted] = useRoomState("started", false),
+    [values, setValues] = useRoomState<string[]>("values", Array(4).fill("")),
+    [seconds, setSeconds] = useState(60),
+    [deadline, setDeadline] = useRoomState(
+      "deadline",
+      () => Date.now() + 60000,
+    );
+  const ai =
+    watching || room.machine(state.turn, mode === "ai" && state.turn === 1);
   const send = () => {
     setState((s) => submit(s, values) || s);
     setValues(Array(4).fill(""));
     setSeconds(60);
+    setDeadline(Date.now() + 60000);
   };
   const sendRef = useRef(send);
+  const pausedAt = useRef<number | null>(null);
+  useEffect(() => {
+    if (!room.online || !started || state.phase !== "write") {
+      pausedAt.current = null;
+      return;
+    }
+    if (!room.ready) {
+      pausedAt.current ??= Date.now();
+      return;
+    }
+    if (pausedAt.current !== null && room.host) {
+      const elapsed = Date.now() - pausedAt.current;
+      pausedAt.current = null;
+      setDeadline((d) => d + elapsed);
+    }
+  }, [room.online, room.ready, room.host, started, state.phase, setDeadline]);
   sendRef.current = send;
   useAutoplay(started && ai && state.phase === "write", state, () => {
     setState(
@@ -34,20 +58,43 @@ export default function Basta() {
     );
     setValues(Array(4).fill(""));
     setSeconds(60);
+    setDeadline(Date.now() + 60000);
   });
-  useAutoplay(started && watching && state.phase === "result", state, () =>
-    setState((s) => nextRound(s) || s),
-  );
+  const advance = () => {
+    setState((s) => nextRound(s) || s);
+    setValues(Array(4).fill(""));
+    setSeconds(60);
+    setDeadline(Date.now() + 60000);
+  };
+  useAutoplay(started && watching && state.phase === "result", state, advance);
   useEffect(() => {
-    if (!started || ai || state.phase !== "write") return;
-    const timer = setTimeout(() => {
-      if (seconds <= 1) sendRef.current();
-      else setSeconds((v) => v - 1);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [started, ai, state, seconds]);
+    if (
+      !started ||
+      ai ||
+      state.phase !== "write" ||
+      (room.online && !room.ready)
+    )
+      return;
+    const timer = setInterval(() => {
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setSeconds(remaining);
+      if (!remaining && room.runner) sendRef.current();
+    }, 250);
+    return () => clearInterval(timer);
+  }, [
+    started,
+    ai,
+    state,
+    seconds,
+    room.runner,
+    room.ready,
+    room.online,
+    deadline,
+  ]);
   return (
     <GameLayout
+      roomTurn={state.phase === "write" ? state.turn : 0}
+      privateTable={state.phase === "write"}
       id="basta-tutti-frutti"
       started={started}
       mode={mode}
@@ -57,6 +104,7 @@ export default function Basta() {
         setState(initial());
         setValues(Array(4).fill(""));
         setSeconds(60);
+        setDeadline(Date.now() + 60000);
         setStarted(true);
       }}
       status={
@@ -75,9 +123,7 @@ export default function Basta() {
       stats={<span className="small-score">{state.scores.join(" / ")}</span>}
       controls={
         state.phase === "result" && (
-          <button onClick={() => setState((s) => nextRound(s) || s)}>
-            Siguiente ronda
-          </button>
+          <button onClick={advance}>Siguiente ronda</button>
         )
       }
     >

@@ -1,0 +1,175 @@
+/* Balanced choices share the same grid in chess and all other game menus. */
+.game-options [hidden] {
+  display: none !important;
+}
+.mode-selector:has(> :nth-child(3):last-child) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.mode-selector:has(> :nth-child(4):last-child) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.mode-selector:has(> :nth-child(5):last-child) {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.mode-selector:has(> :nth-child(5):last-child) > * {
+  grid-column: span 2;
+}
+.mode-selector:has(> :nth-child(5):last-child) > :nth-child(n + 4) {
+  grid-column: span 3;
+}
+.mode-selector > button {
+  min-width: 0;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  line-height: 1.4;
+}
+.mode-selector > button > svg {
+  flex-shrink: 0;
+}
+.game-options {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.table-room-setup {
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+  margin: 8px 0;
+}
+.room-seats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.room-seats label {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--muted);
+  min-width: 0;
+}
+.room-seats select {
+  width: 100%;
+  min-width: 0;
+  font-size: 12px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+}
+.table-room-setup > .full {
+  margin: 0 0 14px;
+}
+.room-code {
+  display: block;
+  text-align: center;
+  font-size: 25px;
+  letter-spacing: 0.13em;
+  font-variant-numeric: tabular-nums;
+  user-select: all;
+  padding: 12px;
+  color: var(--green);
+}
+.room-share {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.room-share button {
+  padding: 9px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.room-roster {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.room-roster li {
+  padding: 5px 0;
+  border-bottom: 1px solid var(--line);
+}
+.table-room-setup p[role="status"] {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.room-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.room-wait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  height: 100%;
+  text-align: center;
+  padding: 24px;
+  color: var(--muted);
+  max-width: 440px;
+  margin: auto;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.room-wait > svg {
+  color: var(--green);
+}
+.memory-board {
+  --memory-gap: clamp(3px, 1vh, 8px);
+  grid-template-columns: repeat(var(--memory-cols, 4), minmax(0, 1fr));
+  gap: var(--memory-gap);
+  width: min(
+    100%,
+    calc(
+      (var(--play-h) - var(--memory-gap) * var(--memory-rows, 4) - 20px) *
+        var(--memory-cols, 4) / var(--memory-rows, 4)
+    )
+  );
+  max-width: 850px;
+}
+.memory-board .card-front {
+  font-size: clamp(
+    12px,
+    calc(var(--play-h) / var(--memory-rows, 4) * 0.5),
+    45px
+  );
+}
+.memory-board .card-back {
+  font-size: clamp(
+    12px,
+    calc(var(--play-h) / var(--memory-rows, 4) * 0.4),
+    40px
+  );
+}
+@media (max-width: 480px) {
+  .mode-selector > button {
+    font-size: 11px;
+    padding: 10px 5px;
+  }
+  .room-controls {
+    font-size: 10px;
+    gap: 3px;
+  }
+  .room-controls > svg {
+    display: none;
+  }
+  .room-controls .icon-button {
+    padding: 4px;
+  }
+}

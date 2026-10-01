@@ -161,6 +161,10 @@ export const guides: Record<string, [string, string][]> = {
   ],
   battleship: [
     [
+      "Dos personas",
+      "Puedes jugar con otro humano en este dispositivo o en una sala online. Cada flota se coloca automáticamente y cada jugador dispara una vez por turno. En local, entrega el dispositivo y pulsa Mostrar mesa del jugador antes de ver su flota; la mesa del anterior se oculta tras el disparo. Online cada persona solo ve la mesa activa cuando le toca. La flota enemiga permanece oculta hasta que sus barcos son alcanzados.",
+    ],
+    [
       "Objetivo y preparación",
       "Cada flota ocupa una cuadrícula de diez por diez con cinco barcos, de longitudes cinco, cuatro, tres, tres y dos. Se colocan automáticamente sin solaparse y puedes reorganizar tu flota antes de empezar. El rival no conoce las posiciones de tus barcos.",
     ],
@@ -270,7 +274,7 @@ export const guides: Record<string, [string, string][]> = {
   memory: [
     [
       "Objetivo y preparación",
-      "Todas las cartas comienzan boca abajo y cada dibujo tiene una pareja. En solitario intenta descubrirlas con pocas rondas. Contra otra persona o la IA gana quien recoja más parejas. El reparto se baraja al iniciar una nueva partida.",
+      "Todas las cartas comienzan boca abajo y cada dibujo tiene una pareja. En solitario intenta descubrirlas con pocas rondas. Contra otra persona o la IA gana quien recoja más parejas. Puedes elegir 16, 24, 36, 48 o 64 fichas (hasta 32 parejas). El reparto se baraja al iniciar una nueva partida y el reinicio conserva el tamaño elegido.",
     ],
     [
       "Tu turno",
@@ -448,6 +452,10 @@ export const guides: Record<string, [string, string][]> = {
     ],
   ],
   mastermind: [
+    [
+      "Creador y descifrador humanos",
+      "En Jugadores locales o Con amigos online, el jugador 1 prepara el código en la mesa: elige cuatro colores y pulsa Ocultar código y comenzar. El jugador 2 lo deduce con un máximo de diez intentos y las pistas se calculan automáticamente. En local, entrega el dispositivo después de ocultar el código. Online el invitado espera mientras el anfitrión crea el secreto; después recibe su turno con el código tapado. Al acertar o agotar los intentos se revela el resultado a ambos.",
+    ],
     [
       "Objetivo y preparación",
       "Descubre un código de cuatro posiciones elegido entre seis colores. Antes de empezar selecciona si se permiten repeticiones. Dispones de diez intentos. También puedes crear un código y observar cómo lo resuelve la IA; en Solo IA se genera uno nuevo y el deductor recibe únicamente las pistas.",

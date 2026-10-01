@@ -11,8 +11,30 @@ export const icons = [
   "☀",
   "☾",
   "⚓",
+  "☂",
+  "☘",
+  "❄",
+  "♫",
+  "☕",
+  "⚑",
+  "⚙",
+  "☯",
+  "✿",
+  "▲",
+  "●",
+  "■",
+  "★",
+  "☁",
+  "☄",
+  "⚡",
+  "⚒",
+  "✉",
+  "✈",
+  "☎",
 ];
 export function deck(pairs = 8, random = Math.random): string[] {
+  if (!Number.isInteger(pairs) || pairs < 2 || pairs > icons.length)
+    throw new RangeError("Elige entre 2 y 32 parejas.");
   const d = [...icons.slice(0, pairs), ...icons.slice(0, pairs)];
   for (let i = d.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));

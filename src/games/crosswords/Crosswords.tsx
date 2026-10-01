@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import GameLayout from "../../shared/GameLayout";
 import { usePieceDrag } from "../../shared/usePieceDrag";
 import { useObservation } from "../../shared/Observation";
@@ -15,14 +15,16 @@ import {
   type Placement,
 } from "./rules";
 export default function Crosswords() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [placements, setPlacements] = useState<Placement[]>([]),
-    [tile, setTile] = useState<number | null>(null),
-    [message, setMessage] = useState("");
-  const ai = watching || (mode === "ai" && state.turn === 1),
+  const [state, setState] = useRoomState("state", initial),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [placements, setPlacements] = useRoomState<Placement[]>("placements", []),
+    [tile, setTile] = useRoomState<number | null>("tile", null),
+    [message, setMessage] = useRoomState("message", "");
+  const ai =
+      watching || room.machine(state.turn, mode === "ai" && state.turn === 1),
     rack = state.racks[state.turn],
     used: number[] = [];
   for (const p of placements) {
@@ -55,6 +57,8 @@ export default function Crosswords() {
   );
   return (
     <GameLayout
+      roomTurn={state.turn}
+      privateTable={!state.over}
       id="cruzapalabras"
       started={started}
       mode={mode}

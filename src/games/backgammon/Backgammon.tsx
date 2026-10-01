@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
+import { useMemo } from "react";
 import GameLayout from "../../shared/GameLayout";
 import Die from "../../shared/Die";
 import { useObservation, useAutoplay } from "../../shared/Observation";
@@ -16,14 +17,15 @@ import {
   type Move,
 } from "./rules";
 export default function Backgammon() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [source, setSource] = useState<number | null>(null),
-    [die, setDie] = useState<number | null>(null);
+  const [state, setState] = useRoomState("state", initial),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [source, setSource] = useRoomState<number | null>("source", null),
+    [die, setDie] = useRoomState<number | null>("die", null);
   const actor = state.phase === "double" ? 3 - state.turn : state.turn,
-    ai = watching || (mode === "ai" && actor === 2),
+    ai = watching || room.machine(actor - 1, mode === "ai" && actor === 2),
     legal = useMemo(() => legalMoves(state), [state]);
   useAutoplay(
     started &&
@@ -129,6 +131,7 @@ export default function Backgammon() {
   );
   return (
     <GameLayout
+      roomTurn={actor - 1}
       id="backgammon"
       started={started}
       mode={mode}

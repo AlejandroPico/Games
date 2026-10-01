@@ -1,17 +1,19 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation } from "../../shared/Observation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
 import { usePieceDrag } from "../../shared/usePieceDrag";
 import Worker from "./ai.worker?worker";
 import { initial, moves, apply, result, owner, type Move } from "./rules";
 export default function InternationalDraughts() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [depth, setDepth] = useState(3),
-    [path, setPath] = useState<number[]>([]);
+  const [state, setState] = useRoomState("state", initial),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [depth, setDepth] = useRoomState("depth", 3),
+    [path, setPath] = useRoomState<number[]>("path", []);
   const legal = useMemo(() => moves(state.board, state.turn), [state]),
     over = result(state),
     input = useMemo(() => ({ state, depth }), [state, depth]);
@@ -22,7 +24,10 @@ export default function InternationalDraughts() {
   const { busy, error } = useAI(
     Worker,
     input,
-    started && (watching || (mode === "ai" && state.turn === 2)) && !over,
+    started &&
+      (watching ||
+        room.machine(state.turn - 1, mode === "ai" && state.turn === 2)) &&
+      !over,
     (m: Move | null) => {
       if (m) commit(m);
     },
@@ -52,7 +57,10 @@ export default function InternationalDraughts() {
     started &&
     !over &&
     !busy &&
-    !(watching || (mode === "ai" && state.turn === 2));
+    !(
+      watching ||
+      room.machine(state.turn - 1, mode === "ai" && state.turn === 2)
+    );
   const drag = usePieceDrag<number>({
     canDrag: (i) =>
       canPlay &&
@@ -69,6 +77,7 @@ export default function InternationalDraughts() {
   });
   return (
     <GameLayout
+      roomTurn={state.turn - 1}
       id="damas-internacionales"
       started={started}
       onStart={() => setStarted(true)}

@@ -6,6 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useTableRoom } from "./TableRoom";
 import { Eye, Pause, Play } from "lucide-react";
 
 type Observation = {
@@ -47,14 +48,24 @@ export function ObservationProvider({ children }: { children: ReactNode }) {
   );
 }
 export const useObservation = () => useContext(Context);
-export function ObservationChoice() {
+export function ObservationChoice({
+  disabled = false,
+  onChoose,
+}: {
+  disabled?: boolean;
+  onChoose?: () => void;
+}) {
   const o = useObservation();
   return (
     <button
       type="button"
+      disabled={disabled}
       className={o.watching ? "selected" : ""}
       aria-pressed={o.watching}
-      onClick={() => o.setWatching(!o.watching)}
+      onClick={() => {
+        onChoose?.();
+        o.setWatching(!o.watching);
+      }}
     >
       <Eye size={20} /> Solo inteligencia artificial
     </button>
@@ -95,7 +106,8 @@ export function useAutoplay(
   const o = useObservation(),
     callback = useRef(action);
   callback.current = action;
-  const active = enabled && (!o.watching || !o.paused),
+  const room = useTableRoom();
+  const active = enabled && (!o.watching || !o.paused) && room.runner,
     delay = o.watching ? o.delay : normalDelay;
   useEffect(() => {
     if (!active) return;

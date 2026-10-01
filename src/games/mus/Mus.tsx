@@ -1,5 +1,9 @@
+import {
+  useRoomState,
+  useTableRoom,
+  SeatOptions,
+} from "../../shared/TableRoom";
 import { useObservation, useAutoplay } from "../../shared/Observation";
-import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import HandCards from "../../shared/HandCards";
 import {
@@ -14,22 +18,31 @@ import {
 } from "./rules";
 const playerNames = ["Tú", "Rival 1", "Compañero", "Rival 2"];
 export default function Mus() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(() => initial()),
-    [eight, setEight] = useState(true),
-    [target, setTarget] = useState(40),
-    [mode, setMode] = useState("ai"),
-    [started, setStarted] = useState(false),
-    [selected, setSelected] = useState<number[]>([]),
-    [amount, setAmount] = useState(2),
-    [revealed, setRevealed] = useState("");
+  const [state, setState] = useRoomState("state", () => initial()),
+    [eight, setEight] = useRoomState("eight", true),
+    [target, setTarget] = useRoomState("target", 40),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [humans, setHumans] = useRoomState("humans", 1),
+    [started, setStarted] = useRoomState("started", false),
+    [selected, setSelected] = useRoomState<number[]>("selected", []),
+    [amount, setAmount] = useRoomState("amount", 2),
+    [revealed, setRevealed] = useRoomState("revealed", "");
   const over = state.phase === "over",
     show = over || state.phase === "showdown",
-    human = !watching && (mode === "local" || state.turn === 0),
-    view = mode === "local" ? state.turn : 0,
+    human =
+      !watching &&
+      !room.machine(state.turn, mode === "ai" && state.turn >= humans),
+    view = watching || human ? state.turn : 0,
+    sharedDevice =
+      !room.online &&
+      (room.localConfigured
+        ? room.seats.filter((s) => s === "local").length > 1
+        : mode === "local" || humans > 1),
     context =
       state.round + ":" + state.phase + ":" + state.lance + ":" + state.turn,
-    visible = mode === "ai" || revealed === context || show;
+    visible = watching || !sharedDevice || revealed === context || show;
   const move = (a: Action) => {
     const n = act(state, a);
     if (n) {
@@ -63,7 +76,15 @@ export default function Mus() {
   );
   return (
     <GameLayout
+      roomTurn={show ? 0 : state.turn}
+      roomPlayers={4}
+      privateTable={!show}
       id="mus"
+      mode={mode}
+      setMode={(m) => {
+        setMode(m);
+        setHumans(m === "local" ? 4 : 1);
+      }}
       started={started}
       onStart={() => {
         setState(initial(eight, target));
@@ -80,13 +101,15 @@ export default function Mus() {
             Dos parejas. Tú y tu compañero os enfrentáis al equipo rival.
             Envites de tantos, sin dinero.
           </p>
-          <label className="field-label">
-            Jugadores
-            <select value={mode} onChange={(e) => setMode(e.target.value)}>
-              <option value="ai">Tú y tres inteligencias artificiales</option>
-              <option value="local">Cuatro jugadores locales</option>
-            </select>
-          </label>
+          <SeatOptions
+            count={4}
+            mode={watching ? "solo" : mode}
+            humans={humans}
+            onHumans={(n) => {
+              setHumans(n);
+              setMode(n === 4 ? "local" : "ai");
+            }}
+          />
           <label className="field-label">
             Baraja
             <select
@@ -132,7 +155,7 @@ export default function Mus() {
           ) : (
             <span>El juego ha terminado.</span>
           )
-        ) : mode === "local" && !visible ? (
+        ) : human && sharedDevice && !visible ? (
           <button onClick={() => setRevealed(context)}>
             Mostrar mano de jugador {view + 1}
           </button>

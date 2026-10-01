@@ -22,7 +22,7 @@ describe("Standard chess and FIDE draw adjudication", () => {
     }
     expect(g.moves()).toHaveLength(20);
     expect(perft(3)).toBe(8902);
-  });
+  }, 15000); // Perft enumerates 8,902 positions; allow slower shared CPUs.
   it("rejects moving into check and pinned moves", () => {
     const g = new Chess("4r1k1/8/8/8/8/8/4R3/4K3 w - - 0 1");
     expect(() => g.move({ from: "e2", to: "a2" })).toThrow();

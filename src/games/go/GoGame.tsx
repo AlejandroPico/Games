@@ -1,23 +1,25 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation, useAutoplay } from "../../shared/Observation";
-import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { useAI } from "../../shared/useAI";
 import AIWorker from "./ai.worker?worker";
 import { initial, play, pass, group, score, type State } from "./rules";
 export default function GoGame() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [size, setSize] = useState(9),
-    [state, setState] = useState(() => initial()),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [dead, setDead] = useState<number[]>([]),
-    [approved, setApproved] = useState<number[]>([]),
-    [notice, setNotice] = useState("");
+  const [size, setSize] = useRoomState("size", 9),
+    [state, setState] = useRoomState("state", () => initial()),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [dead, setDead] = useRoomState<number[]>("dead", []),
+    [approved, setApproved] = useRoomState<number[]>("approved", []),
+    [notice, setNotice] = useRoomState("notice", "");
   const { busy, error } = useAI<State, number | null>(
     AIWorker,
     state,
     started &&
-      (watching || (mode === "ai" && state.turn === 2)) &&
+      (watching ||
+        room.machine(state.turn - 1, mode === "ai" && state.turn === 2)) &&
       state.phase === "play",
     (i) => setState((s) => (i === null ? pass(s) : play(s, i) || pass(s))),
   );
@@ -28,7 +30,8 @@ export default function GoGame() {
       !started ||
       state.phase === "over" ||
       busy ||
-      ((watching || (mode === "ai" && state.turn === 2)) &&
+      ((watching ||
+        room.machine(state.turn - 1, mode === "ai" && state.turn === 2)) &&
         state.phase === "play")
     )
       return;
@@ -60,6 +63,7 @@ export default function GoGame() {
   useAutoplay(started && watching && state.phase === "scoring", state, confirm);
   return (
     <GameLayout
+      roomTurn={state.phase === "scoring" ? approved.length : state.turn - 1}
       id="go"
       started={started}
       onStart={() => {
@@ -111,7 +115,11 @@ export default function GoGame() {
         state.phase === "play" ? (
           <button
             className="secondary"
-            disabled={busy || watching || (mode === "ai" && state.turn === 2)}
+            disabled={
+              busy ||
+              watching ||
+              room.machine(state.turn - 1, mode === "ai" && state.turn === 2)
+            }
             onClick={() => {
               setState(pass(state));
               setNotice("");

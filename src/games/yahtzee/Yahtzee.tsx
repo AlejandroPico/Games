@@ -1,5 +1,5 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation, useAutoplay } from "../../shared/Observation";
-import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import Die from "../../shared/Die";
 import {
@@ -15,12 +15,18 @@ import {
   aiCategory,
 } from "./rules";
 export default function Yahtzee() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [opponent, setOpponent] = useState("solo"),
-    [state, setState] = useState(() => initial()),
-    [started, setStarted] = useState(false);
+  const [opponent, setOpponent] = useRoomState<"ai" | "local" | "solo">(
+      "opponent",
+      "solo",
+    ),
+    [state, setState] = useRoomState("state", () => initial()),
+    [started, setStarted] = useRoomState("started", false);
   const over = finished(state),
-    ai = watching || (opponent === "ai" && state.turn === 1),
+    ai =
+      watching ||
+      room.machine(state.turn, opponent === "ai" && state.turn === 1),
     allowed = choices(state),
     joker =
       state.dice.every((v) => v === state.dice[0]) &&
@@ -32,31 +38,22 @@ export default function Yahtzee() {
   });
   return (
     <GameLayout
+      roomTurn={state.turn}
       id="yahtzee-la-generala"
+      mode={opponent}
+      setMode={setOpponent}
+      soloOption={() => setOpponent("solo")}
       started={started}
       onStart={() => {
         setState(initial(!watching && opponent === "solo" ? 1 : 2));
         setStarted(true);
       }}
       onReset={() => setStarted(false)}
-      menu={
-        <label className="field-label">
-          Jugadores
-          <select
-            value={opponent}
-            onChange={(e) => setOpponent(e.target.value)}
-          >
-            <option value="solo">En solitario</option>
-            <option value="ai">Contra la IA</option>
-            <option value="local">Dos jugadores locales</option>
-          </select>
-        </label>
-      }
       status={
         over
           ? "Final · " +
             state.sheets
-              .map((_, i) => (i === 0 ? "Tú" : "Rival") + " " + total(state, i))
+              .map((_, i) => "Jugador " + (i + 1) + " " + total(state, i))
               .join(" — ")
           : ai
             ? "La IA está jugando…"

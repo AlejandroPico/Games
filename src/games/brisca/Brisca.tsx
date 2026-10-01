@@ -1,5 +1,5 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation, useAutoplay } from "../../shared/Observation";
-import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import CardFace from "../../shared/CardFace";
 import HandCards from "../../shared/HandCards";
@@ -14,24 +14,24 @@ import {
   aiMove,
 } from "./rules";
 export default function Brisca() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(() => initial()),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [exchange, setExchange] = useState(false),
-    [revealed, setRevealed] = useState("");
+  const [state, setState] = useRoomState("state", () => initial()),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [exchange, setExchange] = useRoomState("exchange", false),
+    [revealed, setRevealed] = useRoomState("revealed", "");
   const privacyKey =
       state.turn + ":" + state.trick.length + ":" + state.stock.length,
     reveal = revealed === privacyKey;
   const over = state.hands.every((h) => !h.length) && !state.trick.length,
     baza = winner(state),
-    human = !watching && (mode === "local" || state.turn === 0);
+    actor = state.trick.length === 2 ? baza : state.turn,
+    human = !watching && !room.machine(actor, mode === "ai" && actor === 1);
   useAutoplay(
     started &&
       !over &&
-      (watching ||
-        (mode === "ai" &&
-          (state.trick.length === 2 ? baza === 1 : state.turn === 1))),
+      (watching || room.machine(actor, mode === "ai" && actor === 1)),
     state,
     () => {
       if (state.trick.length === 2) setState((s) => collect(swap(s) || s));
@@ -44,6 +44,8 @@ export default function Brisca() {
   );
   return (
     <GameLayout
+      roomTurn={state.trick.length === 2 ? baza : state.turn}
+      privateTable={!over}
       id="brisca"
       started={started}
       onStart={() => {
@@ -73,10 +75,10 @@ export default function Brisca() {
           ? state.scores[0] === state.scores[1]
             ? "Empate"
             : state.scores[0] > state.scores[1]
-              ? "Ganas la mano"
-              : "Gana el rival"
+              ? "Gana el jugador 1"
+              : "Gana el jugador 2"
           : baza >= 0
-            ? "Baza para " + (baza === 0 ? "ti" : "el rival")
+            ? "Baza para el jugador " + (baza + 1)
             : "Turno de " +
               (state.turn === 0
                 ? "jugador 1"
@@ -93,7 +95,7 @@ export default function Brisca() {
         baza >= 0 ? (
           <>
             <button
-              disabled={mode === "ai" && baza === 1}
+              disabled={room.machine(baza, mode === "ai" && baza === 1)}
               onClick={() => setState(collect(state))}
             >
               Recoger baza
@@ -101,7 +103,8 @@ export default function Brisca() {
             {exchange && (
               <button
                 disabled={
-                  exchangeIndex(state) < 0 || (mode === "ai" && baza === 1)
+                  exchangeIndex(state) < 0 ||
+                  room.machine(baza, mode === "ai" && baza === 1)
                 }
                 onClick={() => {
                   const n = swap(state);
@@ -151,7 +154,7 @@ export default function Brisca() {
         <div className="brisca-hand">
           <small>{human ? "Tu mano" : "Turno del rival"}</small>
           <HandCards
-            cards={state.hands[state.turn]}
+            cards={state.hands[actor]}
             spanish
             hidden={!human || (mode === "local" && !reveal)}
             disabled={!started || over || state.trick.length === 2}

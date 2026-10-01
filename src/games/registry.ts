@@ -153,7 +153,7 @@ const enabledGames: Record<string, Partial<GameInfo>> = {
   },
   mastermind: {
     name: "Mastermind",
-    players: "1 jugador + IA",
+    players: "1–2 jugadores",
     ready: true,
   },
   quarto: {
@@ -229,7 +229,7 @@ export const games: GameInfo[] = [
     name: "Batalla naval",
     subtitle: "Un océano de posibilidades.",
     category: "Deducción",
-    players: "1 jugador + IA",
+    players: "1–2 jugadores",
     duration: "10–20 min",
     ready: true,
     color: "blue",

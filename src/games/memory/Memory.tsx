@@ -1,18 +1,30 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation, useAutoplay } from "../../shared/Observation";
-import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { deck, choice } from "./rules";
 export default function Memory() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [cards, setCards] = useState(deck),
-    [matched, setMatched] = useState<number[]>([]),
-    [flipped, setFlipped] = useState<number[]>([]),
-    [known, setKnown] = useState<Record<number, string>>({}),
-    [turn, setTurn] = useState(1),
-    [scores, setScores] = useState([0, 0]),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"solo" | "ai" | "local">("solo"),
-    [rounds, setRounds] = useState(0);
+  const [cards, setCards] = useRoomState("cards", deck),
+    [matched, setMatched] = useRoomState<number[]>("matched", []),
+    [flipped, setFlipped] = useRoomState<number[]>("flipped", []),
+    [known, setKnown] = useRoomState<Record<number, string>>("known", {}),
+    [turn, setTurn] = useRoomState("turn", 1),
+    [scores, setScores] = useRoomState("scores", [0, 0]),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"solo" | "ai" | "local">("mode", "solo"),
+    [rounds, setRounds] = useRoomState("rounds", 0),
+    [pairs, setPairs] = useRoomState("pairs", 8);
+  const start = () => {
+    setCards(deck(pairs));
+    setMatched([]);
+    setFlipped([]);
+    setKnown({});
+    setTurn(1);
+    setScores([0, 0]);
+    setRounds(0);
+    setStarted(true);
+  };
   const over = matched.length === cards.length;
   const reveal = (i: number) => {
     if (flipped.includes(i) || matched.includes(i) || flipped.length >= 2)
@@ -36,7 +48,7 @@ export default function Memory() {
   useAutoplay(
     started &&
       !over &&
-      (watching || (mode === "ai" && turn === 2)) &&
+      (watching || room.machine(turn - 1, mode === "ai" && turn === 2)) &&
       flipped.length < 2,
     flipped,
     () => {
@@ -53,9 +65,13 @@ export default function Memory() {
   );
   return (
     <GameLayout
+      roomTurn={turn - 1}
       id="memory"
       started={started}
-      onStart={() => setStarted(true)}
+      mode={mode}
+      setMode={setMode}
+      soloOption={() => setMode("solo")}
+      onStart={start}
       onReset={() => {
         setCards(deck());
         setMatched([]);
@@ -68,14 +84,17 @@ export default function Memory() {
       }}
       menu={
         <label className="field-label">
-          Cómo jugar
+          Número de fichas
           <select
-            value={mode}
-            onChange={(e) => setMode(e.target.value as typeof mode)}
+            aria-label="Número de fichas"
+            value={pairs}
+            onChange={(e) => setPairs(Number(e.target.value))}
           >
-            <option value="solo">Un jugador · a tu ritmo</option>
-            <option value="ai">Contra la IA · memoria compartida</option>
-            <option value="local">Dos jugadores · por turnos</option>
+            {[8, 12, 18, 24, 32].map((n) => (
+              <option key={n} value={n}>
+                {n * 2} fichas · {n} parejas
+              </option>
+            ))}
           </select>
         </label>
       }
@@ -90,7 +109,7 @@ export default function Memory() {
                 : mode === "ai"
                   ? "Gana la IA"
                   : "Gana el jugador 2"
-          : mode === "ai" && turn === 2
+          : room.machine(turn - 1, mode === "ai" && turn === 2)
             ? "La IA recuerda sus cartas…"
             : "Encuentra una pareja" +
               (mode === "solo" ? "" : " · jugador " + turn)
@@ -108,7 +127,19 @@ export default function Memory() {
       }
       rules="Da la vuelta a dos cartas y encuentra símbolos iguales. Una pareja te permite repetir turno; un fallo pasa el turno en partidas de dos jugadores. En solitario, busca todas las parejas con pocos intentos. La IA solo recuerda las cartas que se han mostrado, sin mirar cartas ocultas."
     >
-      <div className="memory-board">
+      <div
+        className="memory-board"
+        style={
+          {
+            "--memory-cols":
+              cards.length <= 16 ? 4 : cards.length <= 36 ? 6 : 8,
+            "--memory-rows": Math.ceil(
+              cards.length /
+                (cards.length <= 16 ? 4 : cards.length <= 36 ? 6 : 8),
+            ),
+          } as React.CSSProperties
+        }
+      >
         {cards.map((icon, i) => {
           const visible = flipped.includes(i) || matched.includes(i);
           return (
@@ -119,7 +150,7 @@ export default function Memory() {
                 over ||
                 flipped.length >= 2 ||
                 matched.includes(i) ||
-                (mode === "ai" && turn === 2)
+                room.machine(turn - 1, mode === "ai" && turn === 2)
               }
               className={
                 (visible ? "revealed" : "") +

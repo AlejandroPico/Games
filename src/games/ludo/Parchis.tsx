@@ -1,5 +1,9 @@
+import {
+  useRoomState,
+  useTableRoom,
+  SeatOptions,
+} from "../../shared/TableRoom";
 import { useObservation, useAutoplay } from "../../shared/Observation";
-import { useState } from "react";
 import GameLayout from "../../shared/GameLayout";
 import {
   initial,
@@ -48,13 +52,18 @@ function die() {
   return (n[0] % 6) + 1;
 }
 export default function Parchis() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [players, setPlayers] = useState(4),
-    [humans, setHumans] = useState(1),
-    [state, setState] = useState(() => initial()),
-    [started, setStarted] = useState(false);
+  const [players, setPlayers] = useRoomState("players", 4),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [humans, setHumans] = useRoomState("humans", 1),
+    [state, setState] = useRoomState("state", () => initial()),
+    [started, setStarted] = useRoomState("started", false);
   const ai =
-      started && (watching || state.turn >= humans) && state.phase !== "over",
+      started &&
+      (watching ||
+        room.machine(state.turn, mode === "ai" && state.turn >= humans)) &&
+      state.phase !== "over",
     legal = legalMoves(state);
   useAutoplay(ai, state, () =>
     setState((s) =>
@@ -64,7 +73,14 @@ export default function Parchis() {
   const label = names[colorIndex(state.turn, state.players)];
   return (
     <GameLayout
+      roomTurn={state.turn}
+      roomPlayers={players}
       id="ludo"
+      mode={mode}
+      setMode={(m) => {
+        setMode(m);
+        setHumans(m === "local" ? players : 1);
+      }}
       started={started}
       onStart={() => {
         setState(initial(players));
@@ -77,6 +93,7 @@ export default function Parchis() {
             Colores en juego
             <select
               value={players}
+              disabled={room.online}
               onChange={(e) => {
                 const v = Number(e.target.value);
                 setPlayers(v);
@@ -88,23 +105,15 @@ export default function Parchis() {
               <option value={4}>4</option>
             </select>
           </label>
-          <label className="field-label">
-            Jugadores humanos
-            <select
-              value={humans}
-              onChange={(e) => setHumans(Number(e.target.value))}
-            >
-              {Array.from({ length: players }, (_, i) => (
-                <option key={i} value={i + 1}>
-                  {i + 1}
-                  {i + 1 === players ? " · todos locales" : ""}
-                </option>
-              ))}
-            </select>
-          </label>
-          <p className="setup-note">
-            Los humanos controlan los primeros colores; los demás son IA.
-          </p>
+          <SeatOptions
+            count={players}
+            mode={watching ? "solo" : mode}
+            humans={humans}
+            onHumans={(n) => {
+              setHumans(n);
+              setMode(n === players ? "local" : "ai");
+            }}
+          />
         </>
       }
       status={

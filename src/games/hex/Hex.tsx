@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import GameLayout from "../../shared/GameLayout";
 import { useObservation } from "../../shared/Observation";
 import { useAI } from "../../shared/useAI";
 import Worker from "./ai.worker?worker";
 import { initial, play, swap } from "./rules";
 export default function Hex() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [state, setState] = useState(initial),
-    [size, setSize] = useState(9),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [started, setStarted] = useState(false);
-  const ai = watching || (mode === "ai" && state.turn === 2);
+  const [state, setState] = useRoomState("state", initial),
+    [size, setSize] = useRoomState("size", 9),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [started, setStarted] = useRoomState("started", false);
+  const ai =
+    watching || room.machine(state.turn - 1, mode === "ai" && state.turn === 2);
   const { busy, error } = useAI(
     Worker,
     state,
@@ -20,6 +22,7 @@ export default function Hex() {
   );
   return (
     <GameLayout
+      roomTurn={state.turn - 1}
       id="hex"
       started={started}
       mode={mode}

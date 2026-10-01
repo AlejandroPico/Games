@@ -1,19 +1,23 @@
+import { useRoomState, useTableRoom } from "../../shared/TableRoom";
 import { useObservation } from "../../shared/Observation";
 import AIWorker from "./ai.worker?worker";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import GameLayout from "../../shared/GameLayout";
 import { usePieceDrag } from "../../shared/usePieceDrag";
 import { useAI } from "../../shared/useAI";
 import { initial, moves, type Move } from "./rules";
 export default function Checkers() {
+  const room = useTableRoom();
   const { watching } = useObservation();
-  const [board, setBoard] = useState(initial),
-    [turn, setTurn] = useState(1),
-    [started, setStarted] = useState(false),
-    [mode, setMode] = useState<"ai" | "local">("ai"),
-    [path, setPath] = useState<number[]>([]),
-    [quiet, setQuiet] = useState(0),
-    [seen, setSeen] = useState<string[]>([initial().join(",") + "1"]);
+  const [board, setBoard] = useRoomState("board", initial),
+    [turn, setTurn] = useRoomState("turn", 1),
+    [started, setStarted] = useRoomState("started", false),
+    [mode, setMode] = useRoomState<"ai" | "local">("mode", "ai"),
+    [path, setPath] = useRoomState<number[]>("path", []),
+    [quiet, setQuiet] = useRoomState("quiet", 0),
+    [seen, setSeen] = useRoomState<string[]>("seen", [
+      initial().join(",") + "1",
+    ]);
   const legal = useMemo(() => moves(board, turn), [board, turn]),
     key = board.join(",") + turn,
     draw = quiet >= 80 || seen.filter((s) => s === key).length >= 3,
@@ -30,7 +34,9 @@ export default function Checkers() {
   const { busy, error } = useAI<{ board: number[]; turn: number }, Move | null>(
     AIWorker,
     useMemo(() => ({ board, turn }), [board, turn]),
-    started && (watching || (mode === "ai" && turn === 2)) && !over,
+    started &&
+      (watching || room.machine(turn - 1, mode === "ai" && turn === 2)) &&
+      !over,
     (m) => {
       if (m) apply(m);
     },
@@ -68,7 +74,7 @@ export default function Checkers() {
       started &&
       !over &&
       !busy &&
-      !(watching || (mode === "ai" && turn === 2)) &&
+      !(watching || room.machine(turn - 1, mode === "ai" && turn === 2)) &&
       (path.length > 1
         ? path.at(-1) === i
         : legal.some((m) => m.path[0] === i)),
@@ -83,6 +89,7 @@ export default function Checkers() {
   });
   return (
     <GameLayout
+      roomTurn={turn - 1}
       id="checkers"
       started={started}
       onStart={() => setStarted(true)}
@@ -136,7 +143,7 @@ export default function Checkers() {
               over ||
               busy ||
               watching ||
-              (mode === "ai" && turn === 2)
+              room.machine(turn - 1, mode === "ai" && turn === 2)
             }
             className={(Math.floor(i / 8) + (i % 8)) % 2 ? "dark" : "light"}
             onClick={() => {

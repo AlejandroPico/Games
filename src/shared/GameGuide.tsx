@@ -1,5 +1,6 @@
 import { guides } from "./guides";
 import { guideSources } from "./guideSources";
+import { supportsFriends } from "./playModes";
 export default function GameGuide({
   id,
   summary,
@@ -33,6 +34,29 @@ export default function GameGuide({
           volver te devuelven a la colección.
         </p>
       </section>
+      {supportsFriends(id) && (
+        <section>
+          <h3>Jugar con amigos</h3>
+          <p>
+            Elige Con amigos online en los ajustes. Una persona crea una sala y
+            comparte su código o enlace; las demás abren este mismo juego y
+            entran en ella.{" "}
+            {id === "chess"
+              ? "El anfitrión juega con blancas y su amigo con negras."
+              : "En las mesas de varios participantes, el anfitrión asigna cada puesto a este dispositivo, un amigo online o la IA. Espera a que estén todos y pulsa Empezar partida."}{" "}
+            Cada persona juega solo cuando le toca. Mantén la pestaña abierta y
+            la conexión activa: si alguien se desconecta, la partida se detiene.
+          </p>
+          <p>
+            {id === "chess"
+              ? "Nueva partida propone una revancha que el amigo debe aceptar."
+              : "El anfitrión puede reiniciar con los mismos ajustes; el botón del invitado le solicita una nueva partida. Para cambiar los ajustes, el anfitrión abre el menú de la mesa. Un amigo puede volver a entrar con el código mientras haya un puesto online libre."}{" "}
+            Las salas son privadas, sin cuentas ni guardado en un servidor.
+            Están pensadas para jugar entre amigos; el servicio de conexión
+            puede depender de la red.
+          </p>
+        </section>
+      )}
       {guideSources[id]?.length > 0 && (
         <section>
           <h3>Referencias para ampliar</h3>

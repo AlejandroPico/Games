@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTableRoom } from "./TableRoom";
 import { useObservation } from "./Observation";
 export function useAI<T, R>(
   WorkerClass: new () => Worker,
@@ -7,7 +8,8 @@ export function useAI<T, R>(
   onMove: (result: R) => void,
 ) {
   const { watching, paused, delay } = useObservation();
-  const active = enabled && (!watching || !paused);
+  const room = useTableRoom();
+  const active = enabled && (!watching || !paused) && room.runner;
   const callback = useRef(onMove);
   callback.current = onMove;
   const [busy, setBusy] = useState(false),
