@@ -40,7 +40,7 @@ pnpm check:pwa
 pnpm preview
 ```
 
-La preparación copia el motor de un hilo y su licencia a `public/engine`, además del favicon. El motor pesa aproximadamente 1.8 MB y no necesita encabezados de aislamiento. Las rutas por fragmentos admiten visitas directas bajo `/Games/`.
+La preparación copia el motor de un hilo y su licencia a `public/engine`, además del favicon. El motor pesa aproximadamente 1.8 MB y no necesita encabezados de aislamiento. Las rutas por fragmentos admiten visitas directas bajo `/Games/`. Los comandos de desarrollo, pruebas y compilación ejecutan también `scripts/prepare-internal.mjs`: genera metadatos del catálogo e historial en `.generated/inventory.json` y comprueba el mínimo de contexto en `docs/SUPER_PROMPT.md`. La salida generada está ignorada y no se edita a mano. Sin Git las fechas quedan sin registrar; con historial superficial se identifican como evidencia incompleta. Actions obtiene el historial completo.
 
 La compilación genera un Service Worker con una versión basada en el contenido y precarga recursos propios, incluidos todos los juegos y el motor. Requiere completar la descarga inicial y disponer de almacenamiento del navegador. Las actualizaciones esperan al cierre de las pestañas existentes para evitar sustituir recursos durante una partida. `check:pwa` sirve la compilación bajo `/Games/`, ejecuta el Service Worker generado y verifica instalación, limpieza de versiones antiguas y navegación/recursos sin conexión. Android puede instalarla desde el navegador; no se ha comprobado la instalación en un teléfono físico.
 
@@ -51,6 +51,8 @@ Cada juego vive en `src/games/<id>/`, con reglas, IA y componentes independiente
 Para añadir un juego: respetar los modos y tamaños configurables indicados en AGENTS.md, crear su carpeta, registrar metadatos, añadir importación diferida, guía específica en `src/shared/guides.ts`, modo de observación y comprobar sus reglas. La observación se comparte mediante `ObservationProvider`, `useAutoplay` y `useAI`; las decisiones siguen en cada juego. Los juegos con contrincantes usan `TableRoomProvider`, `useRoomState` para los valores compartidos y `room.machine` para determinar los puestos de IA. `GameLayout` recibe `roomTurn` (actor real desde cero, incluidas fases de recuento o descarte), `roomPlayers` y `privateTable` en fases con información privada. La IA y la resolución temporizada se ejecutan solo en el anfitrión. Documentar y probar fases especiales, reconexión, reinicio y móvil; el ajedrez conserva su protocolo de validación propio. No marcar `ready: true` hasta que sea jugable. Si necesita persistencia, usar claves propias con versión; no compartir partidas entre juegos. IndexedDB permite bases locales grandes. SQLite requeriría WASM o un servicio externo y no es necesario para esta entrega.
 
 Formato común: `pnpm exec prettier --write src tests scripts`.
+
+El contexto de continuidad está en [docs/SUPER_PROMPT.md](docs/SUPER_PROMPT.md), sin listado de juegos concretos. El inventario exportable combina registro efectivo, fechas observadas en Git, archivos y guías de variantes; incluye ideas pendientes. CSV es UTF-8 con separador de punto y coma, compatible con importación en Excel; JSON conserva los datos originales y Markdown proporciona fichas completas o un listado separado. La inspección de fuentes no equivale a una auditoría de reglas ni de cobertura. Las fechas de alta y activación no se presentan como fechas verificadas de despliegue.
 
 ## Ajedrez: reglas y límites
 

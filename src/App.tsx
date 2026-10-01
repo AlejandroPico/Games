@@ -30,6 +30,7 @@ import {
   type SunLocation,
 } from "./shared/theme";
 const ChessGame = lazy(() => import("./games/chess/ChessGame"));
+const DeveloperPanel = lazy(() => import("./internal/DeveloperPanel"));
 const ConnectFour = lazy(() => import("./games/connect-four/ConnectFour"));
 const extraGames: Partial<Record<GameId, ReturnType<typeof lazy>>> = {
   "el-ahorcado": lazy(() => import("./games/hangman/Hangman")),
@@ -91,6 +92,7 @@ type InstallEvent = Event & {
   userChoice: Promise<{ outcome: string }>;
 };
 export default function App() {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [mode, setMode] = useState<ThemeMode>(() =>
       read("games-theme-mode", "auto"),
     ),
@@ -134,6 +136,7 @@ export default function App() {
     const listen = () => {
       setRoute(location.hash.slice(1));
       setPanel(null);
+      setInternalOpen(false);
       window.scrollTo(0, 0);
     };
     window.addEventListener("hashchange", listen);
@@ -273,7 +276,15 @@ export default function App() {
           <button
             className="icon-button"
             aria-label="Acerca de"
-            onClick={() => toggle("about")}
+            onClick={(event) => {
+              if (event.altKey) {
+                setPanel(null);
+                setInternalOpen(true);
+              } else {
+                setInternalOpen(false);
+                toggle("about");
+              }
+            }}
           >
             <Info size={21} />
           </button>
@@ -508,6 +519,11 @@ export default function App() {
           </TableRoomProvider>
         </GameBoundary>
       </main>
+      {internalOpen && (
+        <Suspense fallback={<div className="loading">Cargando…</div>}>
+          <DeveloperPanel onClose={() => setInternalOpen(false)} />
+        </Suspense>
+      )}
       {panel === "about" && (
         <Overlay
           title="Acerca de Games"

@@ -21,6 +21,13 @@ export default function Overlay({
       ?.querySelector<HTMLElement>("button,input,select,a,[tabindex]")
       ?.focus();
     const handle = (e: KeyboardEvent) => {
+      // A stacked dialog owns keyboard handling only while it is uppermost.
+      if (
+        Array.from(
+          document.querySelectorAll('[role="dialog"][aria-modal="true"]'),
+        ).at(-1) !== node
+      )
+        return;
       if (e.key === "Escape") {
         e.preventDefault();
         close.current();

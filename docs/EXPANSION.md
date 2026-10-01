@@ -1,6 +1,6 @@
 # Juegos añadidos y variantes
 
-Las fichas solicitadas están activas y conservan la navegación, iluminación, menú integrado y reinicio directo de Games. Cada juego tiene su propia carpeta y reglas en TypeScript. No se añade un servidor, cuentas ni salas a estos juegos; las partidas locales y las IA funcionan en el navegador. El progreso de estos juegos dura mientras se mantiene abierta su vista. La PWA precarga sus recursos para uso sin conexión después de la descarga inicial.
+Las fichas solicitadas están activas y conservan la navegación, iluminación, menú integrado y reinicio directo de Games. Cada juego tiene su propia carpeta y reglas en TypeScript. Las partidas locales y las IA funcionan en el navegador. Los juegos con contrincantes también disponen de salas privadas mediante PeerJS/WebRTC, con las condiciones actuales descritas en README.md; los individuales conservan sus modos propios. No hay servidor propio ni cuentas. El progreso de estos juegos dura mientras se mantiene abierta su vista. La PWA precarga sus recursos para uso sin conexión después de la descarga inicial; las salas requieren Internet.
 
 ## Tableros tradicionales
 
