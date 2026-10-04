@@ -1,4 +1,6 @@
+import { traditionalSources } from "./traditionalGuides";
 export const guideSources: Record<string, { title: string; url: string }[]> = {
+  ...traditionalSources,
   quoridor: [
     {
       title: "Gigamic: juego y reglamento oficial; mesa de dos participantes",

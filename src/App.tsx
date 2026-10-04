@@ -1,5 +1,4 @@
-import CategoryArt from "./shared/CategoryArt";
-import { categoryCompletionIds } from "./games/categoryCompletion";
+import IdentityArt, { identityIds } from "./shared/IdentityArt";
 import ExpansionArt, { expansionIds } from "./shared/ExpansionArt";
 import RepertoireArt, { repertoireIds } from "./shared/RepertoireArt";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
@@ -25,7 +24,7 @@ import { TableRoomProvider } from "./shared/TableRoom";
 import { ObservationProvider } from "./shared/Observation";
 import Overlay from "./shared/Overlay";
 import AutoThemeIcon from "./shared/AutoThemeIcon";
-import RoadmapArt from "./shared/RoadmapArt";
+import RoadmapArt from "./shared/IdeaArt";
 import NewGameArt, { newGameIds } from "./shared/NewGameArt";
 import {
   automaticTheme,
@@ -36,6 +35,27 @@ const ChessGame = lazy(() => import("./games/chess/ChessGame"));
 const DeveloperPanel = lazy(() => import("./internal/DeveloperPanel"));
 const ConnectFour = lazy(() => import("./games/connect-four/ConnectFour"));
 const extraGames: Partial<Record<GameId, ReturnType<typeof lazy>>> = {
+  "molino-nine-men-s-morris": lazy(
+    () => import("./games/molino-nine-men-s-morris/Game"),
+  ),
+  senet: lazy(() => import("./games/senet/Game")),
+  "tafl-hnefatafl": lazy(() => import("./games/tafl-hnefatafl/Game")),
+  "juego-de-la-oca": lazy(() => import("./games/juego-de-la-oca/Game")),
+  "ur-juego-real-de-ur": lazy(() => import("./games/ur-juego-real-de-ur/Game")),
+  pachisi: lazy(() => import("./games/pachisi/Game")),
+  fanorona: lazy(() => import("./games/fanorona/Game")),
+  surakarta: lazy(() => import("./games/surakarta/Game")),
+  "bagh-chal-movimiento-de-tigres": lazy(
+    () => import("./games/bagh-chal-movimiento-de-tigres/Game"),
+  ),
+  "mu-torere": lazy(() => import("./games/mu-torere/Game")),
+  halma: lazy(() => import("./games/halma/Game")),
+  "yut-nori": lazy(() => import("./games/yut-nori/Game")),
+  nyout: lazy(() => import("./games/nyout/Game")),
+  shax: lazy(() => import("./games/shax/Game")),
+  "tsoro-yematatu": lazy(() => import("./games/tsoro-yematatu/Game")),
+  awale: lazy(() => import("./games/awale/Game")),
+  sugoroku: lazy(() => import("./games/sugoroku/Game")),
   "dados-mentirosos-perudo": lazy(
     () => import("./games/dados-mentirosos-perudo/Game"),
   ),
@@ -667,7 +687,7 @@ export default function App() {
 }
 
 function GameArt({ id }: { id: GameId }) {
-  if (categoryCompletionIds.includes(id)) return <CategoryArt id={id} />;
+  if (identityIds.includes(id)) return <IdentityArt id={id} />;
   if (repertoireIds.includes(id)) return <RepertoireArt id={id} />;
   if (expansionIds.includes(id)) return <ExpansionArt id={id} />;
   if (newGameIds.includes(id)) return <NewGameArt id={id} />;

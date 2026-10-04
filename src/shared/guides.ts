@@ -1,6 +1,8 @@
+import { traditionalGuides } from "./traditionalGuides";
 import { categoryGuides } from "./categoryGuides";
 import { repertoireGuides } from "./repertoireGuides";
 export const guides: Record<string, [string, string][]> = {
+  ...traditionalGuides,
   ...categoryGuides,
   ...repertoireGuides,
   "2048": [

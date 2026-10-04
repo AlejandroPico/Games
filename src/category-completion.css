@@ -248,3 +248,24 @@
 .abstract-board button.p4 {
   color: #ac8323;
 }
+
+.traditional-graph {
+  width: min(100%, 74vh, 670px);
+  flex: 1;
+  min-height: 0;
+  max-height: 100%;
+  touch-action: none;
+  object-fit: contain;
+}
+.traditional-graph g[role="button"] {
+  cursor: pointer;
+  outline: none;
+}
+.traditional-graph g[role="button"]:focus-visible circle {
+  stroke: #e2a640;
+  stroke-width: 4px;
+}
+.traditional-graph g.legal:hover circle {
+  stroke: #f1bf4b;
+  stroke-width: 4px;
+}

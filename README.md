@@ -46,6 +46,8 @@ La compilación genera un Service Worker con una versión basada en el contenido
 
 ## Estructura y colaboración
 
+Las nuevas mesas tradicionales y sus ilustraciones se describen en [docs/TRADITIONAL_COMPLETION.md](docs/TRADITIONAL_COMPLETION.md). Cada ayuda identifica su edición jugable, incluidas reconstrucciones históricas y recorridos originales. `IdentityArt` da a las fichas afectadas composiciones propias; `AbstractTable` admite tableros de conexiones, curvas y cuadrículas con clic, teclado y arrastre.
+
 La ampliación de deducción, dados y abstractos se describe en [docs/CATEGORY_COMPLETION.md](docs/CATEGORY_COMPLETION.md), con ediciones, variantes, fuentes y límites. Las mesas de casino usan puntos ficticios. `DiceTable`, `DeductionTable` y `AbstractTable` comparten presentación; cada juego mantiene su motor propio.
 
 La ampliación de mesas tradicionales, cartas, eurogames, deducción y puzles se documenta en [docs/REPERTOIRE_EXPANSION.md](docs/REPERTOIRE_EXPANSION.md), con las ediciones jugables, las adaptaciones originales y sus limitaciones. Las salas compartidas admiten hasta seis puestos. Las ayudas diferencian las reglas de esta mesa de las referencias externas.

@@ -6,6 +6,7 @@
 - TypeScript estricto; IA pesada en Workers para no bloquear la interfaz.
 - Mantener modo día/noche, teclado, móvil y vista útil sin WebGL cuando corresponda.
 - No marcar como disponible un juego incompleto.
+- Las fichas del catálogo deben tener ilustraciones propias y reconocibles del juego, evitando repetir una escena para toda una categoría. Cambiar solo el color no basta. Mantener la composición cuadrada y el título centrado.
 - pnpm test y pnpm build son requisitos antes de subir cambios.
 - GitHub Pages es estático. No guardar secretos, simular backend ni escribir partidas en GitHub.
 - Mantener pnpm-lock.yaml. Copiar el motor con scripts/prepare-engine.mjs.
