@@ -1,3 +1,4 @@
+import { collectionIds } from "./games/categoryCompletion";
 import IdentityArt, { identityIds } from "./shared/IdentityArt";
 import ExpansionArt, { expansionIds } from "./shared/ExpansionArt";
 import RepertoireArt, { repertoireIds } from "./shared/RepertoireArt";
@@ -35,6 +36,83 @@ const ChessGame = lazy(() => import("./games/chess/ChessGame"));
 const DeveloperPanel = lazy(() => import("./internal/DeveloperPanel"));
 const ConnectFour = lazy(() => import("./games/connect-four/ConnectFour"));
 const extraGames: Partial<Record<GameId, ReturnType<typeof lazy>>> = {
+  "tierras-de-losetas": lazy(() => import("./games/tierras-de-losetas/Game")),
+  "el-mercado-de-joyas": lazy(() => import("./games/el-mercado-de-joyas/Game")),
+  "la-villa-agricola": lazy(() => import("./games/la-villa-agricola/Game")),
+  "isla-de-monstruos": lazy(() => import("./games/isla-de-monstruos/Game")),
+  "el-gran-bazar": lazy(() => import("./games/el-gran-bazar/Game")),
+  "diseno-de-mosaicos": lazy(() => import("./games/diseno-de-mosaicos/Game")),
+  "observatorio-de-aves": lazy(
+    () => import("./games/observatorio-de-aves/Game"),
+  ),
+  "terraformacion-planetaria": lazy(
+    () => import("./games/terraformacion-planetaria/Game"),
+  ),
+  "lineas-de-produccion": lazy(
+    () => import("./games/lineas-de-produccion/Game"),
+  ),
+  "expedicion-arqueologica": lazy(
+    () => import("./games/expedicion-arqueologica/Game"),
+  ),
+  "el-laberinto-magico": lazy(() => import("./games/el-laberinto-magico/Game")),
+  "subasta-de-propiedades": lazy(
+    () => import("./games/subasta-de-propiedades/Game"),
+  ),
+  "el-fabricante-de-alfombras": lazy(
+    () => import("./games/el-fabricante-de-alfombras/Game"),
+  ),
+  "viaje-en-el-tiempo": lazy(() => import("./games/viaje-en-el-tiempo/Game")),
+  "invasion-de-clanes": lazy(() => import("./games/invasion-de-clanes/Game")),
+  "descarte-explosivo": lazy(() => import("./games/descarte-explosivo/Game")),
+  "mineros-saboteadores": lazy(
+    () => import("./games/mineros-saboteadores/Game"),
+  ),
+  "lobo-aldea": lazy(() => import("./games/lobo-aldea/Game")),
+  "la-resistencia-avalon": lazy(
+    () => import("./games/la-resistencia-avalon/Game"),
+  ),
+  "guerra-de-cartas-de-energia": lazy(
+    () => import("./games/guerra-de-cartas-de-energia/Game"),
+  ),
+  "combates-del-espacio": lazy(
+    () => import("./games/combates-del-espacio/Game"),
+  ),
+  "dominio-de-reino": lazy(() => import("./games/dominio-de-reino/Game")),
+  "cartas-suicidas": lazy(() => import("./games/cartas-suicidas/Game")),
+  "el-estafador-de-cartas": lazy(
+    () => import("./games/el-estafador-de-cartas/Game"),
+  ),
+  "duelo-de-cartas-en-la-corte": lazy(
+    () => import("./games/duelo-de-cartas-en-la-corte/Game"),
+  ),
+  "comercio-de-alubias": lazy(() => import("./games/comercio-de-alubias/Game")),
+  "el-ladron-de-guante-blanco": lazy(
+    () => import("./games/el-ladron-de-guante-blanco/Game"),
+  ),
+  "cartas-del-purgatorio": lazy(
+    () => import("./games/cartas-del-purgatorio/Game"),
+  ),
+  "senores-de-la-guerra": lazy(
+    () => import("./games/senores-de-la-guerra/Game"),
+  ),
+  "nonogramas-picross": lazy(() => import("./games/nonogramas-picross/Game")),
+  "crucigramas-interactivos": lazy(
+    () => import("./games/crucigramas-interactivos/Game"),
+  ),
+  "bloques-deslizantes": lazy(() => import("./games/bloques-deslizantes/Game")),
+  "puzle-de-tuberias": lazy(() => import("./games/puzle-de-tuberias/Game")),
+  "cruces-numericos-kakuro": lazy(
+    () => import("./games/cruces-numericos-kakuro/Game"),
+  ),
+  "rutas-de-luces-lights-out": lazy(
+    () => import("./games/rutas-de-luces-lights-out/Game"),
+  ),
+  "puentes-fluviales-hashiwokakero": lazy(
+    () => import("./games/puentes-fluviales-hashiwokakero/Game"),
+  ),
+  "laberintos-generativos": lazy(
+    () => import("./games/laberintos-generativos/Game"),
+  ),
   "molino-nine-men-s-morris": lazy(
     () => import("./games/molino-nine-men-s-morris/Game"),
   ),
@@ -687,6 +765,7 @@ export default function App() {
 }
 
 function GameArt({ id }: { id: GameId }) {
+  if (collectionIds.includes(id)) return <RoadmapArt id={id} category="" />;
   if (identityIds.includes(id)) return <IdentityArt id={id} />;
   if (repertoireIds.includes(id)) return <RepertoireArt id={id} />;
   if (expansionIds.includes(id)) return <ExpansionArt id={id} />;

@@ -168,7 +168,9 @@ for (const game of games) {
     folder,
     files,
     sourceBytes: Buffer.byteLength(contents, "utf8"),
-    worker: files.some((path) => path.endsWith(".worker.ts")),
+    worker: files.some(
+      (path) => path.endsWith(".worker.ts") || path.endsWith("/worker.ts"),
+    ),
     dragDetected: /usePieceDrag|draggable|onPointerDown/.test(contents),
     storageLiterals: [
       ...new Set(

@@ -180,6 +180,34 @@ describe("room transport", () => {
     await settle();
     expect(host.view.message).toContain("El jugador 2 pide una nueva partida");
   });
+  it("connects the eighth seat, exchanges its move and accepts its restart request", async () => {
+    const seats: Seat[] = [
+        "local",
+        "ai",
+        "ai",
+        "ai",
+        "ai",
+        "ai",
+        "ai",
+        "remote",
+      ],
+      host = new TableStore(),
+      friend = new TableStore();
+    host.ensure("state", { turn: 7, played: false });
+    open(true, host, seats);
+    const peer = open(false, friend, seats);
+    await settle();
+    expect(host.view.ready).toBe(true);
+    expect(friend.view.seat).toBe(7);
+    host.setTurn(7, true);
+    await settle();
+    friend.set("state", { turn: 0, played: true });
+    await settle();
+    expect(host.values.state).toEqual({ turn: 0, played: true });
+    peer.requestRestart();
+    await settle();
+    expect(host.view.message).toContain("El jugador 8 pide una nueva partida");
+  });
   it("destroy is idempotent and cannot clear callbacks of a newer session", async () => {
     const host = new TableStore(),
       seats: Seat[] = ["local", "remote"],

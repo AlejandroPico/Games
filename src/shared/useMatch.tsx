@@ -126,7 +126,7 @@ export function ScoreStrip({
   turn,
   children,
 }: {
-  scores: number[];
+  scores: (number | null)[];
   turn?: number;
   children?: ReactNode;
 }) {
@@ -134,7 +134,7 @@ export function ScoreStrip({
     <div className="repertoire-scores">
       {scores.map((score, i) => (
         <span key={i} className={turn === i ? "active" : ""}>
-          J{i + 1} <b>{score}</b>
+          J{i + 1} <b>{score ?? "—"}</b>
         </span>
       ))}
       {children}

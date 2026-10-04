@@ -1,4 +1,5 @@
 export type Seat = "local" | "remote" | "ai";
+export const MAX_TABLE_SEATS = 8;
 export type RoomView = {
   online: boolean;
   host: boolean;
@@ -162,7 +163,7 @@ export class TableStore {
     if (
       this.view.online ||
       seats.length < 2 ||
-      seats.length > 6 ||
+      seats.length > MAX_TABLE_SEATS ||
       seats[0] !== "local" ||
       seats.some((s) => s !== "local" && s !== "ai")
     )
@@ -196,7 +197,7 @@ export class TableStore {
       !safePatch(s.values) ||
       !Array.isArray(s.view.seats) ||
       s.view.seats.length < 2 ||
-      s.view.seats.length > 6 ||
+      s.view.seats.length > MAX_TABLE_SEATS ||
       !s.view.seats.every((v) => ["local", "remote", "ai"].includes(v)) ||
       !Number.isInteger(seat) ||
       s.view.seats[seat] !== "remote" ||

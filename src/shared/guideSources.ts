@@ -1,5 +1,7 @@
+import { collectionSources } from "./collectionGuides";
 import { traditionalSources } from "./traditionalGuides";
 export const guideSources: Record<string, { title: string; url: string }[]> = {
+  ...collectionSources,
   ...traditionalSources,
   quoridor: [
     {

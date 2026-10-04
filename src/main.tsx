@@ -21,3 +21,5 @@ import "./rooms.css";
 import "./repertoire.css";
 
 import "./category-completion.css";
+
+import "./collection.css";

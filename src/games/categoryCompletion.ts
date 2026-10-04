@@ -189,3 +189,257 @@ categoryCompletionMetadata["sugoroku"] = {
   players: "2–4 jugadores",
   subtitle: "E-sugoroku: recorrido ilustrado original de Games.",
 };
+
+export const collectionIds = [
+  "tierras-de-losetas",
+  "el-mercado-de-joyas",
+  "la-villa-agricola",
+  "isla-de-monstruos",
+  "el-gran-bazar",
+  "diseno-de-mosaicos",
+  "observatorio-de-aves",
+  "terraformacion-planetaria",
+  "lineas-de-produccion",
+  "expedicion-arqueologica",
+  "el-laberinto-magico",
+  "subasta-de-propiedades",
+  "el-fabricante-de-alfombras",
+  "viaje-en-el-tiempo",
+  "invasion-de-clanes",
+  "descarte-explosivo",
+  "mineros-saboteadores",
+  "lobo-aldea",
+  "la-resistencia-avalon",
+  "guerra-de-cartas-de-energia",
+  "combates-del-espacio",
+  "dominio-de-reino",
+  "cartas-suicidas",
+  "el-estafador-de-cartas",
+  "duelo-de-cartas-en-la-corte",
+  "comercio-de-alubias",
+  "el-ladron-de-guante-blanco",
+  "cartas-del-purgatorio",
+  "senores-de-la-guerra",
+  "nonogramas-picross",
+  "crucigramas-interactivos",
+  "bloques-deslizantes",
+  "puzle-de-tuberias",
+  "cruces-numericos-kakuro",
+  "rutas-de-luces-lights-out",
+  "puentes-fluviales-hashiwokakero",
+  "laberintos-generativos",
+];
+categoryCompletionMetadata["tierras-de-losetas"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["el-mercado-de-joyas"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["la-villa-agricola"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["isla-de-monstruos"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["el-gran-bazar"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["diseno-de-mosaicos"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["observatorio-de-aves"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["terraformacion-planetaria"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["lineas-de-produccion"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["expedicion-arqueologica"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["el-laberinto-magico"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["subasta-de-propiedades"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["el-fabricante-de-alfombras"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["viaje-en-el-tiempo"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["invasion-de-clanes"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["descarte-explosivo"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["mineros-saboteadores"] = {
+  ready: true,
+  players: "3–6 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["lobo-aldea"] = {
+  ready: true,
+  players: "6–8 jugadores",
+  subtitle:
+    "Variante de Games con lobos, vidente y sanador; seis a ocho puestos.",
+};
+categoryCompletionMetadata["la-resistencia-avalon"] = {
+  ready: true,
+  players: "5–6 jugadores",
+  subtitle:
+    "Avalón base de cinco o seis participantes: Merlín y Asesino, sin módulos opcionales.",
+};
+categoryCompletionMetadata["guerra-de-cartas-de-energia"] = {
+  ready: true,
+  players: "2 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["combates-del-espacio"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["dominio-de-reino"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["cartas-suicidas"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["el-estafador-de-cartas"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["duelo-de-cartas-en-la-corte"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["comercio-de-alubias"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["el-ladron-de-guante-blanco"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["cartas-del-purgatorio"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["senores-de-la-guerra"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle:
+    "Edición original de Games; preparación y reglas completas en la ayuda.",
+};
+categoryCompletionMetadata["nonogramas-picross"] = {
+  ready: true,
+  players: "1 jugador",
+  subtitle: "Puzle individual; niveles y reglas en la ayuda.",
+};
+categoryCompletionMetadata["crucigramas-interactivos"] = {
+  ready: true,
+  players: "1 jugador",
+  subtitle: "Puzle individual; niveles y reglas en la ayuda.",
+};
+categoryCompletionMetadata["bloques-deslizantes"] = {
+  ready: true,
+  players: "1 jugador",
+  subtitle: "Puzle individual; niveles y reglas en la ayuda.",
+};
+categoryCompletionMetadata["puzle-de-tuberias"] = {
+  ready: true,
+  players: "1 jugador",
+  subtitle: "Puzle individual; niveles y reglas en la ayuda.",
+};
+categoryCompletionMetadata["cruces-numericos-kakuro"] = {
+  ready: true,
+  players: "1 jugador",
+  subtitle: "Puzle individual; niveles y reglas en la ayuda.",
+};
+categoryCompletionMetadata["rutas-de-luces-lights-out"] = {
+  ready: true,
+  players: "1 jugador",
+  subtitle: "Puzle individual; niveles y reglas en la ayuda.",
+};
+categoryCompletionMetadata["puentes-fluviales-hashiwokakero"] = {
+  ready: true,
+  players: "1 jugador",
+  subtitle: "Puzle individual; niveles y reglas en la ayuda.",
+};
+categoryCompletionMetadata["laberintos-generativos"] = {
+  ready: true,
+  players: "1 jugador",
+  subtitle: "Puzle individual; niveles y reglas en la ayuda.",
+};

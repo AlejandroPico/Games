@@ -5,6 +5,7 @@ import {
   type Proposal,
   type Seat,
   safePatch,
+  MAX_TABLE_SEATS,
 } from "./room-model";
 const protocol = 2;
 const prefix = (game: string, code: string) =>
@@ -242,7 +243,7 @@ export class TablePeer {
         m.snapshot &&
         Number.isInteger(m.seat) &&
         m.seat! >= 1 &&
-        m.seat! < 6
+        m.seat! < MAX_TABLE_SEATS
       ) {
         welcomed = true;
         clearTimeout(timer);
