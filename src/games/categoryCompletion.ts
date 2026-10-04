@@ -443,3 +443,102 @@ categoryCompletionMetadata["laberintos-generativos"] = {
   players: "1 jugador",
   subtitle: "Puzle individual; niveles y reglas en la ayuda.",
 };
+
+export const cardEditionIds = [
+  "poker-texas-hold-em",
+  "chinchon",
+  "tute",
+  "truco-argentino-uruguayo",
+  "rummy-continental",
+  "bridge",
+  "cribbage",
+  "hearts-corazones",
+  "spades-picas",
+  "durak",
+  "euchre",
+  "canasta",
+  "gin-rummy",
+  "mau-mau",
+  "briscola-chiamata",
+  "tarot-frances",
+];
+categoryCompletionMetadata["poker-texas-hold-em"] = {
+  ready: true,
+  players: "2–6 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["chinchon"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["tute"] = {
+  ready: true,
+  players: "4 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["truco-argentino-uruguayo"] = {
+  ready: true,
+  players: "2 jugadores",
+  subtitle: "Truco argentino de dos sin flor; no usa muestra uruguaya.",
+};
+categoryCompletionMetadata["rummy-continental"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle: "Rummy clásico de una mano; no incluye contratos Continental.",
+};
+categoryCompletionMetadata["bridge"] = {
+  ready: true,
+  players: "4 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["cribbage"] = {
+  ready: true,
+  players: "2 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["hearts-corazones"] = {
+  ready: true,
+  players: "4 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["spades-picas"] = {
+  ready: true,
+  players: "4 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["durak"] = {
+  ready: true,
+  players: "2 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["euchre"] = {
+  ready: true,
+  players: "4 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["canasta"] = {
+  ready: true,
+  players: "2 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["gin-rummy"] = {
+  ready: true,
+  players: "2 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["mau-mau"] = {
+  ready: true,
+  players: "2–4 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["briscola-chiamata"] = {
+  ready: true,
+  players: "5 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};
+categoryCompletionMetadata["tarot-frances"] = {
+  ready: true,
+  players: "4 jugadores",
+  subtitle: "Edición y reglas de esta mesa detalladas en la ayuda.",
+};

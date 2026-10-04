@@ -50,7 +50,9 @@ describe("Internal context and portable inventory", () => {
     expect(new Set(json.games.map((g: { id: string }) => g.id)).size).toBe(
       games.length,
     );
-    expect(json.games.some((g: { ready: boolean }) => !g.ready)).toBe(true);
+    expect(json.games.filter((g: { ready: boolean }) => !g.ready)).toHaveLength(
+      games.filter((g) => !g.ready).length,
+    );
     expect(json.sourceRevision).toBe(snapshot.sourceRevision);
     expect(json.dateMeaning).toContain(
       "No son fechas verificadas de publicación",

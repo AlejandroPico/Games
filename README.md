@@ -46,6 +46,8 @@ La compilación genera un Service Worker con una versión basada en el contenido
 
 ## Estructura y colaboración
 
+Las mesas de cartas restantes y sus variantes están descritas en [docs/CARD_COMPLETION.md](docs/CARD_COMPLETION.md). `CardTable` comparte solo presentación y ciclo de salas; cada carpeta conserva su motor independiente. Cartas y casillas mantienen medidas estables durante los turnos; las secuencias de solitarios largas desplazan solo el tapete interno, sin reducir cartas ni desplazar la página.
+
 La ampliación de estrategia, roles y puzles se describe en [docs/EURO_ROLES_LOGIC.md](docs/EURO_ROLES_LOGIC.md). `StrategyTable` y `LogicTable` comparten únicamente presentación; cada motor tiene sus decisiones y Worker propios. Se identifican las ediciones originales, las variantes y los límites de generación y búsqueda.
 
 Las nuevas mesas tradicionales y sus ilustraciones se describen en [docs/TRADITIONAL_COMPLETION.md](docs/TRADITIONAL_COMPLETION.md). Cada ayuda identifica su edición jugable, incluidas reconstrucciones históricas y recorridos originales. `IdentityArt` da a las fichas afectadas composiciones propias; `AbstractTable` admite tableros de conexiones, curvas y cuadrículas con clic, teclado y arrastre.

@@ -1,4 +1,4 @@
-import { collectionIds } from "./games/categoryCompletion";
+import { collectionIds, cardEditionIds } from "./games/categoryCompletion";
 import IdentityArt, { identityIds } from "./shared/IdentityArt";
 import ExpansionArt, { expansionIds } from "./shared/ExpansionArt";
 import RepertoireArt, { repertoireIds } from "./shared/RepertoireArt";
@@ -36,6 +36,24 @@ const ChessGame = lazy(() => import("./games/chess/ChessGame"));
 const DeveloperPanel = lazy(() => import("./internal/DeveloperPanel"));
 const ConnectFour = lazy(() => import("./games/connect-four/ConnectFour"));
 const extraGames: Partial<Record<GameId, ReturnType<typeof lazy>>> = {
+  "poker-texas-hold-em": lazy(() => import("./games/poker-texas-hold-em/Game")),
+  chinchon: lazy(() => import("./games/chinchon/Game")),
+  tute: lazy(() => import("./games/tute/Game")),
+  "truco-argentino-uruguayo": lazy(
+    () => import("./games/truco-argentino-uruguayo/Game"),
+  ),
+  "rummy-continental": lazy(() => import("./games/rummy-continental/Game")),
+  bridge: lazy(() => import("./games/bridge/Game")),
+  cribbage: lazy(() => import("./games/cribbage/Game")),
+  "hearts-corazones": lazy(() => import("./games/hearts-corazones/Game")),
+  "spades-picas": lazy(() => import("./games/spades-picas/Game")),
+  durak: lazy(() => import("./games/durak/Game")),
+  euchre: lazy(() => import("./games/euchre/Game")),
+  canasta: lazy(() => import("./games/canasta/Game")),
+  "gin-rummy": lazy(() => import("./games/gin-rummy/Game")),
+  "mau-mau": lazy(() => import("./games/mau-mau/Game")),
+  "briscola-chiamata": lazy(() => import("./games/briscola-chiamata/Game")),
+  "tarot-frances": lazy(() => import("./games/tarot-frances/Game")),
   "tierras-de-losetas": lazy(() => import("./games/tierras-de-losetas/Game")),
   "el-mercado-de-joyas": lazy(() => import("./games/el-mercado-de-joyas/Game")),
   "la-villa-agricola": lazy(() => import("./games/la-villa-agricola/Game")),
@@ -765,7 +783,8 @@ export default function App() {
 }
 
 function GameArt({ id }: { id: GameId }) {
-  if (collectionIds.includes(id)) return <RoadmapArt id={id} category="" />;
+  if (collectionIds.includes(id) || cardEditionIds.includes(id))
+    return <RoadmapArt id={id} category="" />;
   if (identityIds.includes(id)) return <IdentityArt id={id} />;
   if (repertoireIds.includes(id)) return <RepertoireArt id={id} />;
   if (expansionIds.includes(id)) return <ExpansionArt id={id} />;

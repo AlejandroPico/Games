@@ -1,0 +1,303 @@
+.mini-game .play-area > div.edition-table {
+  height: 100%;
+  width: min(100%, 1100px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 48px;
+  overflow: hidden;
+}
+.edition-summary {
+  margin: 0;
+  min-height: 38px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.edition-public,
+.edition-hand {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  align-items: flex-start;
+  padding: 3px 2px 12px;
+  min-height: 0;
+}
+.edition-public {
+  flex: 1;
+  align-items: center;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border-block: 1px solid var(--line);
+}
+.edition-card {
+  position: relative;
+  flex: 0 0 86px;
+  width: 86px;
+  height: 124px;
+  min-width: 86px;
+  min-height: 124px;
+  background: #fff9e8;
+  color: #28383d;
+  border: 1px solid #b4aea0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  opacity: 1 !important;
+  font-family: Georgia, serif;
+}
+.edition-card.red {
+  color: #a74039;
+}
+.edition-corner {
+  position: absolute;
+  top: 5px;
+  left: 7px;
+  font-size: 22px;
+  line-height: 1;
+  display: grid;
+}
+.edition-corner small {
+  font-size: 17px;
+}
+.edition-suit {
+  font-size: 38px;
+}
+.edition-caption {
+  position: absolute;
+  bottom: 4px;
+  inset-inline: 4px;
+  font-size: 9px;
+  line-height: 1.2;
+  font-family: system-ui;
+}
+.edition-card:not(:disabled):hover {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.edition-private {
+  width: 100%;
+  min-height: 0;
+}
+.edition-private > p {
+  margin: 2px;
+  font-size: 12px;
+}
+.edition-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  align-items: end;
+}
+.edition-actions label {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+}
+.edition-actions select {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+}
+.edition-actions button {
+  flex-shrink: 0;
+}
+.edition-details {
+  font-size: 12px;
+  text-decoration: underline;
+  align-self: flex-end;
+}
+/* Explicit tracks prevent occupied and empty rows from changing geometry. */
+.flat-board {
+  width: min(calc(100vw - 22px), calc(100dvh - var(--header-h) - 154px));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-rows: repeat(8, minmax(0, 1fr));
+  height: min(calc(100vw - 22px), calc(100dvh - var(--header-h) - 154px));
+  flex-shrink: 0;
+}
+.flat-board .square {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: auto;
+  overflow: hidden;
+}
+.checkers-board,
+.reversi-board,
+.flat-board {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-rows: repeat(8, minmax(0, 1fr));
+}
+.international-board {
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  grid-template-rows: repeat(10, minmax(0, 1fr));
+}
+.go-board {
+  grid-template-columns: repeat(var(--go-size), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--go-size), minmax(0, 1fr));
+}
+.sudoku-board {
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  grid-template-rows: repeat(9, minmax(0, 1fr));
+}
+.tic-board {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+}
+/* Pile length never changes card width, height or font size. Extra length scrolls within the tableau. */
+.mini-game .play-area > div.solitaire-table {
+  width: min(100%, 760px);
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 18px;
+  --card-step: 24px;
+  --card-height: calc((100cqw - 48px) / 7/0.69);
+  container-type: inline-size;
+  padding: 0;
+}
+.solitaire-top,
+.solitaire-columns {
+  width: 100%;
+  min-width: 0;
+  gap: 8px;
+  margin: 0;
+  flex-shrink: 0;
+}
+.solitaire-top {
+  align-self: start;
+}
+.solitaire-columns {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  align-items: start;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+  scrollbar-gutter: stable;
+}
+.solitaire-column {
+  min-height: 0;
+}
+.solitaire-table .playing-card,
+.solitaire-table .card-placeholder,
+.solitaire-table .stock-pile {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 0.69;
+  flex-shrink: 0;
+}
+.solitaire-table .card-index {
+  font-size: clamp(13px, 2.8cqw, 24px);
+}
+.solitaire-table .card-suit {
+  font-size: clamp(23px, 5cqw, 42px);
+}
+.mini-game .play-area > div.card-solitaire-table {
+  width: min(100%, 1100px);
+  height: 100%;
+  min-height: 0;
+  align-items: stretch;
+  padding: 0;
+}
+.card-columns {
+  width: 100%;
+  min-width: 0;
+  --card-height: calc((100cqw - (var(--cols) - 1) * 6px) / var(--cols) / 0.7);
+  --step: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  container-type: inline-size;
+  flex: 1 1 0;
+  scrollbar-gutter: stable;
+}
+.freecell-top {
+  width: 100%;
+  flex-shrink: 0;
+}
+.freecell-top > div,
+.freecell-top .card-slot {
+  max-height: none;
+}
+.card-column {
+  min-height: calc(var(--card-height) + (var(--max-stack) - 1) * var(--step));
+}
+.card-columns .card-corner {
+  font-size: clamp(11px, 2cqw, 17px);
+}
+@media (max-width: 600px) {
+  .mini-game .play-area > div.edition-table {
+    gap: 6px;
+    padding: 5px 5px 44px;
+  }
+  .edition-card {
+    flex-basis: 70px;
+    width: 70px;
+    min-width: 70px;
+    height: 104px;
+    min-height: 104px;
+  }
+  .edition-summary {
+    font-size: 11px;
+    min-height: 42px;
+  }
+  .edition-actions select {
+    padding: 8px;
+    font-size: 12px;
+  }
+  .mini-game .play-area > div.solitaire-table {
+    gap: 20px;
+    --card-step: 22px;
+  }
+  .solitaire-top,
+  .solitaire-columns {
+    gap: 4px;
+    --card-height: calc((100cqw - 24px) / 7/0.69);
+  }
+  .card-columns {
+    --step: 22px;
+    --card-height: calc((100cqw - (var(--cols) - 1) * 3px) / var(--cols) / 0.7);
+  }
+  .solitaire-table .card-index {
+    left: 3px;
+    top: 3px;
+  }
+  .solitaire-table .card-index.bottom {
+    right: 3px;
+    bottom: 3px;
+  }
+}
+@media (max-height: 550px) {
+  .edition-card {
+    height: 90px;
+    min-height: 90px;
+    width: 64px;
+    min-width: 64px;
+    flex-basis: 64px;
+  }
+  .edition-corner {
+    font-size: 16px;
+  }
+  .edition-suit {
+    font-size: 25px;
+  }
+  .edition-summary {
+    min-height: 25px;
+  }
+  .mini-game .play-area > div.edition-table {
+    gap: 3px;
+  }
+  .flat-board {
+    height: min(calc(100vw - 22px), calc(100dvh - var(--header-h) - 124px));
+    width: min(calc(100vw - 22px), calc(100dvh - var(--header-h) - 124px));
+  }
+}

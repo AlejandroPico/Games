@@ -1,8 +1,10 @@
+import { cardGuides } from "./cardGuides";
 import { collectionGuides } from "./collectionGuides";
 import { traditionalGuides } from "./traditionalGuides";
 import { categoryGuides } from "./categoryGuides";
 import { repertoireGuides } from "./repertoireGuides";
 export const guides: Record<string, [string, string][]> = {
+  ...cardGuides,
   ...collectionGuides,
   ...traditionalGuides,
   ...categoryGuides,

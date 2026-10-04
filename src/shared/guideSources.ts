@@ -1,6 +1,8 @@
+import { cardSources } from "./cardGuides";
 import { collectionSources } from "./collectionGuides";
 import { traditionalSources } from "./traditionalGuides";
 export const guideSources: Record<string, { title: string; url: string }[]> = {
+  ...cardSources,
   ...collectionSources,
   ...traditionalSources,
   quoridor: [

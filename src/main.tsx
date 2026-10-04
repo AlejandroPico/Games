@@ -23,3 +23,4 @@ import "./repertoire.css";
 import "./category-completion.css";
 
 import "./collection.css";
+import "./card-editions.css";
