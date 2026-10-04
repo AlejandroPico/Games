@@ -4,6 +4,7 @@ import type { DeductionPosition } from "./DeductionTable";
 import GameLayout from "./GameLayout";
 import PrivateHand from "./PrivateHand";
 import Overlay from "./Overlay";
+import { useObservation } from "./Observation";
 import { useMatch, useMatchAI, PlayerSelect, ScoreStrip } from "./useMatch";
 export interface DisplayCard {
   key: string;
@@ -49,6 +50,9 @@ export default function CardTable<T extends DeductionPosition>({
   );
   const [choice, setChoice] = useState(""),
     [details, setDetails] = useState(false);
+  const observation = useObservation();
+  const hiddenHand =
+    ai && m.started && s.winner === null && !observation.watching;
   const v = engine.view(s),
     a = engine.actions(s),
     selected = a.some((x) => x.key === choice) ? choice : a[0]?.key || "";
@@ -125,32 +129,52 @@ export default function CardTable<T extends DeductionPosition>({
           }
         >
           <div className="edition-private">
-            <p>Mano de J{(v.actor ?? s.turn) + 1}</p>
+            <p>
+              {hiddenHand
+                ? "La IA está decidiendo…"
+                : "Mano de J" + ((v.actor ?? s.turn) + 1)}
+            </p>
             <div className="edition-hand" aria-label="Mano de cartas">
-              {v.hand.map(card)}
+              {(hiddenHand
+                ? v.hand.map((c) => ({
+                    key: c.key,
+                    rank: "",
+                    suit: "◇",
+                    label: "Carta oculta de la IA",
+                  }))
+                : v.hand
+              ).map(card)}
             </div>
             <div className="edition-actions">
-              <label>
-                Acción
-                <select
-                  aria-label="Acción de cartas"
-                  value={selected}
-                  onChange={(e) => setChoice(e.target.value)}
-                >
-                  {a.map((x) => (
-                    <option key={x.key} value={x.key}>
-                      {x.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                className="primary"
-                disabled={!selected || ai || !m.started || s.winner !== null}
-                onClick={() => act(selected)}
-              >
-                Confirmar
-              </button>
+              {hiddenHand ? (
+                <p>Esperando el turno de una persona.</p>
+              ) : (
+                <>
+                  <label>
+                    Acción
+                    <select
+                      aria-label="Acción de cartas"
+                      value={selected}
+                      onChange={(e) => setChoice(e.target.value)}
+                    >
+                      {a.map((x) => (
+                        <option key={x.key} value={x.key}>
+                          {x.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    className="primary"
+                    disabled={
+                      !selected || ai || !m.started || s.winner !== null
+                    }
+                    onClick={() => act(selected)}
+                  >
+                    Confirmar
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </PrivateHand>
@@ -160,7 +184,12 @@ export default function CardTable<T extends DeductionPosition>({
       </div>
       {details && (
         <Overlay title="Registro y detalles" onClose={() => setDetails(false)}>
-          {v.notes.map((n, i) => (
+          {(hiddenHand
+            ? [
+                "La mano y las decisiones privadas de la IA permanecen ocultas durante su turno.",
+              ]
+            : v.notes
+          ).map((n, i) => (
             <p key={i}>{n}</p>
           ))}
         </Overlay>

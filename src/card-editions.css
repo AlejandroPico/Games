@@ -92,6 +92,7 @@
   gap: 8px;
   width: 100%;
   align-items: end;
+  min-height: 62px;
 }
 .edition-actions label {
   flex: 1;

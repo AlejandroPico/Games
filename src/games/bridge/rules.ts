@@ -287,8 +287,8 @@ export function view(s: State) {
           " " +
           names[s.bid % 5] +
           (s.double === 2 ? " doblado" : s.double === 4 ? " redoblado" : "") +
-          " · declarante J" +
-          (s.declarer + 1) +
+          (s.phase === "auction" ? " · postor J" : " · declarante J") +
+          ((s.phase === "auction" ? s.bidder : s.declarer) + 1) +
           " · bazas " +
           s.tricks.join("/"),
     notes: [
