@@ -1,3 +1,4 @@
+import { categoryCompletionMetadata } from "./categoryCompletion";
 import { roadmapGames } from "./roadmap";
 export type PlayableGameId =
   | "chess"
@@ -52,6 +53,7 @@ export interface GameInfo {
   color: string;
 }
 const enabledGames: Record<string, Partial<GameInfo>> = {
+  ...categoryCompletionMetadata,
   "damas-chinas": {
     name: "Damas Chinas",
     players: "2–6 jugadores",

@@ -46,6 +46,8 @@ La compilación genera un Service Worker con una versión basada en el contenido
 
 ## Estructura y colaboración
 
+La ampliación de deducción, dados y abstractos se describe en [docs/CATEGORY_COMPLETION.md](docs/CATEGORY_COMPLETION.md), con ediciones, variantes, fuentes y límites. Las mesas de casino usan puntos ficticios. `DiceTable`, `DeductionTable` y `AbstractTable` comparten presentación; cada juego mantiene su motor propio.
+
 La ampliación de mesas tradicionales, cartas, eurogames, deducción y puzles se documenta en [docs/REPERTOIRE_EXPANSION.md](docs/REPERTOIRE_EXPANSION.md), con las ediciones jugables, las adaptaciones originales y sus limitaciones. Las salas compartidas admiten hasta seis puestos. Las ayudas diferencian las reglas de esta mesa de las referencias externas.
 
 Cada juego vive en `src/games/<id>/`, con reglas, IA y componentes independientes. Registro: `src/games/registry.ts`; navegación: `src/App.tsx`; presentación compartida: `src/shared/GameLayout.tsx` y `src/shared/Overlay.tsx`; estilos: `src/styles.css`, `src/redesign.css` y `src/new-games.css` y `src/expansion.css` (mesas de los juegos añadidos).

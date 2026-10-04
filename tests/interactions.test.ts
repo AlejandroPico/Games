@@ -114,8 +114,8 @@ describe("Colección ampliada", () => {
     expect(new Set(games.map((g) => g.id)).size).toBe(games.length);
   });
   it("conserva las variantes propuestas y categorías del listado", () => {
-    for (const id of ["nonogramas-picross", "quoridor"])
-      expect(games.find((g) => g.id === id)?.ready).toBe(false);
+    expect(games.find((g) => g.id === "nonogramas-picross")?.ready).toBe(false);
+    expect(games.find((g) => g.id === "quoridor")?.ready).toBe(true);
     expect(games.find((g) => g.id === "backgammon")?.ready).toBe(true);
     expect(new Set(games.map((g) => g.category))).toContain("Roles ocultos");
   });

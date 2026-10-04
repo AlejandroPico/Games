@@ -27,13 +27,14 @@ const git = (...args) => {
   }
 };
 // Evaluate only the repository's data modules, with no filesystem/network access.
-function dataModule(source, roadmap = []) {
+function dataModule(source, roadmap = [], completion = {}) {
   const module = { exports: {} };
   const context = {
     module,
     exports: module.exports,
     require: (id) => {
       if (id === "./roadmap") return { roadmapGames: roadmap };
+      if (id === "./categoryCompletion") return completion;
       throw new Error(`Unexpected catalogue import: ${id}`);
     },
   };
@@ -46,13 +47,15 @@ function dataModule(source, roadmap = []) {
   vm.runInNewContext(code, context, { timeout: 2000 });
   return module.exports;
 }
-function catalogue(registry, roadmap) {
+function catalogue(registry, roadmap, completionSource = "") {
   const ideas = roadmap ? dataModule(roadmap).roadmapGames : [];
-  return dataModule(registry, ideas).games;
+  const completion = completionSource ? dataModule(completionSource) : {};
+  return dataModule(registry, ideas, completion).games;
 }
 const games = catalogue(
   read("src/games/registry.ts"),
   read("src/games/roadmap.ts"),
+  read("src/games/categoryCompletion.ts"),
 );
 const history = {};
 const commits = git(
@@ -62,6 +65,7 @@ const commits = git(
   "--",
   "src/games/registry.ts",
   "src/games/roadmap.ts",
+  "src/games/categoryCompletion.ts",
 )
   .split("\n")
   .filter(Boolean);
@@ -72,6 +76,7 @@ for (const line of commits) {
   const historical = catalogue(
     source,
     git("show", `${commit}:src/games/roadmap.ts`),
+    git("show", `${commit}:src/games/categoryCompletion.ts`),
   );
   for (const game of historical) {
     const fingerprint = JSON.stringify(game);

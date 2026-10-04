@@ -1,4 +1,89 @@
 export const guideSources: Record<string, { title: string; url: string }[]> = {
+  quoridor: [
+    {
+      title: "Gigamic: juego y reglamento oficial; mesa de dos participantes",
+      url: "https://en.gigamic.com/modern-classics/107-quoridor.html",
+    },
+  ],
+  onitama: [
+    {
+      title:
+        "Arcane Wonders: manual base; comparar salida y reglas de tablas de esta mesa",
+      url: "https://www.arcanewonders.com/wp-content/uploads/2021/05/Onitama-Rulebook.pdf",
+    },
+  ],
+  dvonn: [
+    {
+      title: "Project GIPF: reglas de DVONN",
+      url: "https://gipf.com/dvonn/rules/rules.html",
+    },
+  ],
+  yinsh: [
+    {
+      title: "Project GIPF: reglas de YINSH",
+      url: "https://www.gipf.com/yinsh/rules/rules.html",
+    },
+  ],
+  "la-colmena": [
+    {
+      title: "Gen42: manual base de Hive; esta mesa no incluye expansiones",
+      url: "https://www.gen42.com/wp-content/uploads/Hive-rules.pdf",
+    },
+  ],
+  "dados-mentirosos-perudo": [
+    {
+      title:
+        "Zygomatic / Asmodee: reglamento español de Perudo; calza no se aplica aquí",
+      url: "https://cdn.svc.asmodee.net/production-asmodeees/uploads/2023/12/perudoclassic_es_rules_compressed.pdf",
+    },
+  ],
+  "dados-zombie": [
+    {
+      title: "Steve Jackson Games: reglas básicas",
+      url: "https://www.sjgames.com/dice/zombiedice/img/ZDRules_English.pdf",
+    },
+  ],
+  "farkle-diez-mil": [
+    {
+      title:
+        "PlayMonster: comparar tabla de puntuación con la variante de Games",
+      url: "https://www.playmonster.com/wp-content/uploads/2018/06/Farkle-Rules.pdf",
+    },
+  ],
+  bunco: [
+    {
+      title: "World Bunco Association: formato social original de varias mesas",
+      url: "https://worldbunco.com/rules1.html",
+    },
+  ],
+  "linea-de-tiempo": [
+    {
+      title: "NASA: cronología de lanzamientos y exploración planetaria",
+      url: "https://nssdc.gsfc.nasa.gov/planetary/chronology.html",
+    },
+    {
+      title: "Smithsonian: Wright Flyer de 1903",
+      url: "https://airandspace.si.edu/collection-objects/1903-wright-flyer/nasm_A19610048000",
+    },
+    {
+      title: "CERN: nacimiento de la Web",
+      url: "https://home.cern/science/computing/the-birth-of-the-web/",
+    },
+  ],
+  "construccion-de-colchas": [
+    {
+      title:
+        "Lookout: Patchwork, referencia de género; retales y reglas de Games son una adaptación propia",
+      url: "https://www.lookout-spiele.de/de/games/patchwork.html",
+    },
+  ],
+  "ventanas-de-catedral": [
+    {
+      title:
+        "Floodgate Games: Sagrada, referencia de género; esta ficha tiene patrones y objetivos propios",
+      url: "https://floodgate.games/products/sagrada",
+    },
+  ],
   santorini: [
     {
       title:

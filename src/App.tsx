@@ -1,3 +1,5 @@
+import CategoryArt from "./shared/CategoryArt";
+import { categoryCompletionIds } from "./games/categoryCompletion";
 import ExpansionArt, { expansionIds } from "./shared/ExpansionArt";
 import RepertoireArt, { repertoireIds } from "./shared/RepertoireArt";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
@@ -34,6 +36,44 @@ const ChessGame = lazy(() => import("./games/chess/ChessGame"));
 const DeveloperPanel = lazy(() => import("./internal/DeveloperPanel"));
 const ConnectFour = lazy(() => import("./games/connect-four/ConnectFour"));
 const extraGames: Partial<Record<GameId, ReturnType<typeof lazy>>> = {
+  "dados-mentirosos-perudo": lazy(
+    () => import("./games/dados-mentirosos-perudo/Game"),
+  ),
+  "farkle-diez-mil": lazy(() => import("./games/farkle-diez-mil/Game")),
+  "dados-zombie": lazy(() => import("./games/dados-zombie/Game")),
+  "liar-s-dice-estilo-casino": lazy(
+    () => import("./games/liar-s-dice-estilo-casino/Game"),
+  ),
+  "craps-dados-de-casino": lazy(
+    () => import("./games/craps-dados-de-casino/Game"),
+  ),
+  "sichuan-dice": lazy(() => import("./games/sichuan-dice/Game")),
+  "crown-and-anchor": lazy(() => import("./games/crown-and-anchor/Game")),
+  "pig-el-cerdo": lazy(() => import("./games/pig-el-cerdo/Game")),
+  bunco: lazy(() => import("./games/bunco/Game")),
+  "cee-lo": lazy(() => import("./games/cee-lo/Game")),
+  hazard: lazy(() => import("./games/hazard/Game")),
+  "el-asesino-de-la-mansion": lazy(
+    () => import("./games/el-asesino-de-la-mansion/Game"),
+  ),
+  "codigo-de-redes": lazy(() => import("./games/codigo-de-redes/Game")),
+  "pistas-abstractas": lazy(() => import("./games/pistas-abstractas/Game")),
+  "deduccion-alquimica": lazy(() => import("./games/deduccion-alquimica/Game")),
+  "adivina-quien": lazy(() => import("./games/adivina-quien/Game")),
+  "linea-de-tiempo": lazy(() => import("./games/linea-de-tiempo/Game")),
+  "el-intruso": lazy(() => import("./games/el-intruso/Game")),
+  "construccion-de-colchas": lazy(
+    () => import("./games/construccion-de-colchas/Game"),
+  ),
+  "la-colmena": lazy(() => import("./games/la-colmena/Game")),
+  "ventanas-de-catedral": lazy(
+    () => import("./games/ventanas-de-catedral/Game"),
+  ),
+  "bloques-geometricos": lazy(() => import("./games/bloques-geometricos/Game")),
+  quoridor: lazy(() => import("./games/quoridor/Game")),
+  onitama: lazy(() => import("./games/onitama/Game")),
+  yinsh: lazy(() => import("./games/yinsh/Game")),
+  dvonn: lazy(() => import("./games/dvonn/Game")),
   "damas-chinas": lazy(() => import("./games/damas-chinas/Game")),
   chaturanga: lazy(() => import("./games/chaturanga/Game")),
   patolli: lazy(() => import("./games/patolli/Game")),
@@ -627,6 +667,7 @@ export default function App() {
 }
 
 function GameArt({ id }: { id: GameId }) {
+  if (categoryCompletionIds.includes(id)) return <CategoryArt id={id} />;
   if (repertoireIds.includes(id)) return <RepertoireArt id={id} />;
   if (expansionIds.includes(id)) return <ExpansionArt id={id} />;
   if (newGameIds.includes(id)) return <NewGameArt id={id} />;

@@ -1,6 +1,6 @@
 import { useRoomState, useTableRoom, SeatOptions } from "./TableRoom";
 import { useAutoplay, useObservation } from "./Observation";
-import type { ReactNode } from "react";
+import { useRef, useEffect, type ReactNode } from "react";
 /** Shared lifecycle only. Every game's moves and rules remain in its own module. */
 export function useMatch<T>(
   initial: (players: number) => T,
@@ -50,11 +50,53 @@ export function useMatchAI<T>(
   actor: number,
   finished: boolean,
   move: (state: T) => T,
+  workerFactory?: () => Worker,
 ) {
   const ai = match.machine(actor);
-  useAutoplay(match.started && !finished && ai, match.state, () =>
-    match.setState((s) => move(s)),
+  const worker = useRef<Worker | null>(null),
+    observation = useObservation();
+  useEffect(
+    () => () => {
+      worker.current?.terminate();
+      worker.current = null;
+    },
+    [
+      match.state,
+      match.started,
+      ai,
+      finished,
+      observation.paused,
+      observation.delay,
+      match.room.runner,
+    ],
   );
+  useAutoplay(match.started && !finished && ai, match.state, () => {
+    if (!workerFactory) {
+      match.setState((s) => move(s));
+      return;
+    }
+    const original = match.state;
+    try {
+      const current = workerFactory();
+      worker.current = current;
+      current.onmessage = (e: MessageEvent<T>) => {
+        if (worker.current !== current) return;
+        match.setState((s) => (s === original ? e.data : s));
+        current.terminate();
+        worker.current = null;
+      };
+      current.onerror = () => {
+        if (worker.current === current) {
+          current.terminate();
+          worker.current = null;
+          match.setState((s) => (s === original ? move(s) : s));
+        }
+      };
+      current.postMessage(original);
+    } catch {
+      match.setState((s) => (s === original ? move(s) : s));
+    }
+  });
   return ai;
 }
 export function PlayerSelect({

@@ -1,0 +1,250 @@
+.mini-game .play-area > .dice-table,
+.mini-game .play-area > .deduction-table {
+  width: min(100%, 960px);
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 2vh, 22px);
+  padding: 10px 12px 56px;
+  overflow: auto;
+}
+.dice-rack {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  perspective: 600px;
+}
+.sculpted-die {
+  display: grid;
+  place-items: center;
+  width: clamp(38px, 9vw, 76px);
+  aspect-ratio: 1;
+  background: linear-gradient(145deg, #fff9e9, #e5dbc6 70%, #baac92);
+  border: 1px solid #b5a98f;
+  box-shadow:
+    4px 5px 0 #8c7d64,
+    8px 12px 16px #0002;
+  color: #273d40;
+  font-size: clamp(34px, 8vw, 68px);
+}
+.table-message {
+  max-width: 700px;
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+.table-action {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.table-action label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.table-action select {
+  max-width: min(440px, 80vw);
+}
+.deduction-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 100%;
+  overflow: auto;
+}
+.deduction-cards button {
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  min-width: 72px;
+}
+.deduction-cards button.chosen {
+  outline: 2px solid var(--accent);
+}
+.deduction-cards button.excluded {
+  opacity: 0.25;
+}
+.deduction-notes {
+  width: 100%;
+  max-height: 160px;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  border-top: 1px solid var(--line);
+  padding: 8px;
+}
+.mini-game .play-area > .abstract-table {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 1000px);
+  height: 100%;
+  min-height: 0;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 56px;
+  overflow: auto;
+}
+.abstract-board {
+  display: grid;
+  width: min(65vh, 100%, 560px);
+  aspect-ratio: 1;
+  gap: 2px;
+  background: #a79471;
+  padding: 4px;
+  min-height: 0;
+}
+.abstract-board button {
+  padding: 0;
+  min-width: 0;
+  aspect-ratio: 1;
+  border: 1px solid #a7947160;
+  background: linear-gradient(135deg, #eaddbc, #c3b080);
+  font-size: clamp(13px, 3vw, 28px);
+  color: #23454b;
+  position: relative;
+}
+.abstract-board button.legal {
+  box-shadow: inset 0 0 0 3px #4c9275;
+}
+.abstract-board button.chosen {
+  outline: 3px solid #d29641;
+  z-index: 1;
+}
+.abstract-board button.p1 {
+  color: #28607a;
+}
+.abstract-board button.p2 {
+  color: #9b4148;
+}
+.abstract-board button.void {
+  visibility: hidden;
+}
+.abstract-board button small {
+  font-size: 10px;
+  position: absolute;
+  bottom: 1px;
+  right: 2px;
+}
+.abstract-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+}
+.abstract-controls select {
+  max-width: 80vw;
+}
+.abstract-board.hex-map button {
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+}
+.patch-preview {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+.mini-pattern {
+  display: grid;
+  grid-template-columns: repeat(5, 8px);
+  gap: 1px;
+}
+.mini-pattern i {
+  width: 8px;
+  height: 8px;
+  background: #558d89;
+}
+.mini-pattern i.empty {
+  background: transparent;
+}
+@media (max-width: 600px) {
+  .mini-game .play-area > .dice-table,
+  .mini-game .play-area > .deduction-table {
+    gap: 10px;
+    padding-inline: 6px;
+  }
+  .abstract-board {
+    width: min(100%, 53vh);
+  }
+  .mini-game .play-area > .abstract-table {
+    gap: 5px;
+  }
+  .table-action {
+    gap: 6px;
+  }
+  .deduction-notes {
+    max-height: 90px;
+  }
+  .abstract-board button {
+    font-size: 18px;
+  }
+  .sculpted-die {
+    box-shadow:
+      3px 3px 0 #8c7d64,
+      5px 7px 9px #0002;
+  }
+}
+
+.deduction-illustration {
+  display: block;
+  width: 100%;
+  max-width: 100px;
+  margin: auto;
+}
+.deduction-illustration svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.deduction-cards button:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.deduction-cards button.excluded:disabled {
+  opacity: 0.25;
+}
+.deduction-cards.portrait-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  width: min(100%, 800px);
+  flex-shrink: 0;
+  gap: 6px;
+}
+.portrait-grid button {
+  min-width: 0;
+  padding: 4px;
+}
+.portrait-grid .deduction-illustration {
+  max-width: 58px;
+}
+@media (max-width: 600px) {
+  .deduction-cards.portrait-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .portrait-grid button {
+    padding: 3px;
+    font-size: 11px;
+  }
+  .portrait-grid .deduction-illustration {
+    max-width: 38px;
+  }
+}
+.abstract-board button.p3 {
+  color: #587728;
+}
+.abstract-board button.p4 {
+  color: #ac8323;
+}

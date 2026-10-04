@@ -1,5 +1,7 @@
+import { categoryGuides } from "./categoryGuides";
 import { repertoireGuides } from "./repertoireGuides";
 export const guides: Record<string, [string, string][]> = {
+  ...categoryGuides,
   ...repertoireGuides,
   "2048": [
     [
