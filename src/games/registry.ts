@@ -52,6 +52,84 @@ export interface GameInfo {
   color: string;
 }
 const enabledGames: Record<string, Partial<GameInfo>> = {
+  "damas-chinas": {
+    name: "Damas Chinas",
+    players: "2–6 jugadores",
+    ready: true,
+  },
+  chaturanga: {
+    name: "Chaturanga",
+    players: "1–2 jugadores",
+    subtitle: "Una reconstrucción del ajedrez ancestral para dos bandos.",
+    ready: true,
+  },
+  patolli: {
+    name: "Patolli",
+    players: "2–4 jugadores",
+    subtitle: "Una carrera de piedras y frijoles: reconstrucción recreativa.",
+    ready: true,
+  },
+  "rutas-de-vapor": {
+    name: "Rutas de Vapor",
+    players: "2–4 jugadores",
+    subtitle: "Conecta ciudades y contratos en una adaptación original.",
+    ready: true,
+  },
+  "draft-de-maravillas": {
+    name: "Draft de Maravillas",
+    players: "3–4 jugadores",
+    subtitle: "Tres eras de cartas y ciudades: variante original.",
+    ready: true,
+  },
+  "reserva-de-naturaleza": {
+    name: "Reserva de Naturaleza",
+    players: "2–4 jugadores",
+    subtitle: "Hábitats, animales y conservación en una variante original.",
+    ready: true,
+  },
+  "construccion-de-castillos": {
+    name: "Construcción de Castillos",
+    players: "2–4 jugadores",
+    subtitle: "Dados, losetas y dominios en una variante original.",
+    ready: true,
+  },
+  escoba: { name: "Escoba", players: "2–4 jugadores", ready: true },
+  cinquillo: { name: "Cinquillo", players: "2–4 jugadores", ready: true },
+  belote: { name: "Belote", players: "4 jugadores", ready: true },
+  "futbol-de-mesa-con-cartas": {
+    name: "Fútbol de mesa con cartas",
+    players: "1–2 jugadores",
+    subtitle: "Duelo original de ataque y defensa con cartas.",
+    ready: true,
+  },
+  "buscaminas-hexagonal": {
+    name: "Buscaminas Hexagonal",
+    players: "1 jugador",
+    ready: true,
+  },
+  "torres-de-hanoi": {
+    name: "Torres de Hanói",
+    players: "1 jugador",
+    ready: true,
+  },
+  "sopa-de-letras-dinamica": {
+    name: "Sopa de Letras Dinámica",
+    players: "1 jugador",
+    ready: true,
+  },
+  inu: {
+    name: "Inu",
+    players: "1–2 jugadores",
+    subtitle: "Deducción de posiciones ocultas: variante original de Games.",
+    ready: true,
+  },
+  "mensajes-cruzados": {
+    name: "Mensajes Cruzados",
+    players: "4 jugadores",
+    subtitle: "Pistas y códigos por equipos: variante original.",
+    ready: true,
+  },
+  santorini: { name: "Santorini", players: "1–2 jugadores", ready: true },
   "el-ahorcado": { name: "El Ahorcado", players: "1 jugador", ready: true },
   cruzapalabras: {
     name: "CruzaPalabras",

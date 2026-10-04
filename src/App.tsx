@@ -1,4 +1,5 @@
 import ExpansionArt, { expansionIds } from "./shared/ExpansionArt";
+import RepertoireArt, { repertoireIds } from "./shared/RepertoireArt";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
@@ -33,6 +34,33 @@ const ChessGame = lazy(() => import("./games/chess/ChessGame"));
 const DeveloperPanel = lazy(() => import("./internal/DeveloperPanel"));
 const ConnectFour = lazy(() => import("./games/connect-four/ConnectFour"));
 const extraGames: Partial<Record<GameId, ReturnType<typeof lazy>>> = {
+  "damas-chinas": lazy(() => import("./games/damas-chinas/Game")),
+  chaturanga: lazy(() => import("./games/chaturanga/Game")),
+  patolli: lazy(() => import("./games/patolli/Game")),
+  "rutas-de-vapor": lazy(() => import("./games/rutas-de-vapor/Game")),
+  "draft-de-maravillas": lazy(() => import("./games/draft-de-maravillas/Game")),
+  "reserva-de-naturaleza": lazy(
+    () => import("./games/reserva-de-naturaleza/Game"),
+  ),
+  "construccion-de-castillos": lazy(
+    () => import("./games/construccion-de-castillos/Game"),
+  ),
+  escoba: lazy(() => import("./games/escoba/Game")),
+  cinquillo: lazy(() => import("./games/cinquillo/Game")),
+  belote: lazy(() => import("./games/belote/Game")),
+  "futbol-de-mesa-con-cartas": lazy(
+    () => import("./games/futbol-de-mesa-con-cartas/Game"),
+  ),
+  "buscaminas-hexagonal": lazy(
+    () => import("./games/buscaminas-hexagonal/Game"),
+  ),
+  "torres-de-hanoi": lazy(() => import("./games/torres-de-hanoi/Game")),
+  "sopa-de-letras-dinamica": lazy(
+    () => import("./games/sopa-de-letras-dinamica/Game"),
+  ),
+  inu: lazy(() => import("./games/inu/Game")),
+  "mensajes-cruzados": lazy(() => import("./games/mensajes-cruzados/Game")),
+  santorini: lazy(() => import("./games/santorini/Game")),
   "el-ahorcado": lazy(() => import("./games/hangman/Hangman")),
   cruzapalabras: lazy(() => import("./games/crosswords/Crosswords")),
   "basta-tutti-frutti": lazy(() => import("./games/basta/Basta")),
@@ -599,6 +627,7 @@ export default function App() {
 }
 
 function GameArt({ id }: { id: GameId }) {
+  if (repertoireIds.includes(id)) return <RepertoireArt id={id} />;
   if (expansionIds.includes(id)) return <ExpansionArt id={id} />;
   if (newGameIds.includes(id)) return <NewGameArt id={id} />;
   if (

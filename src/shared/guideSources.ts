@@ -1,4 +1,36 @@
 export const guideSources: Record<string, { title: string; url: string }[]> = {
+  santorini: [
+    {
+      title:
+        "Roxley: reglas base y manuales oficiales; esta mesa no incluye poderes",
+      url: "https://roxley.com/collections/santorini/products/santorini",
+    },
+  ],
+  "damas-chinas": [
+    {
+      title:
+        "Hasbro: instrucciones de Chinese Checkers; comparar variantes de bloqueo",
+      url: "https://www.hasbro.com/common/instruct/ChineseCheckers(1938).PDF",
+    },
+  ],
+  escoba: [
+    {
+      title: "Fournier: Escoba, reglas del fabricante de cartas",
+      url: "https://www.nhfournier.es/como-jugar/escoba/",
+    },
+  ],
+  belote: [
+    {
+      title: "Pagat: reglas recopiladas de jugadores de Belote y sus variantes",
+      url: "https://www.pagat.com/jass/belote.html",
+    },
+  ],
+  cinquillo: [
+    {
+      title: "Ludoteka: otra modalidad de Cinquillo, con puntuación distinta",
+      url: "https://www.ludoteka.com/juegos/cinquillo/reglas",
+    },
+  ],
   sudoku: [
     {
       title: "Reglas y ejemplos del editor Nikoli",

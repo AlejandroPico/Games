@@ -18,3 +18,4 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
 }
 import "./expansion.css";
 import "./rooms.css";
+import "./repertoire.css";

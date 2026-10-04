@@ -6,8 +6,11 @@ import {
 type Options<T> = {
   canDrag: (source: T) => boolean;
   onStart?: (source: T) => void;
-  onDrop: (source: T, target: HTMLElement | null) => boolean;
-  elements?: (source: T, element: HTMLElement) => HTMLElement[];
+  onDrop: (source: T, target: HTMLElement | SVGElement | null) => boolean;
+  elements?: (
+    source: T,
+    element: HTMLElement | SVGElement,
+  ) => (HTMLElement | SVGElement)[];
 };
 export function usePieceDrag<T>(options: Options<T>) {
   const current = useRef(options);
@@ -23,7 +26,7 @@ export function usePieceDrag<T>(options: Options<T>) {
     [],
   );
   const bind = (source: T) => ({
-    onPointerDown: (event: ReactPointerEvent<HTMLElement>) => {
+    onPointerDown: (event: ReactPointerEvent<HTMLElement | SVGElement>) => {
       if (
         !event.isPrimary ||
         event.button !== 0 ||
@@ -36,8 +39,8 @@ export function usePieceDrag<T>(options: Options<T>) {
         x = event.clientX,
         y = event.clientY;
       let ghost: HTMLDivElement | null = null,
-        originals: HTMLElement[] = [],
-        highlight: HTMLElement | null = null;
+        originals: (HTMLElement | SVGElement)[] = [],
+        highlight: HTMLElement | SVGElement | null = null;
       const create = () => {
         originals = current.current.elements?.(source, element) || [element];
         const rects = originals.map((e) => e.getBoundingClientRect()),
@@ -50,7 +53,20 @@ export function usePieceDrag<T>(options: Options<T>) {
         ghost.style.height =
           Math.max(...rects.map((r) => r.bottom - first.top)) + "px";
         originals.forEach((e, i) => {
-          const clone = e.cloneNode(true) as HTMLElement;
+          let clone = e.cloneNode(true) as HTMLElement | SVGElement;
+          if (e instanceof SVGGraphicsElement) {
+            const box = e.getBBox();
+            const svg = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "svg",
+            );
+            svg.setAttribute(
+              "viewBox",
+              `${box.x} ${box.y} ${box.width} ${box.height}`,
+            );
+            svg.appendChild(clone);
+            clone = svg;
+          }
           clone.removeAttribute("id");
           clone.removeAttribute("aria-label");
           clone.style.position = "absolute";
@@ -80,7 +96,7 @@ export function usePieceDrag<T>(options: Options<T>) {
         highlight =
           document
             .elementFromPoint(e.clientX, e.clientY)
-            ?.closest<HTMLElement>("[data-drop]") || null;
+            ?.closest<HTMLElement | SVGElement>("[data-drop]") || null;
         highlight?.classList.add("drop-hover");
       };
       const finish = (e: PointerEvent) => {
@@ -92,7 +108,7 @@ export function usePieceDrag<T>(options: Options<T>) {
           const target =
             document
               .elementFromPoint(e.clientX, e.clientY)
-              ?.closest<HTMLElement>("[data-drop]") || null;
+              ?.closest<HTMLElement | SVGElement>("[data-drop]") || null;
           current.current.onDrop(source, target);
         }
         clear();

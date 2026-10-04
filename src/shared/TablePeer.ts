@@ -242,7 +242,7 @@ export class TablePeer {
         m.snapshot &&
         Number.isInteger(m.seat) &&
         m.seat! >= 1 &&
-        m.seat! < 4
+        m.seat! < 6
       ) {
         welcomed = true;
         clearTimeout(timer);

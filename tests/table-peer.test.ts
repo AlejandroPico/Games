@@ -86,6 +86,31 @@ afterEach(() => {
   for (const peer of sessions.splice(0)) peer.destroy();
 });
 describe("room transport", () => {
+  it("connects all five friends in a six-seat table and accepts seat six moves", async () => {
+    const seats: Seat[] = [
+      "local",
+      "remote",
+      "remote",
+      "remote",
+      "remote",
+      "remote",
+    ];
+    const host = new TableStore();
+    host.ensure("position", { turn: 0, ply: 0 });
+    open(true, host, seats);
+    const guests = Array.from({ length: 5 }, () => new TableStore());
+    for (const guest of guests) open(false, guest, seats);
+    await settle();
+    expect(host.view.ready).toBe(true);
+    expect(guests.map((g) => g.view.seat)).toEqual([1, 2, 3, 4, 5]);
+    host.setTurn(5, true);
+    await settle();
+    guests[4].set("position", { turn: 0, ply: 1 });
+    await settle();
+    expect(host.values.position).toEqual({ turn: 0, ply: 1 });
+    for (const guest of guests)
+      expect(guest.values.position).toEqual(host.values.position);
+  });
   it("assigns distinct remote seats and waits for all friends in a mixed four-player room", async () => {
     const seats: Seat[] = ["local", "remote", "ai", "remote"],
       host = new TableStore(),

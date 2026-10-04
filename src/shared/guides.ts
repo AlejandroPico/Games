@@ -1,4 +1,6 @@
+import { repertoireGuides } from "./repertoireGuides";
 export const guides: Record<string, [string, string][]> = {
+  ...repertoireGuides,
   "2048": [
     [
       "Objetivo y preparación",

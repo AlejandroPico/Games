@@ -162,7 +162,7 @@ export class TableStore {
     if (
       this.view.online ||
       seats.length < 2 ||
-      seats.length > 4 ||
+      seats.length > 6 ||
       seats[0] !== "local" ||
       seats.some((s) => s !== "local" && s !== "ai")
     )
@@ -196,7 +196,7 @@ export class TableStore {
       !safePatch(s.values) ||
       !Array.isArray(s.view.seats) ||
       s.view.seats.length < 2 ||
-      s.view.seats.length > 4 ||
+      s.view.seats.length > 6 ||
       !s.view.seats.every((v) => ["local", "remote", "ai"].includes(v)) ||
       !Number.isInteger(seat) ||
       s.view.seats[seat] !== "remote" ||

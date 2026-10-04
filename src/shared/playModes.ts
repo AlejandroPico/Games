@@ -1,6 +1,9 @@
 import { games } from "../games/registry";
 /** Single-player puzzles have no independent human opponent. The blackjack bank follows fixed rules. */
 export const individualGames = new Set<string>([
+  "buscaminas-hexagonal",
+  "torres-de-hanoi",
+  "sopa-de-letras-dinamica",
   "solitaire",
   "minesweeper",
   "sudoku",
